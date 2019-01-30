@@ -1,0 +1,90 @@
+from __future__ import absolute_import, division, print_function
+
+import tensorflow as tf
+import numpy as np
+
+import os
+import sys
+
+COLUMN_NAMES = ['speed', 'meters_driven', 'seconds', 'categoryid', 'month', 'weekday', 'min_from_midnight']
+FILE_NAME = "data\\BaselineData1.csv"
+fc = tf.feature_column
+tf.logging.set_verbosity(tf.logging.INFO)
+
+def _parse_csv(rows_string_tensor):
+    """Takes the string input tensor and returns tuple of (features, labels)"""
+    # Last dim is the label
+    num_features = len(COLUMN_NAMES)
+    num_columns = num_features + 1
+    columns = tf.decode_csv(rows_string_tensor, record_defaults=[[0.0], [0.0], [0.0], [0], [0], [0], [0], [0.0]])
+    features = dict(zip(COLUMN_NAMES, columns[:num_features]))
+    labels = tf.cast(columns[num_features], tf.float32)
+    return features, labels
+
+def input_fn(is_training):
+    """An input function"""
+    #complete_dataset = tf.contrib.data.CsvDataset(FILE_NAME, [tf.float32, tf.float32, tf.float32, tf.int32, tf.int32,
+    #                                                          tf.int32, tf.int32, tf.float32], header=True)
+
+    dataset = tf.data.TextLineDataset([FILE_NAME])
+    dataset = dataset.skip(1)
+    dataset = dataset.map(_parse_csv, num_parallel_calls = 12)
+
+    if is_training:
+        dataset = dataset.skip(3618252)
+        dataset = dataset.shuffle(150)
+        dataset = dataset.cache()
+        dataset = dataset.repeat(10)
+    else:
+        dataset = dataset.take(3618252)
+
+    dataset = dataset.batch(256)
+
+    return dataset
+
+def mean_absolute_error(labels, predictions):
+    pred_values = predictions['predictions']
+    return {'mean_absolute_error': tf.metrics.mean_absolute_error(labels, pred_values)}
+
+def mean_relative_error(labels, predictions):
+    pred_values = predictions['predictions']
+    return {'mean_relative_error': tf.metrics.mean_relative_error(labels, pred_values)}
+
+def mean_squared_error(labels, predictions):
+    pred_values = predictions['predictions']
+    return {'mean_squared_error': tf.metrics.mean_squared_error(labels, pred_values)}
+
+speed_bound, meters_driven_bound, seconds_bound, min_from_midnight_bound = [], [], [], []
+for i in range(0, 230, 10):
+    speed_bound.append(i)
+for i in range(0, 10025, 25):
+    meters_driven_bound.append(i)
+for i in range(0, 2580, 60):
+    seconds_bound.append(i)
+for i in range(0, 1470, 30):
+    min_from_midnight_bound.append(i)
+
+speed_c = fc.bucketized_column(fc.numeric_column(key="speed", dtype=tf.float32), speed_bound)
+meters_driven_c = fc.bucketized_column(fc.numeric_column(key="meters_driven", dtype=tf.float32), meters_driven_bound)
+seconds_c = fc.bucketized_column(fc.numeric_column(key="seconds", dtype=tf.float32), seconds_bound)
+categoryid_c = fc.numeric_column(key="categoryid", dtype=tf.int32)
+month_c = fc.numeric_column(key="month", dtype=tf.int32)
+weekday_c = fc.numeric_column(key="weekday", dtype=tf.int32)
+min_from_midnight_c = fc.bucketized_column(fc.numeric_column(key="min_from_midnight", dtype=tf.int32), min_from_midnight_bound)
+estimator = tf.estimator.LinearRegressor(feature_columns=[speed_c, meters_driven_c, seconds_c, categoryid_c, month_c,
+                                                          weekday_c, min_from_midnight_c])
+
+estimator = tf.contrib.estimator.add_metrics(estimator, mean_absolute_error)
+#estimator = tf.contrib.estimator.add_metrics(estimator, mean_relative_error)
+estimator = tf.contrib.estimator.add_metrics(estimator, mean_squared_error)
+
+estimator.train(input_fn=lambda: input_fn(True))
+print("Done training!")
+metrics = estimator.evaluate(input_fn=lambda: input_fn(False))
+preds = estimator.predict(input_fn=lambda: input_fn(False))
+predictions = np.array([item['predictions'][0] for item in preds])
+
+for i in metrics:
+    print(i, metrics[i])
+
+print("Done!")
