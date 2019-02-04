@@ -1,0 +1,66 @@
+syntax: glob
+
+node_modules
+.c9revisions
+.DS_Store
+Thumbs.db
+
+*.pyc
+*.pyo
+*.pyd
+
+# C extensions
+*.so
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+include
+man
+__pycache__
+
+# Installer logs
+pip-log.txt
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Model data
+data
+*.edges
+*.emb
+
+# Pycharm/IntelliJ
+.idea
+*.iml
+
+# Keras
+*.h5
+*.json
+
+#Graphsage
+*/GraphSAGE/
+
+Baseline/predictions.csv
+Baseline/model.csv
+Keras-Regressor/ev_wh_prediction.csv
+Baseline/ev_wh_prediction.csv
+LocalSettings.py
+venv
+fetch_data.sh
