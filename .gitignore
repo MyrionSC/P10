@@ -64,3 +64,12 @@ Baseline/ev_wh_prediction.csv
 LocalSettings.py
 venv
 fetch_data.sh
+
+
+data/
+
+Keras-Regressor/saved_history/
+
+Keras-Regressor/saved_models/
+
+Keras-Regressor/saved_scaler/
