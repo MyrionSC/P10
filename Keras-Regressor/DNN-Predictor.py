@@ -138,27 +138,27 @@ elif 'speed' in config['target_feature']:
 #     print(str(pred[0]) + " - " + str(truth[0]) + " - " + str(pred[0] - truth[0]) + " - " + str(pred[0] / truth [0]))
 
 # visualize the speed prediction results
-if 'ev_wh' in config['target_feature']:
-    target_index = config['target_feature'].index('ev_wh')
-    df = load_columns(paths['dataPath'], columns=['mapmatched_id', 'segmentkey', 'categoryid', 'ev_wh'], index='mapmatched_id')
-    df['y_true'] = df['ev_wh']
-    df['y_pred'] = pd.Series(prediction[:, target_index], index=df.index)
-    df = df.drop(columns=config['target_feature'])
-    # TODO: add call to plotting function here
-    r2_by_frequency(df)
-    r2_by_category(df)
-
-# visualize the speed prediction results
-if 'speed' in config['target_feature']:
-    target_index = config['target_feature'].index('speed')
-    df = load_columns(paths['dataPath'], columns=['mapmatched_id', 'segmentkey', 'categoryid', 'speed', 'speedlimit'], index='mapmatched_id')
-    df['y_true'] = df['speed']
-    df['y_pred'] = pd.Series(prediction[:, target_index], index=df.index)
-    #df = df.drop(columns=target_feature)
-    # TODO: add call to plotting function here
-    r2_by_category(df)
-    mae_by_category(df)
-
-    df['y_true'] = df['speedlimit']
-    r2_by_category(df)
-    mae_by_category(df)
+# if 'ev_wh' in config['target_feature']:
+#     target_index = config['target_feature'].index('ev_wh')
+#     df = load_columns(paths['dataPath'], columns=['mapmatched_id', 'segmentkey', 'categoryid', 'ev_wh'], index='mapmatched_id')
+#     df['y_true'] = df['ev_wh']
+#     df['y_pred'] = pd.Series(prediction[:, target_index], index=df.index)
+#     df = df.drop(columns=config['target_feature'])
+#     # TODO: add call to plotting function here
+#     r2_by_frequency(df)
+#     r2_by_category(df)
+#
+# # visualize the speed prediction results
+# if 'speed' in config['target_feature']:
+#     target_index = config['target_feature'].index('speed')
+#     df = load_columns(paths['dataPath'], columns=['mapmatched_id', 'segmentkey', 'categoryid', 'speed', 'speedlimit'], index='mapmatched_id')
+#     df['y_true'] = df['speed']
+#     df['y_pred'] = pd.Series(prediction[:, target_index], index=df.index)
+#     #df = df.drop(columns=target_feature)
+#     # TODO: add call to plotting function here
+#     r2_by_category(df)
+#     mae_by_category(df)
+#
+#     df['y_true'] = df['speedlimit']
+#     r2_by_category(df)
+#     mae_by_category(df)
