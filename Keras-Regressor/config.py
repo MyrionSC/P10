@@ -20,7 +20,7 @@ config = {
     'kernel_initializer': 'normal',
     'optimizer': 'adam',
     'target_feature': ['ev_wh'],
-    'remove_features': ['min_from_midnight', 'speed', 'acceleration', 'deceleration']
+    'remove_features': ['min_from_midnight', 'speed', 'acceleration', 'deceleration', 'temperature', 'headwind_speed']
 }
 
 def_features = ['batch_size', 'epochs', 'hidden_layers', 'cells_per_layer', 'initial_dropout', 'dropout', 'activation', 'kernel_initializer', 'optimizer', 'target_feature', 'remove_features']
