@@ -2,7 +2,7 @@ import csv
 import random
 import os
 
-source_path = "data/Full.csv"
+source_path = "data/Data.csv"
 training_path = "data/Training.csv"
 test_path = "data/Test.csv"
 
