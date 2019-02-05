@@ -1,4 +1,5 @@
 from Utils import loadScaler, read_data, load_model
+from config import *
 from sqlalchemy import create_engine
 from Plots import *
 from sklearn.metrics import mean_squared_error
@@ -85,64 +86,20 @@ def load_columns(filename, columns=[], index=None):
 #         connection.close()
 
 
-# Path of data to predict and embedings
-# dataPath = "../data_predict/141966.csv"
-# dataPath = "../data_predict/192733.csv"
-dataPath = "../data/TestData.csv"
-embTransformed64Path = "../data/osm_dk_20140101-transformed-64d.emb"
-embTransformed32Path = "../data/osm_dk_20140101-transformed-32d.emb"
-embNormal32Path = "../data/osm_dk_20140101-normal-32d.emb"
-embTransformedPath = "../data/osm_dk_20140101-transformed-64d-walk_length-20.emb"
-
-# Parameters of the model and scaler to load
-batch_size = 8192
-epochs = 20
-hidden_layers = 6
-cells_per_layer = 1000
-initial_dropout = 0
-dropout = 0
-activation = 'relu'
-kernel_initializer = 'normal'
-optimizer = 'adamax'
-target_feature = ['ev_wh']
-remove_features = ['min_from_midnight', 'speed', 'weekday', 'month', 'categoryid', 'headwind_speed', 'quarter', 'speedlimit']
-# target_feature = ['speed']
-# remove_features = ['min_from_midnight', 'ev_wh', 'headwind_speed', 'weekday']
-embeddings_used = []
-# embeddings_used = ['normal32', 'transformed32', 'transformed64']
-
-features, labels, num_features, num_labels, _, trip_ids = read_data(dataPath, target_feature, remove_features,
-    emb_transformed_path=embTransformedPath, scale=True, load_scaler=True, use_speed_prediction=True)
-
-# Loads model
-params = dict(activation=activation,
-              batch_size=batch_size,
-              cells_per_layer=cells_per_layer,
-              dropout=dropout,
-              epochs=epochs, hidden_layers=hidden_layers,
-              initial_dropout=initial_dropout,
-              kernel_initializer=kernel_initializer,
-              optimizer=optimizer)
-
-param_string = ','.join("%s=%s" % (key, value) for (key, value) in params.items())
-target_feature_string = ','.join("%s" % x for x in target_feature)
-embeddings_used_string = ""
-
-if len(embeddings_used) > 0:
-    embeddings_used_string = " - " + ','.join("%s" % x for x in embeddings_used)
-modelPath = ("saved_models/DNNRegressor %s%s - %s" % (target_feature_string, embeddings_used_string, param_string))
+features, labels, num_features, num_labels, _, trip_ids = read_data(paths['dataPath'], config['target_feature'], config['remove_features'], scale=True, load_scaler=True)
+modelPath = ("saved_models/DNNRegressor")# %s%s - %s" % (target_feature_string, embeddings_used_string, param_string))
 
 model = load_model(modelPath)
 
-model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mae', 'mse', 'mape', rmse])
-prediction = model.predict(features, batch_size=batch_size, verbose=1)
-evaluation = model.evaluate(features, labels, batch_size=batch_size, verbose=1)
+model.compile(loss='mean_squared_error', optimizer=config['optimizer'], metrics=['mae', 'mse', 'mape', rmse])
+prediction = model.predict(features, batch_size=config['batch_size'], verbose=1)
+evaluation = model.evaluate(features, labels, batch_size=config['batch_size'], verbose=1)
 
 r2 = r2_score(labels, prediction)
 print("R2: " + str(r2))
 
 # Save history
-history_output_path = ("saved_history/Test_Predicting %s%s - %s.json" % (target_feature_string, embeddings_used_string, param_string))
+history_output_path = ("saved_history/Test_Predicting.json")# %s%s - %s.json" % (target_feature_string, embeddings_used_string, param_string))
 history_json = json.dumps(evaluation)
 if not os.path.isdir("saved_history"):
     os.makedirs(os.path.dirname(history_output_path))
@@ -150,9 +107,9 @@ with open(history_output_path, "w") as f:
     f.write(history_json)
 
 # go over predictions saving them into pandas DataFrame
-df = load_columns(dataPath, columns=['mapmatched_id', 'segment_length', 'trip_id'])
+df = load_columns(paths['dataPath'], columns=['mapmatched_id', 'segment_length', 'trip_id'])
 
-for i, target in enumerate(target_feature):
+for i, target in enumerate(config['target_feature']):
     target_predict = str(target + "_prediction")
     df[target_predict] = pd.Series(prediction[:, i])
     df[target] = labels[target]
@@ -162,7 +119,7 @@ for i, target in enumerate(target_feature):
 
 column = df.columns
 
-if 'ev_wh' in target_feature:
+if 'ev_wh' in config['target_feature']:
     grouped_df = df.groupby('trip_id')[column[3:]].sum()
     grouped_r2 = r2_score(grouped_df['ev_wh'], grouped_df['ev_wh_prediction'])
     grouped_mae = mean_absolute_error(grouped_df['ev_wh'], grouped_df['ev_wh_prediction'])
@@ -170,22 +127,10 @@ if 'ev_wh' in target_feature:
     print(grouped_r2)
     print(grouped_mae)
     print(grouped_rmse)
-elif 'speed' in target_feature:
+elif 'speed' in config['target_feature']:
     df['seconds'] = df['segment_length']/df['speed']
     df['seconds_prediction'] = df['segment_length']/df['speed_prediction']
     grouped_df = df.groupby('trip_id')['seconds', 'seconds_prediction'].sum()
-
-
-if 'ev_wh' in target_feature:
-    pass
-    # send results to the database
-    # upload_to_database(df[['ev_wh']], db_schema='experiments', db_table='mi904e18_ev_wh_predictions', column='ev_wh')
-elif 'speed' in target_feature:
-    pass
-    # send results to the database
-    # upload_to_database(df[['speed']], db_schema='experiments', db_table='mi904e18_speed_predictions', column='speed')
-else:
-    raise NotImplementedError()
 
 # print("Prediction, actual, difference, relative")
 # for pred, truth in zip(prediction, labels.values):
@@ -193,20 +138,20 @@ else:
 #     print(str(pred[0]) + " - " + str(truth[0]) + " - " + str(pred[0] - truth[0]) + " - " + str(pred[0] / truth [0]))
 
 # visualize the speed prediction results
-if 'ev_wh' in target_feature:
-    target_index = target_feature.index('ev_wh')
-    df = load_columns(dataPath, columns=['mapmatched_id', 'segmentkey', 'categoryid', 'ev_wh'], index='mapmatched_id')
+if 'ev_wh' in config['target_feature']:
+    target_index = config['target_feature'].index('ev_wh')
+    df = load_columns(paths['dataPath'], columns=['mapmatched_id', 'segmentkey', 'categoryid', 'ev_wh'], index='mapmatched_id')
     df['y_true'] = df['ev_wh']
     df['y_pred'] = pd.Series(prediction[:, target_index], index=df.index)
-    df = df.drop(columns=target_feature)
+    df = df.drop(columns=config['target_feature'])
     # TODO: add call to plotting function here
     r2_by_frequency(df)
     r2_by_category(df)
 
 # visualize the speed prediction results
-if 'speed' in target_feature:
-    target_index = target_feature.index('speed')
-    df = load_columns(dataPath, columns=['mapmatched_id', 'segmentkey', 'categoryid', 'speed', 'speedlimit'], index='mapmatched_id')
+if 'speed' in config['target_feature']:
+    target_index = config['target_feature'].index('speed')
+    df = load_columns(paths['dataPath'], columns=['mapmatched_id', 'segmentkey', 'categoryid', 'speed', 'speedlimit'], index='mapmatched_id')
     df['y_true'] = df['speed']
     df['y_pred'] = pd.Series(prediction[:, target_index], index=df.index)
     #df = df.drop(columns=target_feature)
