@@ -8,6 +8,7 @@ from sklearn.preprocessing import StandardScaler
 import time
 import os
 import json
+import datetime
 
 from pandas.api.types import CategoricalDtype
 
@@ -78,6 +79,11 @@ def load_model(filename):
     return loaded_model
 
 
+def current_time():
+    now = datetime.datetime.today()
+    return str(now.month), str(now.weekday()), str((now.hour * 4) + int(now.minute / 15))
+
+
 def one_hot(df):
     # One-hot encode category, month and weekday columns
     print("One-hot encoding features")
@@ -90,6 +96,12 @@ def one_hot(df):
         df = one_hot_encode_column(df, 'weekday')
     print("Dataframe shape: %s" % str(df.shape))
     print("Time %s" % (time.time() - start_time))
+    return df
+
+
+def preprocess_data(df):
+    df = one_hot(df)
+    df = scale_df(df, load_scaler=True)
     return df
 
 
