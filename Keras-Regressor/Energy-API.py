@@ -3,8 +3,8 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from config import *
 import pandas as pd
-import datetime
-from Utils import load_model, one_hot, scale_df
+from Utils import load_model, current_time, preprocess_data
+
 
 def query(str):
     conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(database['name'], database['user'], database['port'], database['host'], database['password']))
@@ -15,32 +15,37 @@ def query(str):
     conn.close()
     return rows
 
-def predict_segment(segmentkey):
+
+def predict(segments):
+    if isinstance(segments, int):
+        segments = [segments]
     qry = """
-        SELECT osm.categoryid, inc.incline, osm.meters as segment_length, spd.speedlimit
-        FROM maps.osm_dk_20140101 osm
-        JOIN experiments.mi904e18_segment_incline inc
-        ON osm.segmentkey = inc.segmentkey
-        JOIN experiments.mi904e18_speedlimits spd
-        ON osm.segmentkey = spd.segmentkey
-        WHERE osm.segmentkey = {0}
-    """.format(segmentkey)
+            SELECT osm.segmentkey, osm.categoryid, inc.incline, osm.meters as segment_length, spd.speedlimit
+            FROM maps.osm_dk_20140101 osm
+            JOIN experiments.mi904e18_segment_incline inc
+            ON osm.segmentkey = inc.segmentkey
+            JOIN experiments.mi904e18_speedlimits spd
+            ON osm.segmentkey = spd.segmentkey
+            WHERE osm.segmentkey = ANY(ARRAY [ {0} ])
+    """.format(",".join([str(x) for x in segments]))
+    features = pd.DataFrame(query(qry)).applymap(str)
+    keys = features['segmentkey']
 
-    features = pd.DataFrame(query(qry))
+    # Include current time features
+    features['month'], features['weekday'], features['quarter'] = current_time()
 
-    now = datetime.datetime.today()
-    features['month'] = now.month
-    features['weekday'] = now.weekday()
-    features['quarter'] = (now.hour * 4) + int(now.minute / 15)
+    # Ensure correct order of dataframe
     features = features[config['feature_order']]
-    features = features.applymap(str)
 
-    features = one_hot(pd.DataFrame(features))
-    features = scale_df(features)
+    # Preprocess data to same format as trained on
+    features = preprocess_data(features)
 
+    # Load model
     estimator = load_model(paths['modelDir'] + config['model_name'])
 
-    res = estimator.predict(features)
-    return res[0][0]
+    # Return prediction
+    res = pd.DataFrame(estimator.predict(features), columns=['ev_wh']).set_index(keys)
+    return res
 
-print(predict_segment(386273))
+
+print(predict(1))
