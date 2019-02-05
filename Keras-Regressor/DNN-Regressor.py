@@ -38,7 +38,7 @@ if len(embeddings_used) > 0:
     embeddings_used_string = " - " + ','.join("%s" % x for x in embeddings_used)
 
 # Save estimator
-model_output_path = ("saved_models/DNNRegressor")# %s%s - %s" % (config['target_feature'], embeddings_used_string, param_string))
+model_output_path = (paths['modelDir'] + config['model_name'])
 save_model(estimator, model_output_path)
 history_collection.append((config.copy(), history.history))
 print()
@@ -51,7 +51,7 @@ history.history['train_r2'] = train_r2
 history.history['val_r2'] = val_r2
 
 # Save history
-history_output_path = ("saved_history/Predicting DNNRegressor")#%s%s - %s.json" % (config['target_feature'], embeddings_used_string, param_string))
+history_output_path = (paths['historyDir'] + config['model_name'])
 if os.path.isdir("saved_history") and os.path.isfile(history_output_path):
     with open(history_output_path) as f:
         history_list = json.load(f)
@@ -61,7 +61,7 @@ else:
 history_list.append(history.history)
 history_json = json.dumps(history_list)
 
-if not os.path.isdir("saved_history"):
+if not os.path.isdir(paths['historyDir']):
     os.makedirs(os.path.dirname(history_output_path))
 with open(history_output_path, "w") as f:
     f.write(history_json)

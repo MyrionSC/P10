@@ -87,7 +87,7 @@ def load_columns(filename, columns=[], index=None):
 
 
 features, labels, num_features, num_labels, _, trip_ids = read_data(paths['dataPath'], config['target_feature'], config['remove_features'], scale=True, load_scaler=True)
-modelPath = ("saved_models/DNNRegressor")# %s%s - %s" % (target_feature_string, embeddings_used_string, param_string))
+modelPath = (paths['modelDir'] + config['model_name'])
 
 model = load_model(modelPath)
 
@@ -99,9 +99,9 @@ r2 = r2_score(labels, prediction)
 print("R2: " + str(r2))
 
 # Save history
-history_output_path = ("saved_history/Test_Predicting.json")# %s%s - %s.json" % (target_feature_string, embeddings_used_string, param_string))
+history_output_path = (paths['historyDir'] + config['model_name'] + "_Predictions.json")
 history_json = json.dumps(evaluation)
-if not os.path.isdir("saved_history"):
+if not os.path.isdir(paths['historyDir']):
     os.makedirs(os.path.dirname(history_output_path))
 with open(history_output_path, "w") as f:
     f.write(history_json)
