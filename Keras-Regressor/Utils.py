@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+from config import *
 from keras.models import model_from_json
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
@@ -11,7 +12,7 @@ import json
 from pandas.api.types import CategoricalDtype
 
 # One-hot encode a column of a dataframe
-def one_hot_encode(dataframe, column_key):
+def one_hot_encode_column(dataframe, column_key):
     if column_key == 'categoryid':
         cat_type = CategoricalDtype(categories=['10', '11', '15', '16', '20', '21', '25', '26', '30', '31', '35', '40', '45', '50', '55', '60', '65'],
                                     ordered=True)
@@ -77,6 +78,21 @@ def load_model(filename):
     return loaded_model
 
 
+def one_hot(df):
+    # One-hot encode category, month and weekday columns
+    print("One-hot encoding features")
+    start_time = time.time()
+    if 'categoryid' not in config['remove_features']:
+        df = one_hot_encode_column(df, 'categoryid')
+    if 'month' not in config['remove_features']:
+        df = one_hot_encode_column(df, 'month')
+    if 'weekday' not in config['remove_features']:
+        df = one_hot_encode_column(df, 'weekday')
+    print("Dataframe shape: %s" % str(df.shape))
+    print("Time %s" % (time.time() - start_time))
+    return df
+
+
 # Read data from csv file at path
 def read_data(path, target_feature, remove_features, emb_transformed_path="", emb_normal_path="", scale=False, load_scaler=False, cyclicquarter=False, use_speed_prediction=False):
     # Read data
@@ -106,17 +122,7 @@ def read_data(path, target_feature, remove_features, emb_transformed_path="", em
     print("Dataframe shape: %s" % str(df.shape))
     print("Time %s" % (time.time() - start_time))
 
-    # One-hot encode category, month and weekday columns
-    print("One-hot encoding features")
-    start_time = time.time()
-    if 'categoryid' not in remove_features:
-        df = one_hot_encode(df, 'categoryid')
-    if 'month' not in remove_features:
-        df = one_hot_encode(df, 'month')
-    if 'weekday' not in remove_features:
-        df = one_hot_encode(df, 'weekday')
-    print("Dataframe shape: %s" % str(df.shape))
-    print("Time %s" % (time.time() - start_time))
+    df = one_hot(df)
 
     # If path to transformed embeddings is supplied, import and merge with regular data
     embeddings_used = list()
@@ -185,23 +191,27 @@ def read_data(path, target_feature, remove_features, emb_transformed_path="", em
     Y_train = label
 
     if scale:
-        # Scale features by removing the mean and scaling to unit variance
-        print("Scaling data sets")
-        start_time = time.time()
-
-        if load_scaler:
-            scaler = loadScaler(target_feature, remove_features, embeddings_used)
-        else:
-            scaler = StandardScaler()
-            scaler.fit(X_train)
-            saveScaler(scaler, target_feature, remove_features, embeddings_used)
-
-        X_train = scaler.transform(X_train)
-
-        print("Time %s" % (time.time() - start_time))
+        X_train = scale_df(X_train)
         
     return X_train, Y_train, num_features, num_labels, embeddings_used, trip_ids
-    
+
+
+def scale_df(df, load_scaler=True):
+    print("Scaling data sets")
+    start_time = time.time()
+
+    if load_scaler:
+        scaler = loadScaler(config['target_feature'], config['remove_features'], config['embeddings_used'])
+    else:
+        scaler = StandardScaler()
+        scaler.fit(df)
+        saveScaler(scaler, config['target_feature'], config['remove_features'], config['embeddings_used'])
+
+    df = scaler.transform(df)
+
+    print("Time %s" % (time.time() - start_time))
+    return df
+
 
 def saveScaler(scaler, target_feature, remove_features, embeddings_used):
     if len(embeddings_used) > 0:
