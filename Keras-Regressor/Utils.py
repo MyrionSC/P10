@@ -89,10 +89,13 @@ def one_hot(df):
     print("One-hot encoding features")
     start_time = time.time()
     if 'categoryid' not in config['remove_features']:
+        df['categoryid'] = df['categoryid'].map(str)
         df = one_hot_encode_column(df, 'categoryid')
     if 'month' not in config['remove_features']:
+        df['month'] = df['month'].map(str)
         df = one_hot_encode_column(df, 'month')
     if 'weekday' not in config['remove_features']:
+        df['weekday'] = df['weekday'].map(str)
         df = one_hot_encode_column(df, 'weekday')
     print("Dataframe shape: %s" % str(df.shape))
     print("Time %s" % (time.time() - start_time))
@@ -138,6 +141,7 @@ def read_data(path, target_feature, remove_features, scale=False, cyclicquarter=
 
     emb_df = read_embeddings()
     df = merge_embeddings(df, emb_df)
+    df = df.sort_values('mapmatched_id').reset_index(drop=True)
     if 'startpoint' in list(df):
         df = df.drop('startpoint', axis=1)
     if 'endpoint' in list(df):
@@ -261,11 +265,9 @@ def merge_embeddings(df, emb_df):
     start_time = time.time()
     if config['graph_type'] == 'transformed':
         df = pd.merge(df, emb_df, left_on='segmentkey', right_on=emb_df.index)
-        df = df.sort_values('mapmatched_id').reset_index(drop=True)
     elif config['graph_type'] == 'normal':
         df = pd.merge(df, emb_df, left_on='startpoint', right_on='point').drop(['startpoint', 'point'], axis=1)
         df = pd.merge(df, emb_df, left_on='endpoint', right_on='point').drop(['endpoint', 'point'], axis=1)
-        df = df.sort_values('mapmatched_id').reset_index(drop=True)
     print("Dataframe shape: %s" % str(df.shape))
     print("Time %s" % (time.time() - start_time))
     return df

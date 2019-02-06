@@ -3,7 +3,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from config import *
 import pandas as pd
-from Utils import load_model, current_time, preprocess_data
+from Utils import load_model, current_time, one_hot, scale_df, embedding_path, merge_embeddings
 
 
 def query(str):
@@ -28,17 +28,22 @@ def predict(segments):
             ON osm.segmentkey = spd.segmentkey
             WHERE osm.segmentkey = ANY(ARRAY [ {0} ])
     """.format(",".join([str(x) for x in segments]))
-    features = pd.DataFrame(query(qry)).applymap(str)
+    features = pd.DataFrame(query(qry))
     keys = features['segmentkey']
 
     # Include current time features
     features['month'], features['weekday'], features['quarter'] = current_time()
 
     # Ensure correct order of dataframe
-    features = features[config['feature_order']]
+    features = features[['segmentkey'] + config['feature_order']]
 
     # Preprocess data to same format as trained on
-    features = preprocess_data(features)
+    features = one_hot(features)
+
+    emb_df = get_embeddings(segments)
+    features = merge_embeddings(features, emb_df)
+
+    features = scale_df(features, load_scaler=True)
 
     # Load model
     estimator = load_model(paths['modelDir'] + config['model_name'])
@@ -47,5 +52,22 @@ def predict(segments):
     res = pd.DataFrame(estimator.predict(features), columns=['ev_wh']).set_index(keys)
     return res
 
+
+def get_embeddings(segments):
+    temp = segments.copy()
+    with open(embedding_path(), "r") as f:
+        f.readline()
+        df = pd.DataFrame(columns=['segmentkey'] + ['emb_' + str(x) for x in range(embedding_config[config['embeddings_used']]['dims'])])
+
+        for line in f:
+            for seg in temp:
+                if line.startswith(str(seg) + " "):
+                    df2 = pd.DataFrame([line.strip().split(" ")], columns=list(df))
+                    df = df.append(df2)
+                    temp.remove(seg)
+                    break
+            if not temp:
+                break
+    return df.set_index(['segmentkey'])
 
 print(predict(1))
