@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from config import *
@@ -40,16 +40,16 @@ def one_hot_encode_column(dataframe, column_key):
 
 
 # Plot metrics from a training history
-def plot_history(history, metrics):
-    for metric in metrics + ['loss']:
-        plt.plot(history.history[metric], label='Training')
-        plt.plot(history.history['val_' + metric], label='Validation')
-        plt.title(metric.capitalize() + " History")
-        plt.ylabel(metric.capitalize())
-        plt.xlabel("Epoch")
-        plt.legend()
-        plt.show()
-        plt.clf()
+#def plot_history(history, metrics):
+#    for metric in metrics + ['loss']:
+#        plt.plot(history.history[metric], label='Training')
+#        plt.plot(history.history['val_' + metric], label='Validation')
+#        plt.title(metric.capitalize() + " History")
+#        plt.ylabel(metric.capitalize())
+#        plt.xlabel("Epoch")
+#        plt.legend()
+#        plt.show()
+#        plt.clf()
 
 
 # Save a model to disk
