@@ -4,6 +4,7 @@ from psycopg2.extras import RealDictCursor
 from config import *
 import pandas as pd
 from Utils import load_model, current_time, one_hot, scale_df, embedding_path, merge_embeddings
+import time
 
 
 def query(str):
@@ -55,6 +56,8 @@ def predict(segments):
 
 
 def get_embeddings(segments):
+    print("Getting embeddings")
+    start = time.time()
     temp = segments.copy()
     with open(embedding_path(), "r") as f:
         f.readline()
@@ -69,7 +72,9 @@ def get_embeddings(segments):
                     break
             if not temp:
                 break
+    print("Time %s" % (time.time() - start))
     df['segmentkey'] = df['segmentkey'].map(int)
     return df.set_index(['segmentkey'])
 
-print(predict(1))
+
+print(predict(list(range(1, 1000))))
