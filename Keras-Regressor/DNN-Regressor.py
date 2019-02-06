@@ -13,7 +13,9 @@ set_random_seed(1337)  # TensorFlow seed
 
 history_collection = list()
 
-print(embedding_path() + "  -  Removed features: " + ', '.join(config['remove_features']))
+if config["embeddings_used"] is not None:
+    print("Embedding path: " + embedding_path())
+print("Removed features: " + ', '.join(config['remove_features']))
 X_train, Y_train, num_features, num_labels, trip_ids_train \
     = read_data(paths['trainPath'], config['target_feature'], config['remove_features'], scale=True)
 X_validation, Y_validation, _, _, trip_ids_validation \
