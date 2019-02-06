@@ -18,7 +18,7 @@ print("Removed features: " + ', '.join(config['remove_features']))
 X_train, Y_train, num_features, num_labels, trip_ids_train \
     = read_data(paths['trainPath'], config['target_feature'], config['remove_features'], scale=True)
 X_validation, Y_validation, _, _, trip_ids_validation \
-    = read_data(paths['validationPath'], config['target_feature'], config['remove_features'], scale=True)
+    = read_data(paths['validationPath'], config['target_feature'], config['remove_features'], scale=True, load_scaler=True)
 
 # Create estimator
 estimator = DNNRegressor(num_features, num_labels, config['hidden_layers'], config['cells_per_layer'],

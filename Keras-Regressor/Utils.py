@@ -109,7 +109,7 @@ def preprocess_data(df):
 
 
 # Read data from csv file at path
-def read_data(path, target_feature, remove_features, scale=False, cyclicquarter=False, use_speed_prediction=False):
+def read_data(path, target_feature, remove_features, scale=False, load_scaler=False, cyclicquarter=False, use_speed_prediction=False):
     # Read data
     print("Importing data set")
     start_time = time.time()
@@ -181,7 +181,7 @@ def read_data(path, target_feature, remove_features, scale=False, cyclicquarter=
 
     # Scale data using a simple sklearn scaler
     if scale:
-        features = scale_df(features)
+        features = scale_df(features, load_scaler)
         
     return features, label, num_features, num_labels, trip_ids
 
