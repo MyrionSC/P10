@@ -206,7 +206,7 @@ def scale_df(df, load_scaler=False):
 
 
 def saveScaler(scaler, target_feature, remove_features, embeddings_used):
-    if len(embeddings_used) > 0:
+    if embeddings_used is not None:
         embeddings_used_string = ','.join("%s" % x for x in embeddings_used)
     else:
         embeddings_used_string = "None"
@@ -229,7 +229,7 @@ def saveScaler(scaler, target_feature, remove_features, embeddings_used):
 
 
 def loadScaler(target_feature, remove_features, embeddings_used):
-    if len(embeddings_used) > 0:
+    if embeddings_used is not None:
         embeddings_used_string = ','.join("%s" % x for x in embeddings_used)
     else:
         embeddings_used_string = "None"
@@ -279,4 +279,7 @@ def merge_embeddings(df, emb_df):
 
 
 def embedding_path():
-    return paths[config['embeddings_used']] + config['graph_type'] + "-" + str(embedding_config[config['embeddings_used']]['dims']) + "d.emb"
+    if config["embeddings_used"] is not None:
+        return paths[config['embeddings_used']] + config['graph_type'] + "-" + str(embedding_config[config['embeddings_used']]['dims']) + "d.emb"
+    else:
+        return "None"
