@@ -42,7 +42,7 @@ def predict(segments):
 
     if config['embeddings_used'] is not None:
         emb_df = get_embeddings(segments)
-        features = merge_embeddings(features, emb_df)
+        features = merge_embeddings(features, emb_df).drop(['segmentkey'], axis=1)
 
     features = scale_df(features, load_scaler=True)
 
@@ -69,6 +69,7 @@ def get_embeddings(segments):
                     break
             if not temp:
                 break
+    df['segmentkey'] = df['segmentkey'].map(int)
     return df.set_index(['segmentkey'])
 
 print(predict(1))
