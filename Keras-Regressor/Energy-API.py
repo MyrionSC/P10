@@ -40,8 +40,9 @@ def predict(segments):
     # Preprocess data to same format as trained on
     features = one_hot(features)
 
-    emb_df = get_embeddings(segments)
-    features = merge_embeddings(features, emb_df)
+    if config['embeddings_used'] is not None:
+        emb_df = get_embeddings(segments)
+        features = merge_embeddings(features, emb_df)
 
     features = scale_df(features, load_scaler=True)
 

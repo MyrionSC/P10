@@ -137,23 +137,30 @@ def read_data(path, target_feature, remove_features, scale=False, cyclicquarter=
     print("Dataframe shape: %s" % str(df.shape))
     print("Time %s" % (time.time() - start_time))
 
+    # One hot encode categorical features
     df = one_hot(df)
 
-    emb_df = read_embeddings()
-    df = merge_embeddings(df, emb_df)
+    # Read and merge embeddings into dataframe
+    if config['embeddings_used'] is not None:
+        emb_df = read_embeddings()
+        df = merge_embeddings(df, emb_df)
+
+    # Sort dataframe to avoid null values (no idea why, but it's necessary)
     df = df.sort_values('mapmatched_id').reset_index(drop=True)
+
+    # Remove startpoint and endpoint columns if present
     if 'startpoint' in list(df):
         df = df.drop('startpoint', axis=1)
     if 'endpoint' in list(df):
         df = df.drop('endpoint', axis=1)
 
+    # Convert quarter column to a sinusoidal representation if specified
     if cyclicquarter:
         sin = np.sin(2 * np.pi * df['quarter']/95.0)
         cos = np.cos(2 * np.pi * df['quarter']/95.0)
         df = df.drop('quarter',axis=1)
         df['sin_quarter'] = sin
         df['cos_quarter'] = cos
-
 
     # Split data into features and label
     print("Splitting data set to features and labels")
@@ -172,13 +179,11 @@ def read_data(path, target_feature, remove_features, scale=False, cyclicquarter=
     # for i, column in enumerate(features):
     #     print('  %d) \'%s\'' % (i, column))
 
-    X_train = features
-    Y_train = label
-
+    # Scale data using a simple sklearn scaler
     if scale:
-        X_train = scale_df(X_train)
+        features = scale_df(features)
         
-    return X_train, Y_train, num_features, num_labels, trip_ids
+    return features, label, num_features, num_labels, trip_ids
 
 
 def scale_df(df, load_scaler=False):
