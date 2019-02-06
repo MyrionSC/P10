@@ -1,4 +1,4 @@
-from Utils import save_model, read_data
+from Utils import save_model, read_data, embedding_path
 from Model import DNNRegressor
 from config import paths, config, def_features
 from tensorflow import set_random_seed
@@ -13,10 +13,10 @@ set_random_seed(1337)  # TensorFlow seed
 
 history_collection = list()
 
-print(config['embedding_path'] + "  -  Removed features: " + ', '.join(config['remove_features']))
-X_train, Y_train, num_features, num_labels, embeddings_used, trip_ids_train \
+print(embedding_path() + "  -  Removed features: " + ', '.join(config['remove_features']))
+X_train, Y_train, num_features, num_labels, trip_ids_train \
     = read_data(paths['trainPath'], config['target_feature'], config['remove_features'], scale=True)
-X_validation, Y_validation, _, _, _, trip_ids_validation \
+X_validation, Y_validation, _, _, trip_ids_validation \
     = read_data(paths['validationPath'], config['target_feature'], config['remove_features'], scale=True)
 
 # Create estimator
@@ -33,9 +33,6 @@ print('Time to complete %s epochs: %s seconds with batch size %s' % (config['epo
 
 # Define new parameter dictionary without iterations (this means only one model is saved)
 param_string = ','.join("%s=%s" % (key, config[key]) for key in def_features)
-embeddings_used_string = ""
-if len(embeddings_used) > 0:
-    embeddings_used_string = " - " + ','.join("%s" % x for x in embeddings_used)
 
 # Save estimator
 model_output_path = (paths['modelDir'] + config['model_name'])
@@ -68,5 +65,5 @@ with open(history_output_path, "w") as f:
 
 for config, results in history_collection:
     print(config)
-    print(print(config['embedding_path'] + "  -  Removed features: " + ', '.join(config['remove_features'])))
+    print(print(embedding_path() + "  -  Removed features: " + ', '.join(config['remove_features'])))
     print("Train R2: {:f}".format(results['train_r2']) + "  -  Validation R2: {:f}".format(results['val_r2']))

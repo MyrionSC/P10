@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from config import *
 from keras.models import model_from_json
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 import time
 import os
@@ -11,6 +10,7 @@ import json
 import datetime
 
 from pandas.api.types import CategoricalDtype
+
 
 # One-hot encode a column of a dataframe
 def one_hot_encode_column(dataframe, column_key):
@@ -106,7 +106,7 @@ def preprocess_data(df):
 
 
 # Read data from csv file at path
-def read_data(path, target_feature, remove_features, emb_transformed_path="", emb_normal_path="", scale=False, load_scaler=False, cyclicquarter=False, use_speed_prediction=False):
+def read_data(path, target_feature, remove_features, scale=False, cyclicquarter=False, use_speed_prediction=False):
     # Read data
     print("Importing data set")
     start_time = time.time()
@@ -136,43 +136,12 @@ def read_data(path, target_feature, remove_features, emb_transformed_path="", em
 
     df = one_hot(df)
 
-    # If path to transformed embeddings is supplied, import and merge with regular data
-    embeddings_used = list()
-    if emb_transformed_path != "":
-        print("Importing transformed embedded data set")
-        start_time = time.time()
-        emb_df = pd.read_csv(emb_transformed_path, header=0, sep=' ')
-        print("Time %s" % (time.time() - start_time))
-
-        print("Merging data sets")
-        start_time = time.time()
-        df = pd.merge(df, emb_df, left_on='segmentkey', right_on='segmentkey')
-        df = df.sort_values('mapmatched_id').reset_index(drop=True)
-        print("Dataframe shape: %s" % str(df.shape))
-        print("Time %s" % (time.time() - start_time))
-        if emb_transformed_path == "../data/osm_dk_20140101-transformed-64d.emb":
-            embeddings_used.append("transformed64")
-        if emb_transformed_path == "../data/osm_dk_20140101-transformed-32d.emb":
-            embeddings_used.append("transformed32")
-
-    # If path to normal embeddings is supplied, import and merge with regular data
-    if emb_normal_path != "":
-        print("Importing normal embedded data set")
-        start_time = time.time()
-        emb_df = pd.read_csv(emb_normal_path, header=0, sep=' ')
-        print("Time %s" % (time.time() - start_time))
-
-        print("Merging data sets")
-        start_time = time.time()
-        df = pd.merge(df, emb_df, left_on='startpoint', right_on='point').drop(['startpoint', 'point'], axis=1)
-        df = pd.merge(df, emb_df, left_on='endpoint', right_on='point').drop(['endpoint', 'point'], axis=1)
-        df = df.sort_values('mapmatched_id').reset_index(drop=True)
-        print("Dataframe shape: %s" % str(df.shape))
-        print("Time %s" % (time.time() - start_time))
-        if emb_normal_path == "../data/osm_dk_20140101-normal-32d.emb":
-            embeddings_used.append("normal32")
-    else:
-        df = df.drop(['startpoint', 'endpoint'], axis=1)
+    emb_df = read_embeddings()
+    df = merge_embeddings(df, emb_df)
+    if 'startpoint' in list(df):
+        df = df.drop('startpoint', axis=1)
+    if 'endpoint' in list(df):
+        df = df.drop('endpoint', axis=1)
 
     if cyclicquarter:
         sin = np.sin(2 * np.pi * df['quarter']/95.0)
@@ -187,7 +156,7 @@ def read_data(path, target_feature, remove_features, emb_transformed_path="", em
     start_time = time.time()
     label = df[target_feature]
     trip_ids = df['trip_id']
-    features = df.drop(target_feature, axis=1).drop('segmentkey', axis=1).drop('mapmatched_id', axis=1).drop('trip_id', axis=1)
+    features = df.drop(columns=target_feature + ['segmentkey', 'mapmatched_id', 'trip_id'])
     print("Time %s" % (time.time() - start_time))
 
     # Calculate the number of features (input dimension of model)
@@ -205,12 +174,13 @@ def read_data(path, target_feature, remove_features, emb_transformed_path="", em
     if scale:
         X_train = scale_df(X_train)
         
-    return X_train, Y_train, num_features, num_labels, embeddings_used, trip_ids
+    return X_train, Y_train, num_features, num_labels, trip_ids
 
 
-def scale_df(df, load_scaler=True):
+def scale_df(df, load_scaler=False):
     print("Scaling data sets")
     start_time = time.time()
+    columns = list(df)
 
     if load_scaler:
         scaler = loadScaler(config['target_feature'], config['remove_features'], config['embeddings_used'])
@@ -219,7 +189,8 @@ def scale_df(df, load_scaler=True):
         scaler.fit(df)
         saveScaler(scaler, config['target_feature'], config['remove_features'], config['embeddings_used'])
 
-    df = scaler.transform(df)
+    df = pd.DataFrame(scaler.transform(df))
+    df = df.rename(lambda x: columns[x], axis='columns')
 
     print("Time %s" % (time.time() - start_time))
     return df
@@ -267,3 +238,38 @@ def loadScaler(target_feature, remove_features, embeddings_used):
     scaler.n_samples_seen_ = scaler_params['n_samples_seen_']
 
     return scaler
+
+
+def read_embeddings():
+    print('Importing embeddings from ' + embedding_path())
+    start_time = time.time()
+    if config['embeddings_used'] == 'LINE':
+        start_time = time.time()
+        df = pd.read_csv(embedding_path(), header=None, sep=' ', skiprows=1)
+        df = df.rename(columns={0: 'segmentkey'})
+        df = df.drop(embedding_config['LINE']['dims'] + 1, axis=1)
+        df = df.set_index(['segmentkey'])
+        df = df.rename(lambda x: "emb_" + str(x-1), axis='columns')
+    else:
+        df = pd.read_csv(embedding_path(), header=0, sep=' ')
+    print("Time %s" % (time.time() - start_time))
+    return df
+
+
+def merge_embeddings(df, emb_df):
+    print("Merging data sets")
+    start_time = time.time()
+    if config['graph_type'] == 'transformed':
+        df = pd.merge(df, emb_df, left_on='segmentkey', right_on=emb_df.index)
+        df = df.sort_values('mapmatched_id').reset_index(drop=True)
+    elif config['graph_type'] == 'normal':
+        df = pd.merge(df, emb_df, left_on='startpoint', right_on='point').drop(['startpoint', 'point'], axis=1)
+        df = pd.merge(df, emb_df, left_on='endpoint', right_on='point').drop(['endpoint', 'point'], axis=1)
+        df = df.sort_values('mapmatched_id').reset_index(drop=True)
+    print("Dataframe shape: %s" % str(df.shape))
+    print("Time %s" % (time.time() - start_time))
+    return df
+
+
+def embedding_path():
+    return paths[config['embeddings_used']] + config['graph_type'] + "-" + str(embedding_config[config['embeddings_used']]['dims']) + "d.emb"
