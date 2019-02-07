@@ -2,6 +2,7 @@ DROP VIEW IF EXISTS experiments.segments_temp_view;
 CREATE VIEW experiments.segments_temp_view AS
 SELECT  trips_table.trip_id as trip_id,
         trips_table.id as mapmatched_id,
+        trips_table.trip_segmentno as trip_segmentno,
         trips_table.segmentkey as segmentkey,
         osm_map.categoryid,
         CASE WHEN incline_table.incline_percentage IS NOT NULL
