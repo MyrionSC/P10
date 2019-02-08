@@ -1,3 +1,4 @@
+from LocalSettings import database
 #import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -8,8 +9,21 @@ import time
 import os
 import json
 import datetime
-
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from pandas.api.types import CategoricalDtype
+
+cat_list = ['10', '11', '15', '16', '20', '21', '25', '26', '30', '31', '35', '40', '45', '50', '55', '60', '65']
+
+
+def query(str):
+    conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(database['name'], database['user'], database['port'], database['host'], database['password']))
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(str)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return rows
 
 
 # One-hot encode a column of a dataframe
@@ -283,3 +297,14 @@ def embedding_path():
         return paths[config['embeddings_used']] + config['graph_type'] + "-" + str(embedding_config[config['embeddings_used']]['dims']) + "d.emb"
     else:
         return "None"
+
+def cat_converter():
+    df = pd.DataFrame(query(qry))
+    for cat in cat_list:
+        df[cat] = (df['segment1_length'] * df['category1'].map(lambda x: 1 if x == int(cat) else 0) +
+                  df['segment2_length'] * df['category2'].map(lambda x: 1 if x == int(cat) else 0) +
+                  df['segment3_length'] * df['category3'].map(lambda x: 1 if x == int(cat) else 0)) / \
+                  df['supersegment_length']
+
+    df = df.drop(['segment1_length', 'segment2_length', 'segment3_length', 'category1', 'category2', 'category3'], axis=1)
+    print('hej')
