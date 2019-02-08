@@ -1,4 +1,3 @@
-from Utils import plot_history
 from Utils import save_model, load_model
 from Utils import read_data
 from Model import LinearRegressor
@@ -38,19 +37,19 @@ def root_mean_squared_error(y_true, y_pred):
     return sqrt(mean_squared_error(y_true, y_pred))
 
 train = False
-epochs = 10
+epochs = 4
 batch_size = 32768 // 8
 dataPath = "../data/Data.csv"
 trainPath = "../data/Training.csv"
-validationPath = "../data/Validation.csv"
+validationPath = "../data/Test.csv"
 target_feature = ['ev_wh']
 remove_features = ['min_from_midnight', 'acceleration', 'deceleration']
 # Read the data from the specified CSV file
 
 if train:
-    X_train, Y_train, num_features, num_labels, embeddings_used, trip_ids_train \
+    X_train, Y_train, num_features, num_labels, trip_ids_train \
         = read_data(trainPath, target_feature, remove_features)
-    X_validation, Y_validation, _, _, _, trip_ids_validation \
+    X_validation, Y_validation, _, _, trip_ids_validation \
         = read_data(validationPath, target_feature, remove_features)
 
     history_collection = list()
@@ -104,7 +103,7 @@ if train:
         print("Train MAE: {:f}".format(results['train_mae']) + "  -  Validation MAE: {:f}".format(results['val_mae']))
 
 else:
-    features, labels, num_features, num_labels, _, trip_ids = read_data(dataPath, target_feature, remove_features)
+    features, labels, num_features, num_labels, trip_ids = read_data(dataPath, target_feature, remove_features)
 
     # Loads model
     params = dict(batch_size=batch_size,
