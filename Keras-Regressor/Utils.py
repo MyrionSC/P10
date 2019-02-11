@@ -298,6 +298,31 @@ def embedding_path():
     else:
         return "None"
 
+
+def general_converter(num_segments, limit=None):
+    qrt = "SELECT\n\ts1.trip_id,\n\ts1.trip_segmentno as supersegmentno,\n\t"
+    qrt += ",\n\t".join(["s{0}.segmentkey as key{0},\n\ts{0}.categoryid as category{0},\n\ts{0}.meters as segment{0}_length".format(i+1) for i in range(num_segments)])
+    qrt += ",\n\t" + " + ".join(["s{0}.meters".format(i + 1) for i in range(num_segments)]) + " as supersegment_length\n"
+    qrt += "FROM experiments.rmp10_supersegment_info as s1\n"
+    qrt += "\n".join(["JOIN experiments.rmp10_supersegment_info as s{1}\nON s{0}.trip_id = s{1}.trip_id \nAND s{1}.trip_segmentno = s{0}.trip_segmentno + 1".format(i, i+1) for i in range(1, num_segments)])
+    qrt += "\nORDER BY trip_id, supersegmentno"
+    if limit is not None and isinstance(limit, int):
+        qrt += "\nLIMIT " + str(limit)
+
+    df = pd.DataFrame(query(qrt))
+
+    for cat in cat_list:
+        df['categoryid_' + cat] = df['segment1_length'] * df['category1'].map(lambda x: 1 if x == int(cat) else 0)
+        for i in range(2, num_segments+1):
+            df['categoryid_' + cat] = df['categoryid_' + cat] + df['segment' + str(i) + '_length'] * df['category' + str(i)].map(lambda x: 1 if x == int(cat) else 0)
+        df['categoryid_' + cat] = df['categoryid_' + cat] / df['supersegment_length']
+
+    for i in range(1, num_segments+1):
+        df = df.drop(['segment' + str(i) + '_length', 'category' + str(i)], axis=1)
+
+    return df.set_index(['trip_id', 'supersegmentno'])
+
+
 def cat_converter():
     df = pd.DataFrame(query(qry))
     for cat in cat_list:
