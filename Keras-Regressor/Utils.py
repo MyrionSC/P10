@@ -1,3 +1,4 @@
+from LocalSettings import database
 #import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -8,8 +9,21 @@ import time
 import os
 import json
 import datetime
-
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from pandas.api.types import CategoricalDtype
+
+cat_list = ['10', '11', '15', '16', '20', '21', '25', '26', '30', '31', '35', '40', '45', '50', '55', '60', '65']
+
+
+def query(str):
+    conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(database['name'], database['user'], database['port'], database['host'], database['password']))
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(str)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return rows
 
 
 # One-hot encode a column of a dataframe
@@ -283,3 +297,39 @@ def embedding_path():
         return paths[config['embeddings_used']] + config['graph_type'] + "-" + str(embedding_config[config['embeddings_used']]['dims']) + "d.emb"
     else:
         return "None"
+
+
+def general_converter(num_segments, limit=None):
+    qrt = "SELECT\n\ts1.trip_id,\n\ts1.trip_segmentno as supersegmentno,\n\t"
+    qrt += ",\n\t".join(["s{0}.segmentkey as key{0},\n\ts{0}.categoryid as category{0},\n\ts{0}.meters as segment{0}_length".format(i+1) for i in range(num_segments)])
+    qrt += ",\n\t" + " + ".join(["s{0}.meters".format(i + 1) for i in range(num_segments)]) + " as supersegment_length\n"
+    qrt += "FROM experiments.rmp10_supersegment_info as s1\n"
+    qrt += "\n".join(["JOIN experiments.rmp10_supersegment_info as s{1}\nON s{0}.trip_id = s{1}.trip_id \nAND s{1}.trip_segmentno = s{0}.trip_segmentno + 1".format(i, i+1) for i in range(1, num_segments)])
+    qrt += "\nORDER BY trip_id, supersegmentno"
+    if limit is not None and isinstance(limit, int):
+        qrt += "\nLIMIT " + str(limit)
+
+    df = pd.DataFrame(query(qrt))
+
+    for cat in cat_list:
+        df['categoryid_' + cat] = df['segment1_length'] * df['category1'].map(lambda x: 1 if x == int(cat) else 0)
+        for i in range(2, num_segments+1):
+            df['categoryid_' + cat] = df['categoryid_' + cat] + df['segment' + str(i) + '_length'] * df['category' + str(i)].map(lambda x: 1 if x == int(cat) else 0)
+        df['categoryid_' + cat] = df['categoryid_' + cat] / df['supersegment_length']
+
+    for i in range(1, num_segments+1):
+        df = df.drop(['segment' + str(i) + '_length', 'category' + str(i)], axis=1)
+
+    return df.set_index(['trip_id', 'supersegmentno'])
+
+
+def cat_converter():
+    df = pd.DataFrame(query(qry))
+    for cat in cat_list:
+        df[cat] = (df['segment1_length'] * df['category1'].map(lambda x: 1 if x == int(cat) else 0) +
+                  df['segment2_length'] * df['category2'].map(lambda x: 1 if x == int(cat) else 0) +
+                  df['segment3_length'] * df['category3'].map(lambda x: 1 if x == int(cat) else 0)) / \
+                  df['supersegment_length']
+
+    df = df.drop(['segment1_length', 'segment2_length', 'segment3_length', 'category1', 'category2', 'category3'], axis=1)
+    print('hej')
