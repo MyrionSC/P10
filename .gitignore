@@ -51,8 +51,7 @@ data
 *.iml
 
 # Keras
-*.h5
-*.json
+Keras-Regressor/saved-*/
 
 #Graphsage
 */GraphSAGE/
