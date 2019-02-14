@@ -29,12 +29,12 @@ def route():
     origin = int(request.args.get('origin'))
     dest = int(request.args.get('dest'))
     geojson = get_route(origin, dest)
-    return geojson
+    return render_template('test.html', geojson=geojson)
     
 
 def get_route(origin, dest):
     qry = """
-    SELECT row_to_json(fc)
+    SELECT row_to_json(fc)::text as path
         FROM(
             SELECT
                 'FeaturesCollection' as "type",
@@ -53,9 +53,6 @@ def get_route(origin, dest):
         ) as fc
     """.format(origin, dest)
     return query(qry)[0][0]
-
-def testfunc(x, y):
-    return x ** y 
 
 @app.route("/test_route")
 def test():
