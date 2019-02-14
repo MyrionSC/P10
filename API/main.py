@@ -22,9 +22,16 @@ def query(str):
     conn.close()
     return rows
 
+<<<<<<< HEAD
 @app.route("/map") # serve frontend, which is in map dir
 def map():
     return send_from_directory('map')
+=======
+@app.route("/")
+def hello():
+    return "Maybe serve client from this endpoint"
+    
+>>>>>>> 0304f270a0f9cc90853bd20672f9e3d52a9763c4
 
 @app.route("/route")
 def get_json():
@@ -54,7 +61,3 @@ def get_route(origin, dest):
         ) as fc
     """.format(origin, dest)
     return query(qry)[0][0]
-
-@app.route("/test_route")
-def test():
-    return render_template('test.html')
