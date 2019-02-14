@@ -1,8 +1,8 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, send_from_directory, redirect, url_for
 from flask_cors import CORS
 import psycopg2
 import json
-app = Flask(__name__)
+app = Flask(__name__, static_folder="map")
 CORS(app)
 
 database = {
@@ -22,17 +22,9 @@ def query(str):
     conn.close()
     return rows
 
-@app.route("/")
-def hello():
-    return "Maybe serve client from this endpoint"
-
-@app.route("/map")
-def route():
-    origin = int(request.args.get('origin'))
-    dest = int(request.args.get('dest'))
-    geojson = get_route(origin, dest)
-    return render_template('test.html', geojson=geojson)
-    
+@app.route("/map") # serve frontend, which is in map dir
+def map():
+    return send_from_directory('map')
 
 @app.route("/route")
 def get_json():
