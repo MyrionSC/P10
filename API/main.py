@@ -24,13 +24,20 @@ def query(str):
 def hello():
     return "Maybe serve client from this endpoint"
 
-@app.route("/route")
+@app.route("/map")
 def route():
     origin = int(request.args.get('origin'))
     dest = int(request.args.get('dest'))
     geojson = get_route(origin, dest)
     return render_template('test.html', geojson=geojson)
     
+
+@app.route("/route")
+def get_json():
+    origin = int(request.args.get('origin'))
+    dest = int(request.args.get('dest'))
+    return get_route(origin, dest)
+
 
 def get_route(origin, dest):
     qry = """
