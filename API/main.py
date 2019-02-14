@@ -25,13 +25,6 @@ def query(str):
 @app.route("/")
 def hello():
     return "Maybe serve client from this endpoint"
-
-@app.route("/map")
-def route():
-    origin = int(request.args.get('origin'))
-    dest = int(request.args.get('dest'))
-    geojson = get_route(origin, dest)
-    return render_template('test.html', geojson=geojson)
     
 
 @app.route("/route")
@@ -62,7 +55,3 @@ def get_route(origin, dest):
         ) as fc
     """.format(origin, dest)
     return query(qry)[0][0]
-
-@app.route("/test_route")
-def test():
-    return render_template('test.html')
