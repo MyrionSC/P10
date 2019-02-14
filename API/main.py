@@ -1,7 +1,9 @@
 from flask import Flask, request, render_template
+from flask_cors import CORS
 import psycopg2
 import json
 app = Flask(__name__)
+CORS(app)
 
 database = {
     "name": "ev_smartmi",
