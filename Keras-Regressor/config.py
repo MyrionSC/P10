@@ -28,7 +28,7 @@ embedding_config = {
         'learning_rate': 0.000001,
     },
     'LINE': {
-        'dims': 100,
+        'dims': 20,
         'order': 2,
         'negative': 5,
         'samples': 1,
