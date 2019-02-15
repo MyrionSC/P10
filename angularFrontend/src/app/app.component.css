@@ -1,3 +1,7 @@
+p {
+    margin-bottom: 2px;
+}
+
 .outerContainer {
     display: flex;
     height: 100%;
@@ -21,8 +25,18 @@
     width: 100%;
 }
 
-p {
-    margin-bottom: 2px;
+.navbar-divider {
+    background: #ddd;
+    margin-bottom: 15px;
+}
+
+.resultsContainer {
+    width: 100%;
+    background: #fff;
+}
+
+.dark {
+    background: #000;
 }
 
 

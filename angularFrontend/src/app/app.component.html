@@ -1,12 +1,21 @@
 <div class="outerContainer">
 
     <div class="formsContainer">
-        <!-- forms example -->
-        <p class="p">Origin segment</p>
+        <p class="p">Origin</p>
         <input class="input location-input" [(ngModel)]="origin"><br>
-        <p class="p">Destination segment</p>
+        <p class="p">Destination</p>
         <input class="input location-input" [(ngModel)]="dest"><br>
-        <button class="button calculate-button" (click)="route()">Calculate route</button>
+        <button type="submit" class="button calculate-button"
+                [ngClass]="{'is-loading': routeLoading}"
+                (click)="route()">Calculate route</button>
+        <div class="navbar-divider"></div>
+
+        <div *ngIf="routeLoaded" class="box resultsContainer">
+            <!-- example results-->
+            <p>distance: 12.2 km</p>
+            <p>Energy: 42.34 kwh</p>
+            <p>Time: 1:23</p>
+        </div>
     </div>
 
     <div class="mapContainer" (leafletMapReady)="mapReady($event)"
