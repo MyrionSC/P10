@@ -24,7 +24,7 @@ def query(str):
 
 @app.route("/map") # serve frontend, which is in map dir
 def map():
-    return send_from_directory('map')
+    return send_from_directory('map', 'index.html')
 
 @app.route("/route")
 def get_json():
