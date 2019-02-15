@@ -73,6 +73,7 @@ Keras-Regressor/saved_models/
 
 Keras-Regressor/saved_scaler/
 
-embeddings/LINE/line_input\.csv
+embeddings/
 
 API/map/
+API/model/
