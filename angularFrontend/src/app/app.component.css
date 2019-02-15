@@ -1,0 +1,16 @@
+.outerContainer {
+    display: flex;
+    height: 100%;
+}
+
+.formsContainer {
+    width: 300px;
+    padding: 20px;
+}
+
+.mapContainer {
+    width: 100%;
+}
+
+
+

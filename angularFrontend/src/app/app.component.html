@@ -1,15 +1,24 @@
-<div (leafletMapReady)="mapReady($event)" style="height: 70%;"
-     leaflet
-     [leafletOptions]="options"
-     [leafletLayers]="layers">
+<div class="outerContainer">
+
+    <div class="formsContainer">
+        <!-- forms example -->
+        <p>From:</p>
+        <input [(ngModel)]="origin"><br>
+        <p>To:</p>
+        <input [(ngModel)]="dest"><br>
+        <button (click)="route()">Calculate route</button>
+    </div>
+
+    <div class="mapContainer" (leafletMapReady)="mapReady($event)"
+         leaflet
+         [leafletOptions]="options"
+         [leafletLayers]="layers">
+    </div>
 </div>
 
-<!-- forms example -->
-<p>From:</p>
-<input [(ngModel)]="origin"><br>
-<p>To:</p>
-<input [(ngModel)]="dest"><br>
-<button (click)="route()">Calculate route</button>
+
+
+
 
 
 
