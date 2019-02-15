@@ -10,4 +10,4 @@ ADD COLUMN length float;
 UPDATE maps.routing
 SET length = maps.osm_dk_20140101.meters
 FROM maps.osm_dk_20140101
-WHERE segmentkey = maps.osm_dk_20140101.segmentkey;
+WHERE maps.routing.segmentkey = maps.osm_dk_20140101.segmentkey;
