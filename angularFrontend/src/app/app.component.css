@@ -12,5 +12,17 @@
     width: 100%;
 }
 
+.location-input {
+    margin-bottom: 15px;
+}
+
+.calculate-button {
+    margin: 10px 0;
+    width: 100%;
+}
+
+p {
+    margin-bottom: 2px;
+}
 
 
