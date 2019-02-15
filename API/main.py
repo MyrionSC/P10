@@ -22,16 +22,9 @@ def query(str):
     conn.close()
     return rows
 
-<<<<<<< HEAD
 @app.route("/map") # serve frontend, which is in map dir
 def map():
     return send_from_directory('map')
-=======
-@app.route("/")
-def hello():
-    return "Maybe serve client from this endpoint"
-    
->>>>>>> 0304f270a0f9cc90853bd20672f9e3d52a9763c4
 
 @app.route("/route")
 def get_json():
@@ -50,12 +43,13 @@ def get_route(origin, dest):
             FROM (
                 SELECT
                     'Feature' as "type",
-                    ST_AsGeoJSON(segmentgeo, 6) :: json as "geometry"
+                    ST_AsGeoJSON(the_geom, 6) :: json as "geometry"
                 FROM (
                     SELECT
-                        osm_dk_20140101.segmentgeo
+                        the_geom
                     FROM pgr_dijkstra('SELECT edg.*, meters as cost FROM experiments.rmp10_edges edg JOIN maps.osm_dk_20140101 osm ON osm.segmentkey = edg.segmentkey'::text, {0}::bigint, {1}::bigint) pgr
-                    JOIN maps.osm_dk_20140101 ON pgr.edge = osm_dk_20140101.segmentkey
+                    JOIN experiments.rmp10_edges osm
+                    ON pgr.edge = osm.id
                 ) as q
             ) as f
         ) as fc
