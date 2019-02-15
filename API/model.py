@@ -1,24 +1,9 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import pandas as pd
+from db_settings import *
 
 dijkstra_qry = '\'SELECT segmentkey as id, startpoint as source, endpoint as target, segmentgeom as the_geom, length as cost FROM maps.routing\''
-
-main_db = {
-    "name": "ev_smartmi",
-    "user": "smartmi",
-    "port": "4102",
-    "host": "172.19.1.104",
-    "password": "63p467R=530"
-}
-
-local_db = {
-    "name": "postgres",
-    "user": "postgres",
-    "port": "5432",
-    "host": "localhost",
-    "password": "Agerbjerg93"
-}
 
 def query(str, db):
     conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(db['name'], db['user'], db['port'], db['host'], db['password']))

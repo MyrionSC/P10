@@ -77,3 +77,5 @@ embeddings/
 
 API/map/
 API/model/
+
+API/db_settings.py
