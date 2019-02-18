@@ -1,7 +1,9 @@
 /* tslint:disable:max-line-length */
-import {Component, OnInit} from '@angular/core';
-import {geoJSON, latLng, LeafletEventHandlerFnMap, tileLayer} from 'leaflet';
+import {Component, Inject, OnInit} from '@angular/core';
+import {geoJSON, latLng, tileLayer} from 'leaflet';
 import {HttpClient} from '@angular/common/http';
+import {environment} from '../environments/environment';
+import { DOCUMENT } from '@angular/platform-browser';
 
 @Component({
     selector: 'app-root',
@@ -9,7 +11,7 @@ import {HttpClient} from '@angular/common/http';
     styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, @Inject(DOCUMENT) private document: any) {}
 
     options = {};
     layers = {};
@@ -20,14 +22,16 @@ export class AppComponent implements OnInit {
     origin: bigint;
     dest: bigint;
     routeJson: any;
-    routeUrl = 'http://localhost:5000/route';
+    hostUrl: string;
 
     // visual bools
     routeLoading = false;
     routeLoaded = false;
 
     route() {
-        const url = this.routeUrl + '?origin=' + this.origin + '&dest=' + this.dest;
+        const url = this.hostUrl + '/route?origin=' + this.origin + '&dest=' + this.dest;
+        console.log('prod: ' + environment.production);
+        console.log('GET: ' + url);
         this.routeLoading = true;
         this.http.get(url).subscribe(res => {
             this.routeJson = res;
@@ -43,6 +47,12 @@ export class AppComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        console.log(this.document.location.hostname);
+
+        this.hostUrl = this.document.location.hostname === '172.25.11.191' ?
+            this.hostUrl = 'http://172.25.11.191:5000' :
+            this.hostUrl = 'http://localhost:5000';
+
         this.options = {
             layers: [
                 tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 18, attribution: this.attribution})
