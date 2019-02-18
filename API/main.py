@@ -1,32 +1,23 @@
-from flask import Flask, request
+from flask import Flask, request, render_template, send_from_directory, redirect, url_for
+from flask_cors import CORS
+import psycopg2
 import json
-app = Flask(__name__)
+from model import *
 
-@app.route("/")
-def hello():
-    return "Maybe serve client from this endpoint"
+app = Flask(__name__, static_folder="map")
+CORS(app)
+
+@app.route("/map") # serve frontend, which is in map dir
+def map():
+    return send_from_directory('map', 'index.html')
 
 @app.route("/route")
-def route():
-    origin = request.args.get('origin')
-    dest = request.args.get('dest')
-    dic = {
-	'origin': origin,
-	'dest': dest,
-	'energy': 42
-    }
-    return json.dumps(dic)
+def get_json():
+    origin = int(request.args.get('origin'))
+    dest = int(request.args.get('dest'))
+    return get_route(origin, dest)
 
-
-
-
-#@app.route("/test/<int:num>")
-#def test(num):
-    #return str(testfunc(num,2))
-
-
-
-
-def testfunc(x, y):
-    return x ** y 
-
+@app.route("/embedding")
+def emb():
+    key = int(request.args.get('key'))
+    return get_embedding(key)
