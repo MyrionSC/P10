@@ -1,4 +1,4 @@
 flask==1.0.2
-flask-cors
+flask_cors
 psycopg2
 pandas
