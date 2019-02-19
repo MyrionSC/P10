@@ -50,32 +50,26 @@ data
 .idea
 *.iml
 
-# Keras
-Keras-Regressor/saved-*/
-
-#Graphsage
-*/GraphSAGE/
-
 Baseline/predictions.csv
 Baseline/model.csv
-Keras-Regressor/ev_wh_prediction.csv
 Baseline/ev_wh_prediction.csv
 LocalSettings.py
 venv
-fetch_data.sh
-
 
 data/
 
-Keras-Regressor/saved_history/
+# Keras
+#Models/Keras-Regressor/saved-**
+Models/Keras-Regressor/ev_wh_prediction.csv
+Models/Keras-Regressor/saved_history/
+Models/Keras-Regressor/saved_models/
+Models/Keras-Regressor/saved_scaler/
+Models/Keras-Regressor/saved_embeddings/
 
-Keras-Regressor/saved_models/
+Backend/map/
+Backend/model/
+Backend/db_settings.py
 
-Keras-Regressor/saved_scaler/
+Embeddings/LINE/line_input.csv
 
-embeddings/
 
-API/map/
-API/model/
-
-API/db_settings.py

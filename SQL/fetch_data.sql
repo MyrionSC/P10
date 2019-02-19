@@ -48,7 +48,7 @@ WHERE trips_table.segmentkey = osm_map.segmentkey
     AND trips_table.id = accel_table.mapmatched_id
     AND trips_table.segmentkey = speedlimit_table.segmentkey;
 
-\copy (SELECT * FROM experiments.segments_temp_view) TO './data/Data.csv' HEADER CSV;  
+\copy (SELECT * FROM experiments.segments_temp_view) TO '../Models/data/Data.csv' HEADER CSV;  
 
 -- optional
 DROP VIEW experiments.segments_temp_view;
