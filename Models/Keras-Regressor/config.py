@@ -5,12 +5,7 @@ paths = {
     'modelDir': "./saved_models/",
     'scalarDir': "./saved_scalar/",
     'historyDir': "./saved_history/",
-    'embTransformed64Path': "../data/osm_dk_20140101-transformed-64d.emb",
-    'embTransformed32Path': "../data/osm_dk_20140101-transformed-32d.emb",
-    'embNormal32Path': "../data/osm_dk_20140101-normal-32d.emb",
-    'graphSAGE': "../embeddings/graphSAGE/osm_dk_20140101-graphSAGE-",
-    'node2vec': "../embeddings/node2vec/osm_dk_20140101-node2vec-",
-    'LINE': "../embeddings/LINE/osm_dk_20140101-LINE-",
+    'embeddingDir': "./saved_embeddings/"
 }
 
 embedding_config = {
