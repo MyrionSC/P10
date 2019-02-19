@@ -30,7 +30,6 @@ export class AppComponent implements OnInit {
 
     route() {
         const url = this.hostUrl + '/route?origin=' + this.origin + '&dest=' + this.dest;
-        console.log('prod: ' + environment.production);
         console.log('GET: ' + url);
         this.routeLoading = true;
         this.http.get(url).subscribe(res => {
@@ -47,8 +46,6 @@ export class AppComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        console.log(this.document.location.hostname);
-
         this.hostUrl = this.document.location.hostname === '172.25.11.191' ?
             this.hostUrl = 'http://172.25.11.191:5000' :
             this.hostUrl = 'http://localhost:5000';

@@ -1,20 +1,19 @@
-<div class="outerContainer">
-
+<div (keyup.enter)="route()" class="outerContainer">
     <div class="formsContainer">
         <p class="p">Origin</p>
         <input autofocus class="input location-input" [(ngModel)]="origin"><br>
         <p class="p">Destination</p>
         <input class="input location-input" [(ngModel)]="dest"><br>
-        <button (keyup.enter)="route()" type="submit" class="button calculate-button"
+        <button type="submit" class="button calculate-button"
                 [ngClass]="{'is-loading': routeLoading}"
                 (click)="route()">Calculate route</button>
         <div class="navbar-divider"></div>
 
         <div *ngIf="routeLoaded" class="box resultsContainer">
             <!-- example results-->
-            <p>distance: 12.2 km</p>
-            <p>Energy: 42.34 kwh</p>
-            <p>Time: 1:23</p>
+            <p><i class="mdi mdi-map-marker-distance" aria-hidden="true"></i> 12.2 km</p>
+            <p><i class="mdi mdi-flash" aria-hidden="true"></i> 42.34 kwh</p>
+            <p><i class="mdi mdi-clock-outline" aria-hidden="true"></i> 1:23</p>
         </div>
     </div>
 
