@@ -32,7 +32,7 @@ embedding_config = {
 }
 
 config = {
-    'embeddings_used': 'LINE',
+    'embeddings_used': None,
     'graph_type': 'transformed',
     'batch_size': 8192,
     'epochs': 1,
