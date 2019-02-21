@@ -2,6 +2,7 @@ import json
 import db
 import pprint
 import urllib.request
+import datetime
 from xmltodict import parse as xmlParse, unparse as xmlUnparse
 
 
@@ -20,25 +21,28 @@ def parseYr():
 
 
 
-def RetrieveTemperature(segmentId: int):
+def RetrieveTemperature(segmentId: int) -> int:
     # get county of segmentId
     weatherStationCounty = db.getWeatherStation(segmentId)
 
     # retrieve data for county from yr
     countyUrlDict = json.loads(open("misc-data/TemperaturePlaceUrl.json").read())
     url = countyUrlDict[weatherStationCounty]
-    weatherData = urllib.request.urlopen(url).read()
-    # print(weatherData)
+    weatherDataDict = xmlParse(urllib.request.urlopen(url).read())
 
-    print(json.dumps(xmlParse(weatherData), indent=4))
+    # with open("weatherdump.json", "w+") as file:  # creates / overwrites file
+    #     file.write(json.dumps(weatherDataDict, indent=4))
+    # with open("weatherdump.json", "r") as file:
+    #     weatherDataDict = json.loads(file.read())
 
-
+    # get the temperature now
+    return int(weatherDataDict['weatherdata']['forecast']['tabular']['time'][0]["temperature"]["@value"])
 
 
 
 
 if __name__ == '__main__':
-    # RetrieveTemperature("lksjdflkj")
-    parseYr()
+    print("temperature: " + str(RetrieveTemperature(2)))
+    # parseYr()
 
 
