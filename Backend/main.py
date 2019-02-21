@@ -2,7 +2,7 @@ from flask import Flask, request, render_template, send_from_directory, redirect
 from flask_cors import CORS
 import psycopg2
 import json
-from model import *
+from db import *
 
 app = Flask(__name__, static_folder="map")
 CORS(app)
