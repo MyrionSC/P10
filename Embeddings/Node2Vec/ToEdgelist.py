@@ -2,10 +2,10 @@ import networkx as nx
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
-from LocalSettings import database
+from LocalSettings import main_db
 
 def sql_query(str):
-    conn = psycopg2.connect(f"dbname='{database['name']}' user='{database['user']}' port='{database['port']}' host='{database['host']}' password='{database['password']}'")
+    conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(main_db['name'], main_db['user'], main_db['port'], main_db['host'], main_db['password']))
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute(str)
     rows = cur.fetchall()
