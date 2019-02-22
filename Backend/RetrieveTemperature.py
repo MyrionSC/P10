@@ -29,7 +29,7 @@ def RetrieveTemperature(segmentId: int) -> int:
     # retrieve data for county from yr
     countyUrlDict = json.loads(open("misc-data/TemperaturePlaceUrl.json").read())
     url = countyUrlDict[weatherStationCounty]
-    weatherDataDict = xmlParse(urllib.request.urlopen(url).read())
+    weatherDataDict = xmlParse(urllib.request.urlopen(urlAsciiEncode(url)).read())
 
     # with open("weatherdump.json", "w+") as file:  # creates / overwrites file
     #     file.write(json.dumps(weatherDataDict, indent=4))
@@ -59,8 +59,8 @@ def getCoordinates():
 
 
 if __name__ == '__main__':
-    # print("temperature: " + str(RetrieveTemperature(2)))
+    print("temperature: " + str(RetrieveTemperature(2)))
     # parseYr()
-    getCoordinates()
+    # getCoordinates()
 
 
