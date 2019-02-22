@@ -1,9 +1,8 @@
 import json
 import db
-import pprint
 import urllib.request
 import urllib.parse
-from xmltodict import parse as xmlParse, unparse as xmlUnparse
+from xmltodict import parse as xmlParse
 from Utils import urlAsciiEncode
 
 
@@ -31,13 +30,12 @@ def RetrieveTemperature(segmentId: int) -> int:
     url = countyUrlDict[weatherStationCounty]
     weatherDataDict = xmlParse(urllib.request.urlopen(urlAsciiEncode(url)).read())
 
-    # with open("weatherdump.json", "w+") as file:  # creates / overwrites file
-    #     file.write(json.dumps(weatherDataDict, indent=4))
-    # with open("weatherdump.json", "r") as file:
-    #     weatherDataDict = json.loads(file.read())
-
     # get the temperature now
-    return int(weatherDataDict['weatherdata']['forecast']['tabular']['time'][0]["temperature"]["@value"])
+    temperature = int(weatherDataDict['weatherdata']['forecast']['tabular']['time'][0]["temperature"]["@value"])
+
+    print("Weatherstation for id " + str(segmentId) + " is " + weatherStationCounty + ". Temperature is " + str(temperature))
+
+    return int(temperature)
 
 
 def getCoordinates():
@@ -59,7 +57,8 @@ def getCoordinates():
 
 
 if __name__ == '__main__':
-    print("temperature: " + str(RetrieveTemperature(2)))
+    pass
+    # print("temperature: " + str(RetrieveTemperature(1)))
     # parseYr()
     # getCoordinates()
 
