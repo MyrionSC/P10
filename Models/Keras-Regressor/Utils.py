@@ -1,5 +1,4 @@
 from LocalSettings import main_db
-#import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from config import *
@@ -98,17 +97,16 @@ def current_time():
     return str(now.month), str(now.weekday()), str((now.hour * 4) + int(now.minute / 15))
 
 
-def one_hot(df):
+def one_hot(df, config):
     # One-hot encode category, month and weekday columns
     print("One-hot encoding features")
     start_time = time.time()
-    if 'categoryid' not in config['remove_features']:
+    if 'categoryid' in list(df):
         df['categoryid'] = df['categoryid'].map(str)
         df = one_hot_encode_column(df, 'categoryid')
-    if 'month' not in config['remove_features']:
-        df['month'] = df['month'].map(str)
+    if 'month' in list(df):
         df = one_hot_encode_column(df, 'month')
-    if 'weekday' not in config['remove_features']:
+    if 'weekday' in list(df):
         df['weekday'] = df['weekday'].map(str)
         df = one_hot_encode_column(df, 'weekday')
     print("Dataframe shape: %s" % str(df.shape))
@@ -118,12 +116,12 @@ def one_hot(df):
 
 def preprocess_data(df):
     df = one_hot(df)
-    df = scale_df(df, load_scaler=True)
+    df = scale_df(df)
     return df
 
 
 # Read data from csv file at path
-def read_data(path, target_feature, remove_features, scale=False, load_scaler=False, cyclicquarter=False, use_speed_prediction=False):
+def read_data(path, target_feature, remove_features, scale=False, re_scale=False, cyclicquarter=False, use_speed_prediction=False):
     # Read data
     print("Importing data set")
     start_time = time.time()
@@ -139,20 +137,21 @@ def read_data(path, target_feature, remove_features, scale=False, load_scaler=Fa
 
         print("Merging speed predictions")
         start_time = time.time()
-        df = pd.merge(df, speed_df, left_on='mapmatched_id', right_on='mapmatched_id')
-        df = df.sort_values('mapmatched_id').reset_index(drop=True)
+        df = df.merge(speed_df, left_on='mapmatched_id', right_on='mapmatched_id')
+        df.sort_values('mapmatched_id', inplace=True)
+        df.reset_index(drop=True, inplace=True)
         print("Dataframe shape: %s" % str(df.shape))
         print("Time %s" % (time.time() - start_time))
 
     # Remove unused features before merging with embeddings
     print("Removing unused features")
     start_time = time.time()
-    df = df.drop(remove_features, axis=1)
+    df.drop(remove_features, axis=1, inplace=True)
     print("Dataframe shape: %s" % str(df.shape))
     print("Time %s" % (time.time() - start_time))
 
     # One hot encode categorical features
-    df = one_hot(df)
+    df = one_hot(df, config)
 
     # Read and merge embeddings into dataframe
     if config['embeddings_used'] is not None:
@@ -160,13 +159,14 @@ def read_data(path, target_feature, remove_features, scale=False, load_scaler=Fa
         df = merge_embeddings(df, emb_df)
 
     # Sort dataframe to avoid null values (no idea why, but it's necessary)
-    df = df.sort_values('mapmatched_id').reset_index(drop=True)
+    df.sort_values('mapmatched_id', inplace=True)
+    df.reset_index(drop=True, inplace=True)
 
     # Remove startpoint and endpoint columns if present
     if 'startpoint' in list(df):
-        df = df.drop('startpoint', axis=1)
+        df.drop('startpoint', axis=1, inplace=True)
     if 'endpoint' in list(df):
-        df = df.drop('endpoint', axis=1)
+        df.drop('endpoint', axis=1, inplace=True)
 
     # Convert quarter column to a sinusoidal representation if specified
     if cyclicquarter:
@@ -181,11 +181,11 @@ def read_data(path, target_feature, remove_features, scale=False, load_scaler=Fa
     start_time = time.time()
     label = df[target_feature]
     trip_ids = df['trip_id']
-    features = df.drop(columns=target_feature + ['segmentkey', 'mapmatched_id', 'trip_id'])
+    df.drop(columns=target_feature + ['segmentkey', 'mapmatched_id', 'trip_id', 'trip_segmentno'], inplace=True)
     print("Time %s" % (time.time() - start_time))
 
     # Calculate the number of features (input dimension of model)
-    num_features = len(list(features))
+    num_features = len(list(df))
     num_labels = len(list(label))
 
     # debug info
@@ -195,41 +195,34 @@ def read_data(path, target_feature, remove_features, scale=False, load_scaler=Fa
 
     # Scale data using a simple sklearn scaler
     if scale:
-        features = scale_df(features, load_scaler)
-        
-    return features, label, num_features, num_labels, trip_ids
+        df = scale_df(df, re_scale)
+
+    print("Dataframe shape: %s" % str(df.shape))
+    return df, label, num_features, num_labels, trip_ids
 
 
-def scale_df(df, load_scaler=False):
+def scale_df(df, re_scale):
     print("Scaling data sets")
     start_time = time.time()
     columns = list(df)
 
-    if load_scaler:
-        scaler = loadScaler(config['target_feature'], config['remove_features'], config['embeddings_used'])
+    if not re_scale and os.path.isfile(scaler_path()):
+        scaler = loadScaler()
     else:
         scaler = StandardScaler()
         scaler.fit(df)
-        saveScaler(scaler, config['target_feature'], config['remove_features'], config['embeddings_used'])
+        saveScaler(scaler)
 
     df = pd.DataFrame(scaler.transform(df))
-    df = df.rename(lambda x: columns[x], axis='columns')
+    df.rename(lambda x: columns[x], axis='columns', inplace=True)
 
     print("Time %s" % (time.time() - start_time))
     return df
 
 
-def saveScaler(scaler, target_feature, remove_features, embeddings_used):
-    if embeddings_used is not None:
-        embeddings_used_string = ','.join("%s" % x for x in embeddings_used)
-    else:
-        embeddings_used_string = "None"
-    target_feature_string = ','.join("%s" % x for x in target_feature)
-    remove_features_string = ','.join("%s" % x for x in remove_features)
-    scaler_path = ("saved_scaler/Scaler - Target features=%s - Removed features=%s - Embeddings=%s.json" % (target_feature_string, remove_features_string, embeddings_used_string))
-    
-    if not os.path.isdir("saved_scaler"):
-        os.makedirs("saved_scaler")
+def saveScaler(scaler):
+    if not os.path.isdir(paths['scalerDir']):
+        os.makedirs(paths['scalerDir'])
     
     scaler_params = dict()
     scaler_params['scale_'] = scaler.scale_.tolist()
@@ -238,20 +231,13 @@ def saveScaler(scaler, target_feature, remove_features, embeddings_used):
     scaler_params['n_samples_seen_'] = int(scaler.n_samples_seen_)
     scaler_json = json.dumps(scaler_params)
     
-    with open(scaler_path, "w") as f:
+    with open(scaler_path(), "w") as f:
         f.write(scaler_json)
+    print("Saved scaler " + scaler_path())
 
 
-def loadScaler(target_feature, remove_features, embeddings_used):
-    if embeddings_used is not None:
-        embeddings_used_string = ','.join("%s" % x for x in embeddings_used)
-    else:
-        embeddings_used_string = "None"
-    target_feature_string = ','.join("%s" % x for x in target_feature)
-    remove_features_string = ','.join("%s" % x for x in remove_features)
-    scaler_path = ("saved_scaler/Scaler - Target features=%s - Removed features=%s - Embeddings=%s.json" % (target_feature_string, remove_features_string, embeddings_used_string))
-
-    with open(scaler_path) as f:
+def loadScaler():
+    with open(scaler_path()) as f:
         scaler_params = json.load(f)
 
     scaler = StandardScaler()
@@ -260,21 +246,21 @@ def loadScaler(target_feature, remove_features, embeddings_used):
     scaler.var_ = np.array(scaler_params['var_'])
     scaler.n_samples_seen_ = scaler_params['n_samples_seen_']
 
+    print("Loaded scaler " + scaler_path())
     return scaler
 
 
 def read_embeddings():
     print('Importing embeddings from ' + embedding_path())
     start_time = time.time()
-    if config['embeddings_used'] == 'LINE':
-        start_time = time.time()
-        df = pd.read_csv(embedding_path(), header=None, sep=' ', skiprows=1)
-        df = df.rename(columns={0: 'segmentkey'})
-        df = df.drop(embedding_config['LINE']['dims'] + 1, axis=1)
-        df = df.set_index(['segmentkey'])
-        df = df.rename(lambda x: "emb_" + str(x-1), axis='columns')
-    else:
-        df = pd.read_csv(embedding_path(), header=0, sep=' ')
+    with open(embedding_path(), 'r') as f:
+        dim = int(f.readline().split(" ")[1].strip())
+    df = pd.read_csv(embedding_path(), header=None, sep=' ', skiprows=1)
+    df = df.rename(columns={0: 'segmentkey'})
+    if paths['embeddingFile'].startswith('LINE'):
+        df = df.drop(dim + 1, axis=1)
+    df = df.set_index(['segmentkey'])
+    df = df.rename(lambda x: "emb_" + str(x-1), axis='columns')
     print("Time %s" % (time.time() - start_time))
     return df
 
@@ -282,11 +268,11 @@ def read_embeddings():
 def merge_embeddings(df, emb_df):
     print("Merging data sets")
     start_time = time.time()
-    if config['graph_type'] == 'transformed':
-        df = pd.merge(df, emb_df, left_on='segmentkey', right_on=emb_df.index)
-    elif config['graph_type'] == 'normal':
-        df = pd.merge(df, emb_df, left_on='startpoint', right_on='point').drop(['startpoint', 'point'], axis=1)
-        df = pd.merge(df, emb_df, left_on='endpoint', right_on='point').drop(['endpoint', 'point'], axis=1)
+    #if config['graph_type'] == 'transformed':
+    df = df.merge(emb_df, left_on='segmentkey', right_on=emb_df.index)
+    #elif config['graph_type'] == 'normal':
+    #    df = pd.merge(df, emb_df, left_on='startpoint', right_on='point').drop(['startpoint', 'point'], axis=1)
+    #    df = pd.merge(df, emb_df, left_on='endpoint', right_on='point').drop(['endpoint', 'point'], axis=1)
     print("Dataframe shape: %s" % str(df.shape))
     print("Time %s" % (time.time() - start_time))
     return df
@@ -294,9 +280,13 @@ def merge_embeddings(df, emb_df):
 
 def embedding_path():
     if config["embeddings_used"] is not None:
-        return paths[config['embeddings_used']] + config['graph_type'] + "-" + str(embedding_config[config['embeddings_used']]['dims']) + "d.emb"
+        return '{0}{1}.emb'.format(paths['embeddingDir'], paths['embeddingFile'])
     else:
         return "None"
+
+
+def scaler_path():
+    return '{0}{1}.json'.format(paths['scalerDir'], config['scaler_name'])
 
 
 def general_converter(num_segments, limit=None):

@@ -3,9 +3,10 @@ paths = {
     'trainPath': "../data/Training.csv",
     'validationPath': "../data/Test.csv",
     'modelDir': "./saved_models/",
-    'scalarDir': "./saved_scalar/",
+    'scalerDir': "./saved_scaler/",
     'historyDir': "./saved_history/",
-    'embeddingDir': "./saved_embeddings/"
+    'embeddingDir': "./saved_embeddings/",
+    'embeddingFile': "node2vec-64d"
 }
 
 embedding_config = {
@@ -31,23 +32,52 @@ embedding_config = {
     }
 }
 
-config = {
-    'embeddings_used': None,
-    'graph_type': 'transformed',
+speed_predictor = False
+
+speed_config = {
+    'embeddings_used': 'LINE',
     'batch_size': 8192,
-    'epochs': 1,
+    'epochs': 20,
     'iterations': 1,
-    'hidden_layers': 1,
-    'cells_per_layer': 100,
+    'hidden_layers': 6,
+    'cells_per_layer': 1000,
     'initial_dropout': 0,  # Dropout value for the first layer
     'dropout': 0,  # Dropout value for all layers after the first layer
-    'activation': 'softmax',
+    'activation': 'softsign',
     'kernel_initializer': 'normal',
-    'optimizer': 'adam',
-    'target_feature': ['ev_wh'],
-    'remove_features': ['min_from_midnight', 'speed', 'acceleration', 'deceleration', 'temperature', 'headwind_speed'],
-    'feature_order': ['incline', 'segment_length', 'quarter', 'speedlimit', 'categoryid', 'month', 'weekday'],
-    'model_name': "TestModel"
+    'optimizer': 'adamax',
+    'target_feature': ['speed'],
+    'remove_features': ['min_from_midnight', 'ev_wh', 'acceleration', 'deceleration', 'headwind_speed', 'weekday'],
+    'feature_order': ['incline', 'segment_length', 'temperature', 'speedlimit', 'quarter', 'categoryid', 'month'],
+    'model_name': 'SpeedModel-'
 }
+
+energy_config = {
+    'embeddings_used': 'LINE',
+    'batch_size': 8192,
+    'epochs': 20,
+    'iterations': 1,
+    'hidden_layers': 6,
+    'cells_per_layer': 1000,
+    'initial_dropout': 0,  # Dropout value for the first layer
+    'dropout': 0,  # Dropout value for all layers after the first layer
+    'activation': 'relu',
+    'kernel_initializer': 'normal',
+    'optimizer': 'adamax',
+    'target_feature': ['ev_wh'],
+    'remove_features': ['min_from_midnight', 'acceleration', 'speed', 'deceleration', 'headwind_speed', 'speedlimit', 'quarter', 'categoryid', 'month', 'weekday'],
+    'feature_order': ['incline', 'segment_length', 'speed_prediction', 'temperature'],
+    'model_name': 'Model-'
+}
+
+speed_config['model_name'] += 'epochs={0},hidden_layers={1},cells_per_layer={2},embeddings={3}'.format(speed_config['epochs'], speed_config['hidden_layers'], speed_config['cells_per_layer'], paths['embeddingFile'])
+energy_config['model_name'] += 'epochs={0},hidden_layers={1},cells_per_layer={2},embeddings={3}'.format(energy_config['epochs'], energy_config['hidden_layers'], energy_config['cells_per_layer'], paths['embeddingFile'])
+speed_config['scaler_name'] = speed_config['model_name'] + '_Scaler'
+energy_config['scaler_name'] = energy_config['model_name'] + '_Scaler'
+
+if speed_predictor:
+    config = speed_config
+else:
+    config = energy_config
 
 def_features = ['batch_size', 'epochs', 'hidden_layers', 'cells_per_layer', 'initial_dropout', 'dropout', 'activation', 'kernel_initializer', 'optimizer', 'target_feature', 'remove_features']

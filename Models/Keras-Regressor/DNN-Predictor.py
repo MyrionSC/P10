@@ -1,16 +1,12 @@
-from Utils import loadScaler, read_data, load_model
+from Utils import read_data, load_model
 from config import *
-from sqlalchemy import create_engine
-from Plots import *
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from math import sqrt
 import pandas as pd
 from Metrics import rmse
-import csv
 import os
 import json
 
-#from LocalSettings import database
 
 def load_columns(filename, columns=[], index=None):
     """
@@ -33,60 +29,7 @@ def load_columns(filename, columns=[], index=None):
     return df
 
 
-# def upload_to_database(df, db_schema, db_table, column='ev_wh'):
-#     """
-#         Uploads results to databse (db_schema.db_table) using pandas
-#         .to_sql() method
-#
-#         Args:
-#             df (pd.DataFrame): DataFrame to be uploaded to DB
-#             db_schema (str)  : schema name in DB
-#             db_table (str)   : table name in DB
-#
-#         Returns:
-#             None
-#     """
-#
-#     # psycopg2 configguration
-#     engine = create_engine(f'postgresql+psycopg2://{database['username']}:{database['password']}@{database['host']}:{database['port']}/{database['name']}')
-#     connection = engine.raw_connection()
-#
-#     try:
-#
-#         cursor = connection.cursor()
-#
-#         # 1) drop previous index
-#         cursor.execute('DROP INDEX IF EXISTS %s.%s_%s_mapmatched_id_idx;' % (db_schema, db_schema, db_table))
-#         connection.commit()
-#         print('Dropped index: %s.%s_%s_mapmatched_id_idx;' % (db_schema, db_schema, db_table))
-#
-#         # 2) upload data
-#         # 2.1) truncate table
-#         cursor.execute('TRUNCATE %s.%s' % (db_schema, db_table))
-#         connection.commit()
-#         # 2.2) insert data into DB
-#         dataText = b','.join(cursor.mogrify(b'(%s,%s)', (index, float(row[column]))) for index, row in df.iterrows())
-#
-#         query_str = b'INSERT INTO ' + db_schema.encode() + b"." + db_table.encode() + b" VALUES "
-#         cursor.execute(query_str + dataText)
-#         connection.commit()
-#         print('Finished uploading data to %s.%s;' % (db_schema, db_table))
-#
-#         # 3) add index
-#         cursor.execute(""CREATE INDEX {0}_{1}_mapmatched_id_idx
-#                           ON {0}.{1} USING btree (mapmatched_id)
-#                           TABLESPACE pg_default;"".format(db_schema, db_table))
-#         print('Created index: %s_%s_mapmatched_id_idx;' % (db_schema, db_table))
-#
-#         cursor.close()
-#         connection.commit()
-#     except Exception as e:
-#         raise e
-#     finally:
-#         connection.close()
-
-
-features, labels, num_features, num_labels, _, trip_ids = read_data(paths['dataPath'], config['target_feature'], config['remove_features'], scale=True, load_scaler=True)
+features, labels, num_features, num_labels, trip_ids = read_data(paths['dataPath'], config['target_feature'], config['remove_features'], scale=True, use_speed_prediction=not speed_predictor)
 modelPath = (paths['modelDir'] + config['model_name'])
 
 model = load_model(modelPath)
@@ -114,7 +57,7 @@ for i, target in enumerate(config['target_feature']):
     df[target_predict] = pd.Series(prediction[:, i])
     df[target] = labels[target]
     prediction_df = df[['mapmatched_id', target_predict]].copy()
-    prediction_file_path = "../data/test_" + target + "_prediction.csv"
+    prediction_file_path = "../data/" + target + "_prediction.csv"
     prediction_df.to_csv(prediction_file_path, index=False)
 
 column = df.columns
