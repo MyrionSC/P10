@@ -2,8 +2,9 @@ import json
 import db
 import pprint
 import urllib.request
-import datetime
+import urllib.parse
 from xmltodict import parse as xmlParse, unparse as xmlUnparse
+from Utils import urlAsciiEncode
 
 
 def parseYr():
@@ -39,10 +40,27 @@ def RetrieveTemperature(segmentId: int) -> int:
     return int(weatherDataDict['weatherdata']['forecast']['tabular']['time'][0]["temperature"]["@value"])
 
 
+def getCoordinates():
+    countyUrlDict = json.loads(open("misc-data/TemperaturePlaceUrl.json").read())
+    weatherstationLatLongDict = {}
+
+    for key, value in dict.items(countyUrlDict):
+        print(key, value)
+        result = urllib.request.urlopen(urlAsciiEncode(value)).read()
+        weatherDataDict = xmlParse(result)
+        lat = weatherDataDict['weatherdata']['location']['location']['@latitude']
+        long = weatherDataDict['weatherdata']['location']['location']['@longitude']
+        weatherstationLatLongDict[key] = (lat, long)
+
+    with open("misc-data/weatherstation-lat-long.txt", "w+") as file:  # creates / overwrites file
+        for key, value in weatherstationLatLongDict.items():
+            file.write(key + " " + value[0] + " " + value[1] + "\n")
+
 
 
 if __name__ == '__main__':
-    print("temperature: " + str(RetrieveTemperature(2)))
+    # print("temperature: " + str(RetrieveTemperature(2)))
     # parseYr()
+    getCoordinates()
 
 
