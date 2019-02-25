@@ -56,8 +56,10 @@ def load_model(filename):
 
 # Read data from csv file at path
 def read_data(path, scale=False, re_scale=False, cyclicquarter=False, use_speed_prediction=False):
+    # Get the base data from the csv
     df = get_base_data(path)
 
+    # If speed predictions are set to be used, include them
     if use_speed_prediction:
         df = get_speed_predictions(df)
 
@@ -76,24 +78,24 @@ def read_data(path, scale=False, re_scale=False, cyclicquarter=False, use_speed_
     # Split data into features and label
     features, label = extract_label(df)
 
-    # Calculate the number of features (input dimension of model)
-    num_features = len(list(features))
-    num_labels = len(list(label))
-
     # Scale data using a simple sklearn scaler
     if scale:
         features = scale_df(features, re_scale)
 
-    return features, label, num_features, num_labels
+    return features, label, len(list(features)), len(list(label))
 
 
 # Read the base dataframe
 def get_base_data(path):
-    # Read data
     print("Reading data from " + path)
     start_time = time.time()
+
+    # Read the data from the csv file
     df = pd.read_csv(path, header=0)
+
+    # Remove redundant columns
     df.drop(config['remove_features'] + ['trip_id', 'trip_segmentno'], axis=1, inplace=True)
+
     print("Dataframe shape: %s" % str(df.shape))
     print("Time %s\n" % (time.time() - start_time))
     return df
@@ -103,10 +105,15 @@ def get_base_data(path):
 def get_speed_predictions(df):
     print("Reading speed predictions from " + paths['speedPredPath'])
     start_time = time.time()
+
+    # Read the speed predictions from the csv file
     speed_df = pd.read_csv(paths['speedPredPath'], header=0, sep=',')
+
+    # Merge the speed predictions into the main dataframe
     df = df.merge(speed_df, left_on='mapmatched_id', right_on='mapmatched_id')
     df.sort_values('mapmatched_id', inplace=True)
     df.reset_index(drop=True, inplace=True)
+
     print("Dataframe shape: %s" % str(df.shape))
     print("Time elapsed: %s\n" % (time.time() - start_time))
     return df
@@ -117,6 +124,8 @@ def one_hot(df):
     # One-hot encode category, month and weekday columns
     print("One-hot encoding features")
     start_time = time.time()
+
+    # If the categorical features are present in the dataframe, encode them
     if 'categoryid' in list(df):
         df['categoryid'] = df['categoryid'].map(str)
         df = one_hot_encode_column(df, 'categoryid')
@@ -126,6 +135,7 @@ def one_hot(df):
     if 'weekday' in list(df):
         df['weekday'] = df['weekday'].map(str)
         df = one_hot_encode_column(df, 'weekday')
+
     print("Dataframe shape: %s" % str(df.shape))
     print("Time elapsed: %s\n" % (time.time() - start_time))
     return df
@@ -133,11 +143,15 @@ def one_hot(df):
 
 # One-hot encode a column of a dataframe
 def one_hot_encode_column(df, column_key):
+    # Encode column as categorical dtype
     cats = get_cats(column_key)
     cat_type = CategoricalDtype(categories=cats, ordered=True)
     df[column_key] = df[column_key].astype(cat_type)
+
+    # One-hot encode column
     df = pd.concat([df, pd.get_dummies(df[column_key], prefix=column_key)], axis=1)
     df.drop([column_key], axis=1, inplace=True)
+
     print("Column \'" + column_key + "\' encoded to " + str(len(cats)) + " columns")
     return df
 
@@ -156,11 +170,18 @@ def get_cats(key):
 def get_embeddings(df):
     print('Reading embeddings from ' + embedding_path())
     start_time = time.time()
+
+    # Read embeddings from the csv file
     emb_df = read_embeddings()
+
+    # Merge embeddings into main dataframe
     df = df.merge(emb_df, left_on='segmentkey', right_on=emb_df.index)
+
+    # Sort dataframe and drop redundant columns
     df.sort_values('mapmatched_id', inplace=True)
     df.drop(['mapmatched_id', 'segmentkey'], axis=1, inplace=True)
     df.reset_index(drop=True, inplace=True)
+
     print("Dataframe shape: %s" % str(df.shape))
     print("Time %s\n" % (time.time() - start_time))
     return df
@@ -168,14 +189,25 @@ def get_embeddings(df):
 
 # Read embeddings from disk
 def read_embeddings():
+    # Get the number of dimensions of the embeddings
     with open(embedding_path(), 'r') as f:
         dim = int(f.readline().split(" ")[1].strip())
+
+    # Read the embeddings from the csv file
     df = pd.read_csv(embedding_path(), header=None, sep=' ', skiprows=1)
-    df = df.rename(columns={0: 'segmentkey'})
+
+    # If the embeddings are generated using LINE, drop the last column
+    # This is due to the way LINE saves the embeddings to a file
     if config['embedding'].startswith('LINE'):
         df = df.drop(dim + 1, axis=1)
+
+    # Index dataframe by segmentkey
+    df = df.rename(columns={0: 'segmentkey'})
     df = df.set_index(['segmentkey'])
+
+    # Rename columns
     df = df.rename(lambda x: "emb_" + str(x - 1), axis='columns')
+
     return df
 
 
@@ -183,11 +215,14 @@ def read_embeddings():
 def convert_quarter(df):
     print("Converting \'quarter\' column to circular representation")
     start_time = time.time()
+
+    # Calculate sine and cosine features based on the quarter column
     sin = np.sin(2 * np.pi * df['quarter'] / 95.0)
     cos = np.cos(2 * np.pi * df['quarter'] / 95.0)
     df.drop('quarter', axis=1, inplace=True)
     df['sin_quarter'] = sin
     df['cos_quarter'] = cos
+
     print("Dataframe shape: %s" % str(df.shape))
     print("Time %s\n" % (time.time() - start_time))
     return df
@@ -197,8 +232,11 @@ def convert_quarter(df):
 def extract_label(df):
     print("Extracting label")
     start_time = time.time()
+
+    # Extract the target feature from the dataframe
     label = df[[config['target_feature']]]
     df.drop(columns=[config['target_feature']], axis=1, inplace=True)
+
     print("Dataframe shape: %s" % str(df.shape))
     print("Time elapsed %s\n" % (time.time() - start_time))
     return df, label
@@ -207,14 +245,21 @@ def extract_label(df):
 # Scale the dataframe
 def scale_df(df, re_scale):
     start_time = time.time()
+
+    # Cache the column names of the dataframe.
     columns = list(df)
 
+    # If a scaler exists and creating a new scaler is not explicitly requested, load the existing scaler
     if not re_scale and os.path.isfile(scaler_path()):
         scaler = load_scaler()
+    # Otherwise, create a new scaler
     else:
         scaler = create_scaler(df)
 
+    # Scale the dataframe
     df = pd.DataFrame(scaler.transform(df))
+
+    # Reapply the cached column names
     df.rename(lambda x: columns[x], axis='columns', inplace=True)
 
     print("Dataframe shape: %s" % str(df.shape))
