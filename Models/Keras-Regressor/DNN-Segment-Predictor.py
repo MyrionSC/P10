@@ -11,6 +11,7 @@ from config import *
 month = '2'
 quarter = '47'
 
+
 def read_road_map_data():
     qry = """
         SELECT 
@@ -47,7 +48,8 @@ def read_road_map_data():
     df['temperature'] = query(qry2)[0]['temperature']
     df['month'] = month
     df['quarter'] = quarter
-    return df
+    return df.sort_values('segmentkey')
+
 
 def do_speed_predictions(df, emb_df):
     speed_features = df[['segmentkey'] + speed_config['feature_order']]
@@ -58,7 +60,8 @@ def do_speed_predictions(df, emb_df):
     speed_model = load_model(paths['modelDir'] + speed_config['model_name'])
     speed_model.compile(loss='mean_squared_error', optimizer=speed_config['optimizer'],
                         metrics=['mae', 'mse', 'mape', rmse])
-    return speed_model.predict(speed_features, batch_size=speed_config['batch_size'], verbose=1)
+    return pd.DataFrame(speed_model.predict(speed_features, batch_size=speed_config['batch_size'], verbose=1),
+                        columns=['speed_prediction'])
 
 
 def do_energy_predictions(df, emb_df, speed_df):
@@ -70,15 +73,16 @@ def do_energy_predictions(df, emb_df, speed_df):
     energy_features.set_index(['segmentkey'], inplace=True)
     energy_model = load_model(paths['modelDir'] + energy_config['model_name'])
     energy_model.compile(loss='mean_squared_error', optimizer=energy_config['optimizer'],
-                        metrics=['mae', 'mse', 'mape', rmse])
-    return energy_model.predict(energy_features, batch_size=energy_config['batch_size'], verbose=1)
+                         metrics=['mae', 'mse', 'mape', rmse])
+    return pd.DataFrame(energy_model.predict(energy_features, batch_size=energy_config['batch_size'], verbose=1),
+                        columns=['energy_prediction'])
 
 
 df = read_road_map_data()
-keys = df[['segmentkey']].sort_values('segmentkey')
+keys = df[['segmentkey']]
 emb_df = read_embeddings()
-speed_predictions = pd.DataFrame(do_speed_predictions(df, emb_df), columns=['speed_prediction'])
-energy_predictions = pd.DataFrame(do_energy_predictions(df, emb_df, speed_predictions), columns=['energy_prediction'])
+speed_predictions = do_speed_predictions(df, emb_df)
+energy_predictions = do_energy_predictions(df, emb_df, speed_predictions)
 energy_predictions['segmentkey'] = keys
 res = energy_predictions[['segmentkey', 'energy_prediction']]
 res.to_csv("../data/energy_predictions.csv", sep=';', header=False, index=False, encoding='utf8')
