@@ -47,5 +47,10 @@ def get_embedding(key):
 	return str(list(query(qry, local_db)[0])[1:])
 
 
-def getWeatherStation(segmentId: int) -> str:
-    return "Ålborg"
+def getWeatherStation(segmentKey: int) -> str:
+    qry = """
+    	SELECT wsname
+    	FROM weather.segment_weatherstation_map
+    	WHERE segmentkey = {0}
+    """.format(segmentKey)
+    return query(qry, local_db)[0][0]
