@@ -1,7 +1,7 @@
 from Utils import save_model, read_data, load_model
 from Model import DNNRegressor
 import Configuration
-from Configuration import paths
+from Configuration import paths, model_path, speed_predictor
 from tensorflow import set_random_seed
 from numpy.random import seed
 from sklearn.metrics import r2_score
@@ -18,7 +18,7 @@ def read_predicting_data_sets(config):
     print("")
     print("------ Reading data ------")
     start_time = time.time()
-    X, Y = read_data(paths['dataPath'], config, scale=True, use_speed_prediction=not Configuration.speed_predictor)
+    X, Y = read_data(paths['dataPath'], config, scale=True, use_speed_prediction=not speed_predictor)
     print("Data read")
     print("Time elapsed: %s" % (time.time() - start_time))
 
@@ -29,14 +29,14 @@ def read_training_data_sets(config):
     print("")
     print("------ Reading training data ------")
     start_time = time.time()
-    X_train, Y_train = read_data(paths['trainPath'], config, scale=True, re_scale=True, use_speed_prediction=not Configuration.speed_predictor)
+    X_train, Y_train = read_data(paths['trainPath'], config, scale=True, re_scale=True, use_speed_prediction=not speed_predictor)
     print("Training data read")
     print("Time elapsed: %s" % (time.time() - start_time))
 
     print("")
     print("------ Reading validation data ------")
     start_time = time.time()
-    X_validation, Y_validation = read_data(paths['validationPath'], config, scale=True, use_speed_prediction=not Configuration.speed_predictor)
+    X_validation, Y_validation = read_data(paths['validationPath'], config, scale=True, use_speed_prediction=not speed_predictor)
     print("Validation data read")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
 
@@ -75,31 +75,31 @@ def calculate_results(estimator, X, Y, config):
 
 
 def save_history(history, train_r2, val_r2, config):
+    modelpath = model_path(config)
     print("")
     print("------ Saving history ------")
     start_time = time.time()
     history.history['train_r2'] = train_r2
     history.history['val_r2'] = val_r2
-    if not os.path.isdir(paths['historyDir']):
-        os.makedirs(paths['historyDir'])
-    with open(paths['historyDir'] + Configuration.model_name(config) + '_History.json', "w") as f:
-        f.write(json.dumps(Configuration, indent=4))
+    if not os.path.isdir(modelpath):
+        os.makedirs(modelpath)
+    with open(modelpath + 'history.json', "w") as f:
         f.write(json.dumps(history.history, indent=4))
     print("History saved")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
 
 
-def training(config):
+def train(config):
     X_train, Y_train, X_validation, Y_validation = read_training_data_sets(config)
     model, history = train_model(X_train, Y_train, X_validation, Y_validation, config)
     train_predictions, train_r2 = calculate_results(model, X_train, Y_train, config)
     val_predictions, val_r2 = calculate_results(model, X_validation, Y_validation, config)
     print("")
     print("Train R2: {:f}".format(train_r2) + "  -  Validation R2: {:f}".format(val_r2))
-    save_history(train_r2, val_r2, history, config)
+    save_history(history, train_r2, val_r2, config)
 
 
-def predicting(config):
+def predict(config):
     X, Y = read_predicting_data_sets(config)
     model = load_model(config)
     predictions, r2 = calculate_results(model, X, Y, config)
@@ -109,13 +109,13 @@ def predicting(config):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    train = True
+    do_train = True
     if len(args) > 0 and args[0] == "predict":
-        train = False
+        do_train = False
 
     default_config = Configuration.energy_config
 
-    if train:
-        training(default_config)
+    if do_train:
+        train(default_config)
     else:
-        predicting(default_config)
+        predict(default_config)

@@ -70,13 +70,15 @@ energy_config = {
     'remove_features': ['min_from_midnight', 'acceleration', 'speed', 'deceleration', 'headwind_speed', 'speedlimit', 'quarter', 'categoryid', 'month', 'weekday'],
     'feature_order': ['incline', 'segment_length', 'speed_prediction', 'temperature'],
     'model_name_base': 'Model-',
-    'batch_dir': "TestOutput"
+    'batch_dir': "TestOutput",
+    'speed_prediction_file': "speed_prediction.csv"
 }
 
 
-def model_name(config):
-    return config('model_name_base') + 'epochs={0},hidden_layers={1},cells_per_layer={2},embeddings={3}'.format(config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])
+def model_dir_name(config):
+    return config['model_name_base'] + 'epochs_{0}-hidden_layers_{1}-cells_per_layer_{2}-embeddings_{3}/'.format(config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])
 
 
-def scaler_name(config):
-    return model_name(config) + '_Scaler'
+def model_path(config):
+    return paths['modelDir'] + model_dir_name(config)
+

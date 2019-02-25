@@ -1,8 +1,7 @@
 from LocalSettings import main_db
 import pandas as pd
 import numpy as np
-import Configuration
-from Configuration import paths
+from Configuration import paths, model_path
 from keras.models import model_from_json
 from sklearn.preprocessing import StandardScaler
 import time
@@ -31,30 +30,31 @@ def query(qry):
 
 # Save a model to disk
 def save_model(model, config):
-    filename = paths['modelDir'] + Configuration.model_name(config)
+    modelpath = model_path(config)
     # Serialize model structure as json file
     model_json = model.to_json()
-    if not os.path.isdir("saved_models"):
-        os.makedirs(os.path.dirname(filename))
-    with open(filename + '.json', 'w') as f:
+    if not os.path.isdir(modelpath):
+        os.makedirs(modelpath)
+    with open(modelpath + 'model.json', 'w') as f:
         f.write(model_json)
-
+    with open(modelpath + 'config.json', 'w') as f:
+        f.write(json.dumps(config, indent=4))
     # Serialize model weights as HDF5 file
-    model.save_weights(filename + '.h5')
-    print('Model saved: ' + filename + '!')
+    model.save_weights(modelpath + 'model.h5')
+    print('Model saved: ' + modelpath)
 
 
 # Load a model from disk
 def load_model(config):
-    filename = paths['modelDir'] + Configuration.model_name(config)
+    modelpath = model_path(config)
     # Load model structure json
-    with open(filename + '.json', 'r') as json_file:
+    with open(modelpath + 'model.json', 'r') as json_file:
         loaded_model_json = json_file.read()
     loaded_model = model_from_json(loaded_model_json)
 
     # load weights into model
-    loaded_model.load_weights(filename + '.h5')
-    print('Model loaded: ' + filename + '!')
+    loaded_model.load_weights(modelpath + 'model.h5')
+    print('Model loaded: ' + modelpath)
     loaded_model.compile(loss='mean_squared_error', optimizer=config['optimizer'], metrics=['mae', 'mse', 'mape', rmse])
     return loaded_model
 
@@ -62,11 +62,11 @@ def load_model(config):
 # Read data from csv file at path
 def read_data(path, config, scale=False, re_scale=False, cyclicquarter=False, use_speed_prediction=False):
     # Get the base data from the csv
-    df = get_base_data(path)
+    df = get_base_data(path, config)
 
     # If speed predictions are set to be used, include them
     if use_speed_prediction:
-        df = get_speed_predictions(df)
+        df = get_speed_predictions(df, config)
 
     # One hot encode categorical features
     if 'month' in list(df) or 'weekday' in list(df) or 'categoryid' in list(df):
@@ -74,7 +74,7 @@ def read_data(path, config, scale=False, re_scale=False, cyclicquarter=False, us
 
     # Read and merge embeddings into dataframe
     if config['embedding'] is not None:
-        df = get_embeddings(df)
+        df = get_embeddings(df, config)
         df.drop(['mapmatched_id', 'segmentkey'], axis=1, inplace=True)
 
     # Convert quarter column to a sinusoidal representation if specified
@@ -82,11 +82,11 @@ def read_data(path, config, scale=False, re_scale=False, cyclicquarter=False, us
         df = convert_quarter(df)
 
     # Split data into features and label
-    features, label = extract_label(df)
+    features, label = extract_label(df, config)
 
     # Scale data using a simple sklearn scaler
     if scale:
-        features = scale_df(features, re_scale)
+        features = scale_df(features, config, re_scale)
 
     return features, label
 
@@ -195,11 +195,11 @@ def get_embeddings(df, config):
 # Read embeddings from disk
 def read_embeddings(config):
     # Get the number of dimensions of the embeddings
-    with open(embedding_path(), 'r') as f:
+    with open(embedding_path(config), 'r') as f:
         dim = int(f.readline().split(" ")[1].strip())
 
     # Read the embeddings from the csv file
-    df = pd.read_csv(embedding_path(), header=None, sep=' ', skiprows=1)
+    df = pd.read_csv(embedding_path(config), header=None, sep=' ', skiprows=1)
 
     # If the embeddings are generated using LINE, drop the last column
     # This is due to the way LINE saves the embeddings to a file
@@ -255,7 +255,7 @@ def scale_df(df, config, re_scale):
     columns = list(df)
 
     # If a scaler exists and creating a new scaler is not explicitly requested, load the existing scaler
-    if not re_scale and os.path.isfile(scaler_path()):
+    if not re_scale and os.path.isfile(model_path(config) + "scaler.json"):
         scaler = load_scaler(config)
     # Otherwise, create a new scaler
     else:
@@ -274,7 +274,7 @@ def scale_df(df, config, re_scale):
 
 # Create a new scaler
 def create_scaler(df, config):
-    print("Creating scaler in " + scaler_path(config))
+    print("Creating scaler in " + model_path(config))
     scaler = StandardScaler()
     scaler.fit(df)
     save_scaler(scaler, config)
@@ -283,8 +283,9 @@ def create_scaler(df, config):
 
 # Save the scaler
 def save_scaler(scaler, config):
-    if not os.path.isdir(paths['scalerDir']):
-        os.makedirs(paths['scalerDir'])
+    modelpath = model_path(config)
+    if not os.path.isdir(modelpath):
+        os.makedirs(modelpath)
 
     scaler_params = dict()
     scaler_params['scale_'] = scaler.scale_.tolist()
@@ -293,14 +294,15 @@ def save_scaler(scaler, config):
     scaler_params['n_samples_seen_'] = int(scaler.n_samples_seen_)
     scaler_json = json.dumps(scaler_params)
 
-    with open(scaler_path(config), "w") as f:
+    with open(modelpath + "scaler.json", "w") as f:
         f.write(scaler_json)
 
 
 # Load an existing scaler
 def load_scaler(config):
-    print("Loading scaler from " + scaler_path(config))
-    with open(scaler_path(config)) as f:
+    modelpath = model_path(config)
+    print("Loading scaler from " + modelpath)
+    with open(modelpath + "scaler.json", "r") as f:
         scaler_params = json.load(f)
 
     scaler = StandardScaler()
@@ -317,11 +319,6 @@ def embedding_path(config):
         return '{0}{1}.emb'.format(paths['embeddingDir'], config['embedding'])
     else:
         return "None"
-
-
-# Return the path to the scaler
-def scaler_path(config):
-    return '{0}{1}.json'.format(paths['scalerDir'], config['scaler_name'])
 
 
 # Return the current month, weekday and quarter from midnight
