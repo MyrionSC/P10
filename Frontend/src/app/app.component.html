@@ -1,4 +1,4 @@
-<div (keyup.enter)="route()" class="outerContainer">
+<div class="outerContainer">
     <div class="formsContainer">
         <p class="p">Origin</p>
         <input autofocus class="input location-input" [(ngModel)]="origin"><br>
@@ -6,13 +6,14 @@
         <input class="input location-input" [(ngModel)]="dest"><br>
         <button type="submit" class="button calculate-button"
                 [ngClass]="{'is-loading': routeLoading}"
-                (click)="route()">Calculate route</button>
+                (click)="getRoute()"
+                >Calculate route</button>
         <div class="navbar-divider"></div>
 
         <div *ngIf="routeLoaded" class="box resultsContainer">
             <!-- example results-->
-            <p><i class="mdi mdi-map-marker-distance" aria-hidden="true"></i> {{routeDistance | number:'0.0-3':'en-DK' }} km</p>
-            <p><i class="mdi mdi-flash" aria-hidden="true"></i> {{routeEnergyCost | number:'0.0-3':'en-DK'}} kWh</p>
+            <p><i class="mdi mdi-map-marker-distance" aria-hidden="true"></i> {{routeDistance | number:'0.0-2':'en-DK' }} km</p>
+            <p><i class="mdi mdi-flash" aria-hidden="true"></i> {{routeEnergyCost | number:'0.0-2':'en-DK'}} kWh</p>
             <!--<p><i class="mdi mdi-clock-outline" aria-hidden="true"></i> 1:23</p>-->
         </div>
     </div>

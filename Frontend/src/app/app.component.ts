@@ -31,11 +31,12 @@ export class AppComponent implements OnInit {
     routeLoading = false;
     routeLoaded = false;
 
-    route() {
-        const url = this.hostUrl + '/route?origin=' + this.origin + '&dest=' + this.dest;
+    getRoute() {
+        const url = this.hostUrl + '/getRoute?origin=' + this.origin + '&dest=' + this.dest;
         console.log('GET: ' + url);
         this.routeLoading = true;
         this.http.get(url).subscribe(res => {
+            console.log('printed twice?');
             this.routeJson = res;
             this.routeEnergyCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_cost / 1000;
             this.routeDistance = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_length / 1000;
