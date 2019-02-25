@@ -1,7 +1,8 @@
 from LocalSettings import main_db
 import pandas as pd
 import numpy as np
-from configs import *
+import Configuration
+from Configuration import paths
 from keras.models import model_from_json
 from sklearn.preprocessing import StandardScaler
 import time
@@ -29,7 +30,8 @@ def query(qry):
 
 
 # Save a model to disk
-def save_model(model, filename):
+def save_model(model, config):
+    filename = paths['modelDir'] + Configuration.model_name(config)
     # Serialize model structure as json file
     model_json = model.to_json()
     if not os.path.isdir("saved_models"):
@@ -43,7 +45,8 @@ def save_model(model, filename):
 
 
 # Load a model from disk
-def load_model(filename):
+def load_model(config):
+    filename = paths['modelDir'] + Configuration.model_name(config)
     # Load model structure json
     with open(filename + '.json', 'r') as json_file:
         loaded_model_json = json_file.read()
@@ -57,7 +60,7 @@ def load_model(filename):
 
 
 # Read data from csv file at path
-def read_data(path, scale=False, re_scale=False, cyclicquarter=False, use_speed_prediction=False):
+def read_data(path, config, scale=False, re_scale=False, cyclicquarter=False, use_speed_prediction=False):
     # Get the base data from the csv
     df = get_base_data(path)
 
@@ -89,7 +92,7 @@ def read_data(path, scale=False, re_scale=False, cyclicquarter=False, use_speed_
 
 
 # Read the base dataframe
-def get_base_data(path):
+def get_base_data(path, config):
     print("Reading data from " + path)
     start_time = time.time()
 
@@ -105,12 +108,12 @@ def get_base_data(path):
 
 
 # Get speed predictions from a file and add them to the dataframe
-def get_speed_predictions(df):
-    print("Reading speed predictions from " + paths['speedPredPath'])
+def get_speed_predictions(df, config):
+    print("Reading speed predictions from " + paths['speedPredPath'] + config['speed_prediction_file'])
     start_time = time.time()
 
     # Read the speed predictions from the csv file
-    speed_df = pd.read_csv(paths['speedPredPath'], header=0, sep=',')
+    speed_df = pd.read_csv(paths['speedPredPath'] + config['speed_prediction_file'], header=0, sep=',')
 
     # Merge the speed predictions into the main dataframe
     df = df.merge(speed_df, left_on='mapmatched_id', right_on='mapmatched_id')
@@ -170,12 +173,12 @@ def get_cats(key):
 
 
 # Get embeddings and add them to the dataframe
-def get_embeddings(df):
-    print('Reading embeddings from ' + embedding_path())
+def get_embeddings(df, config):
+    print('Reading embeddings from ' + embedding_path(config))
     start_time = time.time()
 
     # Read embeddings from the csv file
-    emb_df = read_embeddings()
+    emb_df = read_embeddings(config)
 
     # Merge embeddings into main dataframe
     df = df.merge(emb_df, left_on='segmentkey', right_on=emb_df.index)
@@ -190,7 +193,7 @@ def get_embeddings(df):
 
 
 # Read embeddings from disk
-def read_embeddings():
+def read_embeddings(config):
     # Get the number of dimensions of the embeddings
     with open(embedding_path(), 'r') as f:
         dim = int(f.readline().split(" ")[1].strip())
@@ -231,7 +234,7 @@ def convert_quarter(df):
 
 
 # Extract the label column from the features
-def extract_label(df):
+def extract_label(df, config):
     print("Extracting label")
     start_time = time.time()
 
@@ -245,7 +248,7 @@ def extract_label(df):
 
 
 # Scale the dataframe
-def scale_df(df, re_scale):
+def scale_df(df, config, re_scale):
     start_time = time.time()
 
     # Cache the column names of the dataframe.
@@ -253,10 +256,10 @@ def scale_df(df, re_scale):
 
     # If a scaler exists and creating a new scaler is not explicitly requested, load the existing scaler
     if not re_scale and os.path.isfile(scaler_path()):
-        scaler = load_scaler()
+        scaler = load_scaler(config)
     # Otherwise, create a new scaler
     else:
-        scaler = create_scaler(df)
+        scaler = create_scaler(df, config)
 
     # Scale the dataframe
     df = pd.DataFrame(scaler.transform(df))
@@ -270,16 +273,16 @@ def scale_df(df, re_scale):
 
 
 # Create a new scaler
-def create_scaler(df):
-    print("Creating scaler in " + scaler_path())
+def create_scaler(df, config):
+    print("Creating scaler in " + scaler_path(config))
     scaler = StandardScaler()
     scaler.fit(df)
-    save_scaler(scaler)
+    save_scaler(scaler, config)
     return scaler
 
 
 # Save the scaler
-def save_scaler(scaler):
+def save_scaler(scaler, config):
     if not os.path.isdir(paths['scalerDir']):
         os.makedirs(paths['scalerDir'])
 
@@ -290,14 +293,14 @@ def save_scaler(scaler):
     scaler_params['n_samples_seen_'] = int(scaler.n_samples_seen_)
     scaler_json = json.dumps(scaler_params)
 
-    with open(scaler_path(), "w") as f:
+    with open(scaler_path(config), "w") as f:
         f.write(scaler_json)
 
 
 # Load an existing scaler
-def load_scaler():
-    print("Loading scaler from " + scaler_path())
-    with open(scaler_path()) as f:
+def load_scaler(config):
+    print("Loading scaler from " + scaler_path(config))
+    with open(scaler_path(config)) as f:
         scaler_params = json.load(f)
 
     scaler = StandardScaler()
@@ -309,7 +312,7 @@ def load_scaler():
 
 
 # Return the path to the embeddings
-def embedding_path():
+def embedding_path(config):
     if config["embedding"] is not None:
         return '{0}{1}.emb'.format(paths['embeddingDir'], config['embedding'])
     else:
@@ -317,7 +320,7 @@ def embedding_path():
 
 
 # Return the path to the scaler
-def scaler_path():
+def scaler_path(config):
     return '{0}{1}.json'.format(paths['scalerDir'], config['scaler_name'])
 
 

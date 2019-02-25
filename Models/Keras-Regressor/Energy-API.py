@@ -1,5 +1,5 @@
 from LocalSettings import database
-from configs import *
+from Configuration import *
 import pandas as pd
 from Utils import load_model, current_time, one_hot, scale_df, embedding_path, merge_embeddings, query
 import time

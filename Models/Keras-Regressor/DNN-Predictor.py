@@ -1,5 +1,5 @@
 from Utils import read_data, load_model
-from configs import *
+from Configuration import *
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from math import sqrt
 import pandas as pd

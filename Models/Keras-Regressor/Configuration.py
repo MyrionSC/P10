@@ -6,7 +6,7 @@ paths = {
     'scalerDir': "./saved_scaler/",
     'historyDir': "./saved_history/",
     'embeddingDir': "./saved_embeddings/",
-    'speedPredPath': "../data/speed_prediction.csv"
+    'speedPredPath': "../data/"
 }
 
 embedding_config = {
@@ -49,11 +49,13 @@ speed_config = {
     'target_feature': 'speed',
     'remove_features': ['min_from_midnight', 'ev_wh', 'acceleration', 'deceleration', 'headwind_speed', 'weekday'],
     'feature_order': ['incline', 'segment_length', 'temperature', 'speedlimit', 'quarter', 'categoryid', 'month'],
-    'model_name': 'SpeedModel-'
+    'model_name': 'SpeedModel-',
+    'batch_dir': "TestOutput"
 }
 
 energy_config = {
     'embedding': "node2vec-64d",
+    'speed_predictions_file': "speed_prediction.csv",
     'batch_size': 8192,
     'epochs': 20,
     'iterations': 1,
@@ -67,17 +69,14 @@ energy_config = {
     'target_feature': 'ev_wh',
     'remove_features': ['min_from_midnight', 'acceleration', 'speed', 'deceleration', 'headwind_speed', 'speedlimit', 'quarter', 'categoryid', 'month', 'weekday'],
     'feature_order': ['incline', 'segment_length', 'speed_prediction', 'temperature'],
-    'model_name': 'Model-'
+    'model_name_base': 'Model-',
+    'batch_dir': "TestOutput"
 }
 
-speed_config['model_name'] += 'epochs={0},hidden_layers={1},cells_per_layer={2},embeddings={3}'.format(speed_config['epochs'], speed_config['hidden_layers'], speed_config['cells_per_layer'], speed_config['embedding'])
-energy_config['model_name'] += 'epochs={0},hidden_layers={1},cells_per_layer={2},embeddings={3}'.format(energy_config['epochs'], energy_config['hidden_layers'], energy_config['cells_per_layer'], energy_config['embedding'])
-speed_config['scaler_name'] = speed_config['model_name'] + '_Scaler'
-energy_config['scaler_name'] = energy_config['model_name'] + '_Scaler'
 
-if speed_predictor:
-    config = speed_config
-else:
-    config = energy_config
+def model_name(config):
+    return config('model_name_base') + 'epochs={0},hidden_layers={1},cells_per_layer={2},embeddings={3}'.format(config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])
 
-def_features = ['batch_size', 'epochs', 'hidden_layers', 'cells_per_layer', 'initial_dropout', 'dropout', 'activation', 'kernel_initializer', 'optimizer', 'target_feature', 'remove_features']
+
+def scaler_name(config):
+    return model_name(config) + '_Scaler'
