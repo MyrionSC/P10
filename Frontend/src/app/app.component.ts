@@ -22,6 +22,9 @@ export class AppComponent implements OnInit {
     origin: bigint;
     dest: bigint;
     routeJson: any;
+    routeEnergyCost: number;
+    routeDistance: number;
+
     hostUrl: string;
 
     // visual bools
@@ -34,6 +37,8 @@ export class AppComponent implements OnInit {
         this.routeLoading = true;
         this.http.get(url).subscribe(res => {
             this.routeJson = res;
+            this.routeEnergyCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_cost / 1000;
+            this.routeDistance = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_length / 1000;
             this.layers[0] = geoJSON(this.routeJson);
             this.map.fitBounds(this.layers[0].getBounds());
             this.routeLoaded = true;

@@ -11,9 +11,9 @@
 
         <div *ngIf="routeLoaded" class="box resultsContainer">
             <!-- example results-->
-            <p><i class="mdi mdi-map-marker-distance" aria-hidden="true"></i> 12.2 km</p>
-            <p><i class="mdi mdi-flash" aria-hidden="true"></i> 42.34 kwh</p>
-            <p><i class="mdi mdi-clock-outline" aria-hidden="true"></i> 1:23</p>
+            <p><i class="mdi mdi-map-marker-distance" aria-hidden="true"></i> {{routeDistance | number:'0.0-3':'en-DK' }} km</p>
+            <p><i class="mdi mdi-flash" aria-hidden="true"></i> {{routeEnergyCost | number:'0.0-3':'en-DK'}} kWh</p>
+            <!--<p><i class="mdi mdi-clock-outline" aria-hidden="true"></i> 1:23</p>-->
         </div>
     </div>
 
