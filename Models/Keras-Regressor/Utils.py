@@ -1,7 +1,7 @@
 from LocalSettings import main_db
 import pandas as pd
 import numpy as np
-from config import *
+from configs import *
 from keras.models import model_from_json
 from sklearn.preprocessing import StandardScaler
 import time

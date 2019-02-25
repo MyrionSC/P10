@@ -1,12 +1,12 @@
 from Utils import read_data, load_model, query, one_hot, read_embeddings, merge_embeddings
-from config import *
+from configs import *
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from math import sqrt
 import pandas as pd
 from Metrics import rmse
 import os
 import json
-from config import *
+from configs import *
 
 month = '2'
 quarter = '47'
