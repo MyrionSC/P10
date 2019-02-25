@@ -82,7 +82,7 @@ def read_data(path, scale=False, re_scale=False, cyclicquarter=False, use_speed_
     if scale:
         features = scale_df(features, re_scale)
 
-    return features, label, len(list(features)), len(list(label))
+    return features, label
 
 
 # Read the base dataframe
@@ -97,7 +97,7 @@ def get_base_data(path):
     df.drop(config['remove_features'] + ['trip_id', 'trip_segmentno'], axis=1, inplace=True)
 
     print("Dataframe shape: %s" % str(df.shape))
-    print("Time %s\n" % (time.time() - start_time))
+    print("Time elapsed: %s seconds\n" % (time.time() - start_time))
     return df
 
 
@@ -115,7 +115,7 @@ def get_speed_predictions(df):
     df.reset_index(drop=True, inplace=True)
 
     print("Dataframe shape: %s" % str(df.shape))
-    print("Time elapsed: %s\n" % (time.time() - start_time))
+    print("Time elapsed: %s seconds\n" % (time.time() - start_time))
     return df
 
 
@@ -137,7 +137,7 @@ def one_hot(df):
         df = one_hot_encode_column(df, 'weekday')
 
     print("Dataframe shape: %s" % str(df.shape))
-    print("Time elapsed: %s\n" % (time.time() - start_time))
+    print("Time elapsed: %s seconds\n" % (time.time() - start_time))
     return df
 
 
@@ -183,7 +183,7 @@ def get_embeddings(df):
     df.reset_index(drop=True, inplace=True)
 
     print("Dataframe shape: %s" % str(df.shape))
-    print("Time %s\n" % (time.time() - start_time))
+    print("Time elapsed: %s seconds\n" % (time.time() - start_time))
     return df
 
 
@@ -224,7 +224,7 @@ def convert_quarter(df):
     df['cos_quarter'] = cos
 
     print("Dataframe shape: %s" % str(df.shape))
-    print("Time %s\n" % (time.time() - start_time))
+    print("Time elapsed: %s seconds\n" % (time.time() - start_time))
     return df
 
 
@@ -263,7 +263,7 @@ def scale_df(df, re_scale):
     df.rename(lambda x: columns[x], axis='columns', inplace=True)
 
     print("Dataframe shape: %s" % str(df.shape))
-    print("Time %s\n" % (time.time() - start_time))
+    print("Time elapsed: %s seconds\n" % (time.time() - start_time))
     return df
 
 
