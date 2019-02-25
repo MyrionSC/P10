@@ -1,9 +1,9 @@
 import json
 import db
-import pprint
 import urllib.request
-import datetime
-from xmltodict import parse as xmlParse, unparse as xmlUnparse
+import urllib.parse
+from xmltodict import parse as xmlParse
+from Utils import urlAsciiEncode
 
 
 def parseYr():
@@ -28,21 +28,38 @@ def RetrieveTemperature(segmentId: int) -> int:
     # retrieve data for county from yr
     countyUrlDict = json.loads(open("misc-data/TemperaturePlaceUrl.json").read())
     url = countyUrlDict[weatherStationCounty]
-    weatherDataDict = xmlParse(urllib.request.urlopen(url).read())
-
-    # with open("weatherdump.json", "w+") as file:  # creates / overwrites file
-    #     file.write(json.dumps(weatherDataDict, indent=4))
-    # with open("weatherdump.json", "r") as file:
-    #     weatherDataDict = json.loads(file.read())
+    weatherDataDict = xmlParse(urllib.request.urlopen(urlAsciiEncode(url)).read())
 
     # get the temperature now
-    return int(weatherDataDict['weatherdata']['forecast']['tabular']['time'][0]["temperature"]["@value"])
+    temperature = int(weatherDataDict['weatherdata']['forecast']['tabular']['time'][0]["temperature"]["@value"])
 
+    print("Weatherstation for id " + str(segmentId) + " is " + weatherStationCounty + ". Temperature is " + str(temperature))
+
+    return int(temperature)
+
+
+def getCoordinates():
+    countyUrlDict = json.loads(open("misc-data/TemperaturePlaceUrl.json").read())
+    weatherstationLatLongDict = {}
+
+    for key, value in dict.items(countyUrlDict):
+        print(key, value)
+        result = urllib.request.urlopen(urlAsciiEncode(value)).read()
+        weatherDataDict = xmlParse(result)
+        lat = weatherDataDict['weatherdata']['location']['location']['@latitude']
+        long = weatherDataDict['weatherdata']['location']['location']['@longitude']
+        weatherstationLatLongDict[key] = (lat, long)
+
+    with open("misc-data/weatherstation-lat-long.txt", "w+") as file:  # creates / overwrites file
+        for key, value in weatherstationLatLongDict.items():
+            file.write(key + " " + value[0] + " " + value[1] + "\n")
 
 
 
 if __name__ == '__main__':
-    print("temperature: " + str(RetrieveTemperature(2)))
+    pass
+    # print("temperature: " + str(RetrieveTemperature(1)))
     # parseYr()
+    # getCoordinates()
 
 
