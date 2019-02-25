@@ -6,6 +6,7 @@ import pandas as pd
 from Metrics import rmse
 import os
 import json
+import time
 
 
 def load_columns(filename, columns=[], index=None):
@@ -29,7 +30,13 @@ def load_columns(filename, columns=[], index=None):
     return df
 
 
-features, labels, num_features, num_labels, trip_ids = read_data(paths['dataPath'], config['target_feature'], config['remove_features'], scale=True, use_speed_prediction=not speed_predictor)
+print("")
+print("------ Reading data ------")
+start_time = time.time()
+features, labels, num_features, num_labels, trip_ids = read_data(paths['dataPath'], scale=True,
+                                                                 use_speed_prediction=not speed_predictor)
+print("Data read, time elapsed: %s" % (time.time() - start_time))
+
 modelPath = (paths['modelDir'] + config['model_name'])
 
 model = load_model(modelPath)

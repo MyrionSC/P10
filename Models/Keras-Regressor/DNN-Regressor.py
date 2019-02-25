@@ -13,12 +13,19 @@ set_random_seed(1337)  # TensorFlow seed
 
 history_collection = list()
 
-print("Embedding path: " + embedding_path())
-print("Removed features: " + ', '.join(config['remove_features']))
-X_train, Y_train, num_features, num_labels, trip_ids_train \
-    = read_data(paths['trainPath'], config['target_feature'], config['remove_features'], scale=True, re_scale=True, use_speed_prediction=not speed_predictor)
-X_validation, Y_validation, _, _, trip_ids_validation \
-    = read_data(paths['validationPath'], config['target_feature'], config['remove_features'], scale=True, use_speed_prediction=not speed_predictor)
+print("")
+print("------ Reading training data ------")
+start_time = time.time()
+X_train, Y_train, num_features, num_labels = read_data(paths['trainPath'], scale=True, re_scale=True,
+                                                       use_speed_prediction=not speed_predictor)
+print("Training data read, time elapsed: %s" % (time.time() - start_time))
+
+print("")
+print("------ Reading validation data ------")
+start_time = time.time()
+X_validation, Y_validation, _, _ = read_data(paths['validationPath'], scale=True,
+                                             use_speed_prediction=not speed_predictor)
+print("Validation data read, time elapsed: %s" % (time.time() - start_time))
 
 # Create estimator
 estimator = DNNRegressor(num_features, num_labels, config['hidden_layers'], config['cells_per_layer'],

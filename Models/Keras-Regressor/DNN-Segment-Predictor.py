@@ -53,7 +53,7 @@ def read_road_map_data():
 
 def do_speed_predictions(df, emb_df):
     speed_features = df[['segmentkey'] + speed_config['feature_order']]
-    speed_features = one_hot(speed_features, speed_config)
+    speed_features = one_hot(speed_features)
     speed_features = merge_embeddings(speed_features, emb_df)
     speed_features.sort_values('segmentkey', inplace=True)
     speed_features.set_index(['segmentkey'], inplace=True)
@@ -67,7 +67,7 @@ def do_speed_predictions(df, emb_df):
 def do_energy_predictions(df, emb_df, speed_df):
     df['speed_prediction'] = speed_df['speed_prediction']
     energy_features = df[['segmentkey'] + energy_config['feature_order']]
-    energy_features = one_hot(energy_features, energy_config)
+    energy_features = one_hot(energy_features)
     energy_features = merge_embeddings(energy_features, emb_df)
     energy_features.sort_values('segmentkey', inplace=True)
     energy_features.set_index(['segmentkey'], inplace=True)

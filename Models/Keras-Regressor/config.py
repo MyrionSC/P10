@@ -6,7 +6,7 @@ paths = {
     'scalerDir': "./saved_scaler/",
     'historyDir': "./saved_history/",
     'embeddingDir': "./saved_embeddings/",
-    'embeddingFile': "node2vec-64d"
+    'speedPredPath': "../data/speed_prediction.csv"
 }
 
 embedding_config = {
@@ -35,7 +35,7 @@ embedding_config = {
 speed_predictor = False
 
 speed_config = {
-    'embeddings_used': 'LINE',
+    'embedding': "node2vec-64d",
     'batch_size': 8192,
     'epochs': 20,
     'iterations': 1,
@@ -46,14 +46,14 @@ speed_config = {
     'activation': 'softsign',
     'kernel_initializer': 'normal',
     'optimizer': 'adamax',
-    'target_feature': ['speed'],
+    'target_feature': 'speed',
     'remove_features': ['min_from_midnight', 'ev_wh', 'acceleration', 'deceleration', 'headwind_speed', 'weekday'],
     'feature_order': ['incline', 'segment_length', 'temperature', 'speedlimit', 'quarter', 'categoryid', 'month'],
     'model_name': 'SpeedModel-'
 }
 
 energy_config = {
-    'embeddings_used': 'LINE',
+    'embedding': "node2vec-64d",
     'batch_size': 8192,
     'epochs': 20,
     'iterations': 1,
@@ -64,14 +64,14 @@ energy_config = {
     'activation': 'relu',
     'kernel_initializer': 'normal',
     'optimizer': 'adamax',
-    'target_feature': ['ev_wh'],
+    'target_feature': 'ev_wh',
     'remove_features': ['min_from_midnight', 'acceleration', 'speed', 'deceleration', 'headwind_speed', 'speedlimit', 'quarter', 'categoryid', 'month', 'weekday'],
     'feature_order': ['incline', 'segment_length', 'speed_prediction', 'temperature'],
     'model_name': 'Model-'
 }
 
-speed_config['model_name'] += 'epochs={0},hidden_layers={1},cells_per_layer={2},embeddings={3}'.format(speed_config['epochs'], speed_config['hidden_layers'], speed_config['cells_per_layer'], paths['embeddingFile'])
-energy_config['model_name'] += 'epochs={0},hidden_layers={1},cells_per_layer={2},embeddings={3}'.format(energy_config['epochs'], energy_config['hidden_layers'], energy_config['cells_per_layer'], paths['embeddingFile'])
+speed_config['model_name'] += 'epochs={0},hidden_layers={1},cells_per_layer={2},embeddings={3}'.format(speed_config['epochs'], speed_config['hidden_layers'], speed_config['cells_per_layer'], speed_config['embedding'])
+energy_config['model_name'] += 'epochs={0},hidden_layers={1},cells_per_layer={2},embeddings={3}'.format(energy_config['epochs'], energy_config['hidden_layers'], energy_config['cells_per_layer'], energy_config['embedding'])
 speed_config['scaler_name'] = speed_config['model_name'] + '_Scaler'
 energy_config['scaler_name'] = energy_config['model_name'] + '_Scaler'
 
