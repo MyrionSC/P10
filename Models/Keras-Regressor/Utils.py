@@ -11,6 +11,7 @@ import datetime
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from pandas.api.types import CategoricalDtype
+from Metrics import rmse
 
 
 # Execute a query against the database
@@ -51,6 +52,7 @@ def load_model(filename):
     # load weights into model
     loaded_model.load_weights(filename + '.h5')
     print('Model loaded: ' + filename + '!')
+    loaded_model.compile(loss='mean_squared_error', optimizer=config['optimizer'], metrics=['mae', 'mse', 'mape', rmse])
     return loaded_model
 
 
@@ -70,6 +72,7 @@ def read_data(path, scale=False, re_scale=False, cyclicquarter=False, use_speed_
     # Read and merge embeddings into dataframe
     if config['embedding'] is not None:
         df = get_embeddings(df)
+        df.drop(['mapmatched_id', 'segmentkey'], axis=1, inplace=True)
 
     # Convert quarter column to a sinusoidal representation if specified
     if cyclicquarter:
@@ -94,7 +97,7 @@ def get_base_data(path):
     df = pd.read_csv(path, header=0)
 
     # Remove redundant columns
-    df.drop(config['remove_features'] + ['trip_id', 'trip_segmentno'], axis=1, inplace=True)
+    df.drop(config['remove_features'] + ['trip_id', 'trip_segmentno', 'startpoint', 'endpoint'], axis=1, inplace=True)
 
     print("Dataframe shape: %s" % str(df.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))
@@ -179,7 +182,6 @@ def get_embeddings(df):
 
     # Sort dataframe and drop redundant columns
     df.sort_values('mapmatched_id', inplace=True)
-    df.drop(['mapmatched_id', 'segmentkey'], axis=1, inplace=True)
     df.reset_index(drop=True, inplace=True)
 
     print("Dataframe shape: %s" % str(df.shape))

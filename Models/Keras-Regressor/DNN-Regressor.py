@@ -1,31 +1,41 @@
-from Utils import save_model, read_data, embedding_path
+from Utils import save_model, read_data, load_model
 from Model import DNNRegressor
-from config import paths, config, def_features, speed_predictor
+from config import paths, config, speed_predictor
 from tensorflow import set_random_seed
 from numpy.random import seed
 from sklearn.metrics import r2_score
 import time
 import json
 import os
+import sys
 
 seed(1337)  # Numpy seed
 set_random_seed(1337)  # TensorFlow seed
 
 
-def read_data_sets():
+def read_predicting_data_sets():
+    print("")
+    print("------ Reading data ------")
+    start_time = time.time()
+    X, Y = read_data(paths['dataPath'], scale=True, use_speed_prediction=not speed_predictor)
+    print("Data read")
+    print("Time elapsed: %s" % (time.time() - start_time))
+
+    return X, Y
+
+
+def read_training_data_sets():
     print("")
     print("------ Reading training data ------")
     start_time = time.time()
-    X_train, Y_train = read_data(paths['trainPath'], scale=True, re_scale=True,
-                                                           use_speed_prediction=not speed_predictor)
+    X_train, Y_train = read_data(paths['trainPath'], scale=True, re_scale=True, use_speed_prediction=not speed_predictor)
     print("Training data read")
     print("Time elapsed: %s" % (time.time() - start_time))
 
     print("")
     print("------ Reading validation data ------")
     start_time = time.time()
-    X_validation, Y_validation = read_data(paths['validationPath'], scale=True,
-                                                 use_speed_prediction=not speed_predictor)
+    X_validation, Y_validation = read_data(paths['validationPath'], scale=True, use_speed_prediction=not speed_predictor)
     print("Validation data read")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
 
@@ -52,18 +62,18 @@ def train_model(X_train, Y_train, X_validation, Y_validation):
     return estimator, history
 
 
-def calculate_results(estimator, history, X_train, Y_train, X_validation, Y_validation):
+def calculate_results(estimator, X, Y):
     print("")
     print("------ Calculating R2-score ------")
     start_time = time.time()
-    prediction = estimator.predict(X_train, batch_size=config['batch_size'], verbose=1)
-    val_prediction = estimator.predict(X_validation, batch_size=config['batch_size'], verbose=1)
-    train_r2 = r2_score(Y_train, prediction)
-    val_r2 = r2_score(Y_validation, val_prediction)
+    prediction = estimator.predict(X, batch_size=config['batch_size'], verbose=1)
+    r2 = r2_score(Y, prediction)
     print("")
-    print("Train R2: {:f}".format(train_r2) + "  -  Validation R2: {:f}".format(val_r2))
     print("Time elapsed: %s seconds" % (time.time() - start_time))
+    return r2
 
+
+def save_history(history, train_r2, val_r2):
     print("")
     print("------ Saving history ------")
     start_time = time.time()
@@ -79,6 +89,22 @@ def calculate_results(estimator, history, X_train, Y_train, X_validation, Y_vali
 
 
 if __name__ == "__main__":
-    X_train, Y_train, X_validation, Y_validation = read_data_sets()
-    model, history = train_model(X_train, Y_train, X_validation, Y_validation)
-    calculate_results(model, history, X_train, Y_train, X_validation, Y_validation)
+    args = sys.argv[1:]
+    train = True
+    if len(args) > 0 and args[0] == "predict":
+        train = False
+
+    if train:
+        X_train, Y_train, X_validation, Y_validation = read_training_data_sets()
+        model, history = train_model(X_train, Y_train, X_validation, Y_validation)
+        train_r2 = calculate_results(model, X_train, Y_train)
+        val_r2 = calculate_results(model, X_validation, Y_validation)
+        print("")
+        print("Train R2: {:f}".format(train_r2) + "  -  Validation R2: {:f}".format(val_r2))
+        save_history(train_r2, val_r2, history)
+    else:
+        X, Y = read_predicting_data_sets()
+        model = load_model(paths['modelDir'] + config['model_name'])
+        r2 = calculate_results(model, X, Y)
+        print("")
+        print("R2-score: {:f}".format(r2))
