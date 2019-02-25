@@ -25,10 +25,10 @@ def get_route(origin, dest):
                 SELECT
                     'Feature' as "type",
                     ST_AsGeoJSON(segmentgeom, 6) :: json as "geometry",
-                    json_build_object('cost', cost, 'agg_cost', agg_cost, 'length', meters, 'agg_length', agg_meters) :: json as "properties"
+                    json_build_object('cost', cost, 'agg_cost', agg_cost, 'length', length, 'agg_length', agg_length) :: json as "properties"
                 FROM (
                     SELECT
-                        segmentgeom, pgr.cost, pgr.agg_cost, meters, sum(meters) OVER (ORDER BY pgr.path_seq) as agg_meters
+                        segmentgeom, pgr.cost, pgr.agg_cost, length, sum(length) OVER (ORDER BY pgr.path_seq) as agg_length
                     FROM pgr_dijkstra({2}::text, {0}::bigint, {1}::bigint) pgr
                     JOIN maps.routing osm
                     ON pgr.edge = osm.segmentkey
