@@ -32,7 +32,7 @@ export class AppComponent implements OnInit {
     routeLoaded = false;
 
     getRoute() {
-        const url = this.hostUrl + '/getRoute?origin=' + this.origin + '&dest=' + this.dest;
+        const url = this.hostUrl + '/route?origin=' + this.origin + '&dest=' + this.dest;
         console.log('GET: ' + url);
         this.routeLoading = true;
         this.http.get(url).subscribe(res => {
