@@ -1,7 +1,7 @@
 from Utils import save_model, read_data, load_model, printparams
 from Model import DNNRegressor
 import Configuration
-from Configuration import paths, model_path, speed_predictor
+from Configuration import paths, model_path
 from tensorflow import set_random_seed
 from numpy.random import seed
 from sklearn.metrics import r2_score
@@ -100,6 +100,7 @@ def train(config):
     print("")
     print("Train R2: {:f}".format(train_r2) + "  -  Validation R2: {:f}".format(val_r2))
     save_history(history, train_r2, val_r2, config)
+    return history
 
 
 def predict(config):

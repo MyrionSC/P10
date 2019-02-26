@@ -1,5 +1,6 @@
 import DNN_Regressor as DNN
 import Configuration
+from Plots import plot_history
 
 
 def generate_configs():
@@ -20,4 +21,5 @@ def generate_configs():
 configs = generate_configs()
 
 for config in configs:
-    DNN.train(config)
+    history = DNN.train(config)
+    plot_history(history.history, config)

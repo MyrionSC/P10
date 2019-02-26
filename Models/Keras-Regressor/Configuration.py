@@ -32,8 +32,6 @@ embedding_config = {
     }
 }
 
-speed_predictor = False
-
 speed_config = {
     'embedding': "node2vec-64d",
     'batch_size': 8192,
