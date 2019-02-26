@@ -166,7 +166,7 @@ def one_hot_encode_column(df, column_key):
 
 # Get the possible categories of a feature based on the column key
 def get_cats(key):
-    if key == 'categorid':
+    if key == 'categoryid':
         return ['10', '11', '15', '16', '20', '21', '25', '26', '30', '31', '35', '40', '45', '50', '55', '60', '65']
     elif key == 'month':
         return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
