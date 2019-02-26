@@ -1,4 +1,4 @@
-from Utils import save_model, read_data, load_model
+from Utils import save_model, read_data, load_model, printparams
 from Model import DNNRegressor
 import Configuration
 from Configuration import paths, model_path, speed_predictor
@@ -18,7 +18,7 @@ def read_predicting_data_sets(config):
     print("")
     print("------ Reading data ------")
     start_time = time.time()
-    X, Y = read_data(paths['dataPath'], config, scale=True, use_speed_prediction=not speed_predictor)
+    X, Y = read_data(paths['dataPath'], config)
     print("Data read")
     print("Time elapsed: %s" % (time.time() - start_time))
 
@@ -26,17 +26,20 @@ def read_predicting_data_sets(config):
 
 
 def read_training_data_sets(config):
+    print()
+    printparams(config)
+
     print("")
     print("------ Reading training data ------")
     start_time = time.time()
-    X_train, Y_train = read_data(paths['trainPath'], config, scale=True, re_scale=True, use_speed_prediction=not speed_predictor)
+    X_train, Y_train = read_data(paths['trainPath'], config, re_scale=True)
     print("Training data read")
     print("Time elapsed: %s" % (time.time() - start_time))
 
     print("")
     print("------ Reading validation data ------")
     start_time = time.time()
-    X_validation, Y_validation = read_data(paths['validationPath'], config, scale=True, use_speed_prediction=not speed_predictor)
+    X_validation, Y_validation = read_data(paths['validationPath'], config)
     print("Validation data read")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
 

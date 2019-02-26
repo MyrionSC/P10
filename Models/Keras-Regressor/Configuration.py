@@ -47,17 +47,18 @@ speed_config = {
     'kernel_initializer': 'normal',
     'optimizer': 'adamax',
     'target_feature': 'speed',
-    'remove_features': ['min_from_midnight', 'ev_wh', 'acceleration', 'deceleration', 'headwind_speed', 'weekday'],
-    'feature_order': ['incline', 'segment_length', 'temperature', 'speedlimit', 'quarter', 'categoryid', 'month'],
+    'features_used': ['incline', 'segment_length', 'temperature', 'speedlimit', 'quarter', 'categoryid', 'month'],
     'model_name': 'SpeedModel-',
-    'batch_dir': "TestOutput"
+    'batch_dir': "TestOutput",
+    'speed_prediction_file': "speed_prediction.csv",
+    'scale': True,
+    'cyclic_quarter': False
 }
 
 energy_config = {
     'embedding': "node2vec-64d",
-    'speed_predictions_file': "speed_prediction.csv",
     'batch_size': 8192,
-    'epochs': 20,
+    'epochs': 10,
     'iterations': 1,
     'hidden_layers': 6,
     'cells_per_layer': 1000,
@@ -67,16 +68,17 @@ energy_config = {
     'kernel_initializer': 'normal',
     'optimizer': 'adamax',
     'target_feature': 'ev_wh',
-    'remove_features': ['min_from_midnight', 'acceleration', 'speed', 'deceleration', 'headwind_speed', 'speedlimit', 'quarter', 'categoryid', 'month', 'weekday'],
-    'feature_order': ['incline', 'segment_length', 'speed_prediction', 'temperature'],
+    'features_used': ['incline', 'segment_length', 'speed_prediction', 'temperature'],
     'model_name_base': 'Model-',
-    'batch_dir': "TestOutput",
-    'speed_prediction_file': "speed_prediction.csv"
+    'batch_dir': "TestOutput/",
+    'speed_prediction_file': "speed_prediction.csv",
+    'scale': True,
+    'cyclic_quarter': False
 }
 
 
 def model_dir_name(config):
-    return config['model_name_base'] + 'epochs_{0}-hidden_layers_{1}-cells_per_layer_{2}-embeddings_{3}/'.format(config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])
+    return config['batch_dir'] + config['model_name_base'] + 'epochs_{0}-hidden_layers_{1}-cells_per_layer_{2}-embeddings_{3}/'.format(config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])
 
 
 def model_path(config):

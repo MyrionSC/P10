@@ -60,16 +60,17 @@ def load_model(config):
 
 
 # Read data from csv file at path
-def read_data(path, config, scale=False, re_scale=False, cyclicquarter=False, use_speed_prediction=False):
+def read_data(path, config, re_scale=False):
     # Get the base data from the csv
     df = get_base_data(path, config)
 
     # If speed predictions are set to be used, include them
-    if use_speed_prediction:
+    if 'speed_prediction' in config['features_used']:
         df = get_speed_predictions(df, config)
 
     # One hot encode categorical features
-    if 'month' in list(df) or 'weekday' in list(df) or 'categoryid' in list(df):
+    if 'month' in config['features_used'] or 'weekday' in config['features_used']\
+            or 'categoryid' in config['features_used']:
         df = one_hot(df)
 
     # Read and merge embeddings into dataframe
@@ -78,14 +79,14 @@ def read_data(path, config, scale=False, re_scale=False, cyclicquarter=False, us
         df.drop(['mapmatched_id', 'segmentkey'], axis=1, inplace=True)
 
     # Convert quarter column to a sinusoidal representation if specified
-    if cyclicquarter:
+    if config['cyclic_quarter']:
         df = convert_quarter(df)
 
     # Split data into features and label
     features, label = extract_label(df, config)
 
     # Scale data using a simple sklearn scaler
-    if scale:
+    if config['scale']:
         features = scale_df(features, config, re_scale)
 
     return features, label
@@ -100,7 +101,8 @@ def get_base_data(path, config):
     df = pd.read_csv(path, header=0)
 
     # Remove redundant columns
-    df.drop(config['remove_features'] + ['trip_id', 'trip_segmentno', 'startpoint', 'endpoint'], axis=1, inplace=True)
+    df = df[['segmentkey', 'mapmatched_id'] + [config['target_feature']] + [x for x in config['features_used'] if
+                                                                            not x == 'speed_prediction']]
 
     print("Dataframe shape: %s" % str(df.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))
@@ -321,6 +323,13 @@ def embedding_path(config):
         return "None"
 
 
+def printparams(config):
+    print("Parameters used:")
+    for key in sorted(config):
+        print(" - " + key + ": " + str(config[key]))
+    print()
+
+
 # Return the current month, weekday and quarter from midnight
 def current_time():
     now = datetime.datetime.today()
@@ -330,14 +339,14 @@ def current_time():
 def general_converter(num_segments, limit=None):
     qrt = "SELECT\n\ts1.trip_id,\n\ts1.trip_segmentno as supersegmentno,\n\t"
     qrt += ",\n\t".join([
-                            "s{0}.segmentkey as key{0},\n\ts{0}.categoryid as category{0},\n\ts{0}.meters as segment{0}_length".format(
-                                i + 1) for i in range(num_segments)])
+        "s{0}.segmentkey as key{0},\n\ts{0}.categoryid as category{0},\n\ts{0}.meters as segment{0}_length".format(
+            i + 1) for i in range(num_segments)])
     qrt += ",\n\t" + " + ".join(
         ["s{0}.meters".format(i + 1) for i in range(num_segments)]) + " as supersegment_length\n"
     qrt += "FROM experiments.rmp10_supersegment_info as s1\n"
     qrt += "\n".join([
-                         "JOIN experiments.rmp10_supersegment_info as s{1}\nON s{0}.trip_id = s{1}.trip_id \nAND s{1}.trip_segmentno = s{0}.trip_segmentno + 1".format(
-                             i, i + 1) for i in range(1, num_segments)])
+        "JOIN experiments.rmp10_supersegment_info as s{1}\nON s{0}.trip_id = s{1}.trip_id \nAND s{1}.trip_segmentno = s{0}.trip_segmentno + 1".format(
+            i, i + 1) for i in range(1, num_segments)])
     qrt += "\nORDER BY trip_id, supersegmentno"
     if limit is not None and isinstance(limit, int):
         qrt += "\nLIMIT " + str(limit)
