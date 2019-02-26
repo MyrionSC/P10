@@ -1,12 +1,21 @@
 import pandas as pd
+import matplotlib
+
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import *
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_absolute_error
+from Configuration import model_path
+import os
+import json
+
 
 plt.rcParams.update({'mathtext.fontset': 'stix'})
 plt.rcParams.update({'font.family': 'STIXGeneral'})
-plt.rcParams.update({'font.size' : 30})
+plt.rcParams.update({'font.size': 30})
+plt.rcParams.update({'figure.figsize': (15, 10)})
 
 categories = {1: 'ferry',
               10: 'motorway',
@@ -28,6 +37,27 @@ categories = {1: 'ferry',
               65: 'unpaved'}
 
 
+def plot_history(history, config):
+    modelpath = model_path(config)
+    if not os.path.isdir(modelpath + "plots/"):
+        os.makedirs(modelpath + "plots/")
+    for key in [x for x in sorted(history) if not x.startswith('val') and x != 'train_r2']:
+        plt.plot([x for x in range(len(history[key]))], history[key], 'b-', label="Training " + key)
+        plt.plot([x for x in range(len(history[key]))], history['val_' + key], 'r-', label="Validation " + key)
+        plt.legend()
+        plt.savefig(modelpath + "plots/" + key + ".pdf", bbox_inches='tight')
+        plt.clf()
+        plt.close()
+
+
+def load_hist(model_path):
+    with open(model_path + "/config.json", "r") as f:
+        config = json.load(f)
+    with open(model_path + "/history.json", "r") as f:
+        history = json.load(f)
+    return config, history
+
+
 def r2_count_pd(df_in):
     r2 = r2_score(df_in['y_true'], df_in['y_pred'])
     count = len(df_in)
@@ -37,8 +67,10 @@ def r2_count_pd(df_in):
 def r2_pd(df_in):
     return pd.Series(dict(r2=r2_score(df_in['y_true'], df_in['y_pred'])))
 
+
 def mae_pd(df_in):
     return pd.Series(dict(mae=mean_absolute_error(df_in['y_true'], df_in['y_pred'])))
+
 
 def r2_by_frequency(df, count=False):
     df2 = df.dropna()
