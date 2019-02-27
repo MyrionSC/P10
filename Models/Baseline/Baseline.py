@@ -31,7 +31,7 @@ class Baseline():
         self.scalars = None
 
     def fit(self, feature, label):
-    	print("Training model!")
+        print("Training model!")
         self.scalars = feature.groupby(['categoryid']).apply(lambda x: (label / x['segment_length']).mean()).to_frame('scalar')
         print("Model trained!")
 
@@ -40,7 +40,7 @@ class Baseline():
             print("Can't predict: Model not trained")
             return None
         else:
-        	print("Predicting energy consumptions!")
+            print("Predicting energy consumptions!")
             df = feature.join(self.scalars, on="categoryid")
             df['pred_ev'] = (df['segment_length'] * df['scalar'])
             print("Energy consumption predicted!")
@@ -61,11 +61,11 @@ def root_mean_squared_error(y_true, y_pred):
     return sqrt(m.mean_squared_error(y_true, y_pred))
 
 if len(sys.argv) != 2:
-	print("There must be one argument: train or predict!")
-	quit()
+    print("There must be one argument: train or predict!")
+    quit()
 if not (sys.argv[1] == 'train' or sys.argv[1] == 'predict'):
-	print("Argument must be either train or predict!")
-	quit()
+    print("Argument must be either train or predict!")
+    quit()
 
 df = pd.read_csv(data_path, header=0)
 label = df['ev_wh']
