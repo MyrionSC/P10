@@ -47,18 +47,28 @@ class Baseline():
             print("Model not trained")
         else:
             self.scalars.to_csv("model.csv", sep=",", encoding="utf8", decimal=".")
+            print("Model saved as model.csv")
 
     def load(self):
         self.scalars = pd.read_csv("model.csv", sep=",", encoding="utf8", decimal=".").set_index("categoryid")
+        print("Model loaded from model.csv")
 
 def root_mean_squared_error(y_true, y_pred):
     return sqrt(m.mean_squared_error(y_true, y_pred))
+
+if len(sys.argv) != 2:
+	print("There must be one argument: train or predict!")
+	quit()
+if not (sys.argv[1] == 'train' or sys.argv[1] == 'predict'):
+	print("Argument must be either train or predict!")
+	quit()
 
 df = pd.read_csv(data_path, header=0)
 label = df['ev_wh']
 features = df[['segment_length', 'categoryid']]
 
-if(sys.args[1] == "train"):
+
+if(sys.argv[1] == "train"):
     X_train, X_test, Y_train, Y_test = train_test_split(features, label, test_size=0.3, random_state=1337)
 
     estimator = Baseline()
@@ -80,7 +90,7 @@ if(sys.args[1] == "train"):
     print("RMSE: {:f}".format(root_mean_squared_error(Y_train, train_pred)))
     print("R2: {:f}".format(m.r2_score(Y_train, train_pred)))
 
-elif(sys.args[1] == "predict"):
+elif(sys.argv[1] == "predict"):
     model = Baseline()
     model.load()
 
