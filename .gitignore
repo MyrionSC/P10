@@ -45,6 +45,8 @@ nosetests.xml
 data
 *.edges
 *.emb
+Models/Baseline/ev_wh_prediction.csv
+Models/Baseline/model.csv
 
 # Pycharm/IntelliJ
 .idea
