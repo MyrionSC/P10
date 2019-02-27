@@ -40,7 +40,7 @@ def load_columns(filename, columns=[], index=None):
     return df
 
 
-def get_segment_features:
+def get_segment_features():
     qry = """
         SELECT segmentkey, meters_segment as segment_length, categoryid
         FROM maps.osm_dk_20140101
