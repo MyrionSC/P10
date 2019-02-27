@@ -3,8 +3,21 @@ import sklearn.metrics as m
 from sklearn.model_selection import train_test_split
 from math import sqrt
 import sys
+from LocalSettings import main_db
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 data_path = "../data/Data.csv"
+
+def query(qry, db):
+    conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(db['name'], db['user'], db['port'], db['host'], db['password']))
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute(qry)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return pd.DataFrame(rows)
+
 
 def load_columns(filename, columns=[], index=None):
     """
@@ -25,6 +38,19 @@ def load_columns(filename, columns=[], index=None):
         df.set_index('mapmatched_id', inplace=True)
 
     return df
+
+
+def get_segment_features:
+    qry = """
+        SELECT segmentkey, meters_segment as segment_length, categoryid
+        FROM maps.osm_dk_20140101
+        ORDER BY segmentkey
+    """
+
+    df = query(qry)
+
+    return df[['segmentkey']], df[['meters_segment', 'categoryid']]
+
 
 class Baseline():
     def __init__(self):
@@ -61,15 +87,16 @@ def root_mean_squared_error(y_true, y_pred):
     return sqrt(m.mean_squared_error(y_true, y_pred))
 
 if len(sys.argv) != 2:
-    print("There must be one argument: train or predict!")
+    print("There must be one argument: train, predict or segments!")
     quit()
-if not (sys.argv[1] == 'train' or sys.argv[1] == 'predict'):
-    print("Argument must be either train or predict!")
+if not (sys.argv[1] == 'train' or sys.argv[1] == 'predict' or sys.argv[1] == 'segments'):
+    print("Argument must be either train, predict or segments!")
     quit()
 
-df = pd.read_csv(data_path, header=0)
-label = df['ev_wh']
-features = df[['segment_length', 'categoryid']]
+if not sys.argv[1] == 'segments':
+    df = pd.read_csv(data_path, header=0)
+    label = df['ev_wh']
+    features = df[['segment_length', 'categoryid']]
 
 
 if(sys.argv[1] == "train"):
@@ -129,3 +156,13 @@ elif(sys.argv[1] == "predict"):
     print("R2: " + str(segment_r2))
     print("MAE: " + str(segment_mae))
     print("RMSE: " + str(segment_rmse))
+ 
+ elif(sys.argv[1] == "segments"):
+    model = Baseline()
+    model.load()
+
+    keys, features = get_segment_features()
+    predictions = model.predict(features)
+    predictions['segmentkey'] = keys
+    predictions = predictions['segmentkey', 'pred_ev']
+    predictions.to_csv("segment_predictions.csv" , index=False)
