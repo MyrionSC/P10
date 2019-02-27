@@ -24,6 +24,7 @@ def read_road_map_data():
         ON sl.segmentkey = osm.segmentkey
         FULL OUTER JOIN experiments.mi904e18_segment_incline inc
         ON inc.segmentkey = osm.segmentkey
+        WHERE osm.category != 'ferry'
     """
 
     qry2 = """
