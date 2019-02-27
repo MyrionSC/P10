@@ -9,6 +9,7 @@ from psycopg2.extras import RealDictCursor
 
 data_path = "../data/Data.csv"
 
+
 def query(qry, db):
     conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(db['name'], db['user'], db['port'], db['host'], db['password']))
     cur = conn.cursor(cursor_factory=RealDictCursor)
@@ -70,7 +71,7 @@ class Baseline():
             df = feature.join(self.scalars, on="categoryid")
             df['pred_ev'] = (df['segment_length'] * df['scalar'])
             print("Energy consumption predicted!")
-            return df['pred_ev']
+            return df[['pred_ev']]
 
     def save(self):
         if self.scalars is None:
