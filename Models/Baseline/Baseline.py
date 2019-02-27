@@ -164,5 +164,5 @@ elif(sys.argv[1] == "segments"):
     keys, features = get_segment_features()
     predictions = model.predict(features)
     predictions['segmentkey'] = keys
-    predictions = predictions['segmentkey', 'pred_ev']
+    predictions = predictions[['segmentkey', 'pred_ev']]
     predictions.to_csv("segment_predictions.csv" , index=False)
