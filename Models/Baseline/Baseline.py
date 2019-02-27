@@ -49,7 +49,7 @@ def get_segment_features():
 
     df = query(qry, main_db)
 
-    return df[['segmentkey']], df[['meters', 'categoryid']]
+    return df[['segmentkey']], df[['segment_length', 'categoryid']]
 
 
 class Baseline():
