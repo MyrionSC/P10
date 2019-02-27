@@ -45,6 +45,7 @@ def get_segment_features():
     qry = """
         SELECT segmentkey, meters as segment_length, categoryid
         FROM maps.osm_dk_20140101
+        WHERE cateogory != 'ferry'
         ORDER BY segmentkey
     """
 
