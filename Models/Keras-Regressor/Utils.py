@@ -129,6 +129,7 @@ def get_speed_predictions(df: pd.DataFrame, config: Config) -> pd.DataFrame:
 
     # Read the speed predictions from the csv file
     speed_df = pd.read_csv(paths['speedPredPath'] + config['speed_prediction_file'], header=0, sep=',')
+    speed_df.rename(columns={'prediction': 'speed_prediction'}, inplace=True)
 
     # Merge the speed predictions into the main dataframe
     df = df.merge(speed_df, left_on='mapmatched_id', right_on='mapmatched_id')

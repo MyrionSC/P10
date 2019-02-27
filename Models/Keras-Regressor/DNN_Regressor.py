@@ -75,7 +75,7 @@ def calculate_results(estimator, X: pd.DataFrame, Y: pd.DataFrame, config: Confi
     r2 = r2_score(Y, prediction)
     print("")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
-    return prediction, r2
+    return pd.DataFrame(prediction, columns=['prediction']), r2
 
 
 def save_history(history, train_r2: float, val_r2: float, config: Config):
@@ -120,7 +120,7 @@ def predict(config: Config, save_predictions: bool=False):
     if save_predictions:
         predictions.rename(columns={'0': 'prediction'})
         predictions['mapmatched_id'] = keys
-        predictions.to_csv(model_path(config) + "predictions.csv", index=False)
+        predictions[['mapmatched_id', 'prediction']].to_csv(model_path(config) + "predictions.csv", index=False)
 
 
 if __name__ == "__main__":
