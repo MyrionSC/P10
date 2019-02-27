@@ -32,10 +32,37 @@ embedding_config = {
     }
 }
 
-speed_config = {
+
+class Config(dict):
+    def __init__(self, **kwargs):
+        self.__dict__ = {
+            'embedding': "node2vec-64d",
+            'batch_size': 8192,
+            'epochs': 10,
+            'iterations': 1,
+            'hidden_layers': 6,
+            'cells_per_layer': 1000,
+            'initial_dropout': 0,  # Dropout value for the first layer
+            'dropout': 0,  # Dropout value for all layers after the first layer
+            'activation': 'relu',
+            'kernel_initializer': 'normal',
+            'optimizer': 'adamax',
+            'target_feature': 'ev_wh',
+            'features_used': ['incline', 'segment_length', 'speed_prediction', 'temperature', 'categoryid', 'speedlimit', 'temperature', 'quarter', 'weekday', 'month', 'headwind_speed'],
+            'model_name_base': 'Model-',
+            'batch_dir': "TestOutput/",
+            'speed_prediction_file': "speed_prediction.csv",
+            'scale': True,
+            'cyclic_quarter': False
+        }
+        super().__init__(**kwargs)
+
+
+speed_config = Config()
+speed_config.update({
     'embedding': "node2vec-64d",
     'batch_size': 8192,
-    'epochs': 20,
+    'epochs': 10,
     'iterations': 1,
     'hidden_layers': 6,
     'cells_per_layer': 1000,
@@ -45,40 +72,21 @@ speed_config = {
     'kernel_initializer': 'normal',
     'optimizer': 'adamax',
     'target_feature': 'speed',
-    'features_used': ['incline', 'segment_length', 'temperature', 'speedlimit', 'quarter', 'categoryid', 'month'],
-    'model_name': 'SpeedModel-',
-    'batch_dir': "TestOutput",
+    'features_used': ['incline', 'segment_length', 'temperature', 'categoryid', 'speedlimit', 'temperature', 'quarter', 'weekday', 'month', 'headwind_speed'],
+    'model_name_base': 'SpeedModel-',
+    'batch_dir': "SpeedPredictor",
     'speed_prediction_file': "speed_prediction.csv",
     'scale': True,
     'cyclic_quarter': False
-}
+})
 
-energy_config = {
-    'embedding': "node2vec-64d",
-    'batch_size': 8192,
-    'epochs': 10,
-    'iterations': 1,
-    'hidden_layers': 6,
-    'cells_per_layer': 1000,
-    'initial_dropout': 0,  # Dropout value for the first layer
-    'dropout': 0,  # Dropout value for all layers after the first layer
-    'activation': 'relu',
-    'kernel_initializer': 'normal',
-    'optimizer': 'adamax',
-    'target_feature': 'ev_wh',
-    'features_used': ['incline', 'segment_length', 'speed_prediction', 'temperature', 'categoryid', 'speedlimit', 'temperature', 'quarter', 'weekday', 'month', 'headwind_speed'],
-    'model_name_base': 'Model-',
-    'batch_dir': "TestOutput/",
-    'speed_prediction_file': "speed_prediction.csv",
-    'scale': True,
-    'cyclic_quarter': False
-}
+energy_config = Config()
 
 
-def model_dir_name(config):
+def model_dir_name(config: Config) -> str:
     return config['batch_dir'] + config['model_name_base'] + 'epochs_{0}-hidden_layers_{1}-cells_per_layer_{2}-embeddings_{3}/'.format(config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])
 
 
-def model_path(config):
+def model_path(config: Config) -> str:
     return paths['modelDir'] + model_dir_name(config)
 
