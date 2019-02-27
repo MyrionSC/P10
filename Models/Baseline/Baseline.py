@@ -31,15 +31,19 @@ class Baseline():
         self.scalars = None
 
     def fit(self, feature, label):
+    	print("Training model!")
         self.scalars = feature.groupby(['categoryid']).apply(lambda x: (label / x['segment_length']).mean()).to_frame('scalar')
+        print("Model trained!")
 
     def predict(self, feature):
         if self.scalars is None:
-            print("Model not trained")
+            print("Can't predict: Model not trained")
             return None
         else:
+        	print("Predicting energy consumptions!")
             df = feature.join(self.scalars, on="categoryid")
             df['pred_ev'] = (df['segment_length'] * df['scalar'])
+            print("Energy consumption predicted!")
             return df['pred_ev']
 
     def save(self):
