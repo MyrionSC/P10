@@ -157,7 +157,7 @@ elif(sys.argv[1] == "predict"):
     print("MAE: " + str(segment_mae))
     print("RMSE: " + str(segment_rmse))
  
- elif(sys.argv[1] == "segments"):
+elif(sys.argv[1] == "segments"):
     model = Baseline()
     model.load()
 
