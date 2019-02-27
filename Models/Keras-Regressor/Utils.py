@@ -1,7 +1,8 @@
 from LocalSettings import main_db
 import pandas as pd
 import numpy as np
-from Configuration import paths, model_path
+from Configuration import paths, model_path, Config
+import keras
 from keras.models import model_from_json
 from sklearn.preprocessing import StandardScaler
 import time
@@ -12,10 +13,11 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from pandas.api.types import CategoricalDtype
 from Metrics import rmse
+from typing import List
 
 
 # Execute a query against the database
-def query(qry):
+def query(qry: str):
     conn = psycopg2.connect(
         "dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(main_db['name'], main_db['user'],
                                                                               main_db['port'], main_db['host'],
@@ -29,7 +31,7 @@ def query(qry):
 
 
 # Save a model to disk
-def save_model(model, config):
+def save_model(model: keras.models.Sequential, config: Config):
     modelpath = model_path(config)
     # Serialize model structure as json file
     model_json = model.to_json()
@@ -45,7 +47,7 @@ def save_model(model, config):
 
 
 # Load a model from disk
-def load_model(config):
+def load_model(config: Config) -> keras.models.Sequential:
     modelpath = model_path(config)
     # Load model structure json
     with open(modelpath + 'model.json', 'r') as json_file:
@@ -60,7 +62,7 @@ def load_model(config):
 
 
 # Read data from csv file at path
-def read_data(path, config, re_scale=False):
+def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=False) -> (pd.DataFrame, pd.DataFrame):
     # Get the base data from the csv
     df = get_base_data(path, config)
 
@@ -76,7 +78,10 @@ def read_data(path, config, re_scale=False):
     # Read and merge embeddings into dataframe
     if config['embedding'] is not None:
         df = get_embeddings(df, config)
-        df.drop(['mapmatched_id', 'segmentkey'], axis=1, inplace=True)
+
+    df.drop(['segmentkey'], axis=1, inplace=True)
+    if not retain_id:
+        df.drop(['mapmatched_id'], axis=1, inplace=True)
 
     # Convert quarter column to a sinusoidal representation if specified
     if config['cyclic_quarter']:
@@ -86,14 +91,22 @@ def read_data(path, config, re_scale=False):
     features, label = extract_label(df, config)
 
     # Scale data using a simple sklearn scaler
+    keys = None
+    if retain_id:
+        keys = df['mapmatched_id']
+        df.drop(['mapmatched_id'], axis=1, inplace=True)
+
     if config['scale']:
         features = scale_df(features, config, re_scale)
+
+    if retain_id:
+        features['mapmatched_id'] = keys
 
     return features, label
 
 
 # Read the base dataframe
-def get_base_data(path, config):
+def get_base_data(path: str, config: Config) -> pd.DataFrame:
     print("Reading data from " + path)
     start_time = time.time()
 
@@ -110,7 +123,7 @@ def get_base_data(path, config):
 
 
 # Get speed predictions from a file and add them to the dataframe
-def get_speed_predictions(df, config):
+def get_speed_predictions(df: pd.DataFrame, config: Config) -> pd.DataFrame:
     print("Reading speed predictions from " + paths['speedPredPath'] + config['speed_prediction_file'])
     start_time = time.time()
 
@@ -128,7 +141,7 @@ def get_speed_predictions(df, config):
 
 
 # One hot encode categorical feature columns
-def one_hot(df):
+def one_hot(df: pd.DataFrame) -> pd.DataFrame:
     # One-hot encode category, month and weekday columns
     print("One-hot encoding features")
     start_time = time.time()
@@ -150,7 +163,7 @@ def one_hot(df):
 
 
 # One-hot encode a column of a dataframe
-def one_hot_encode_column(df, column_key):
+def one_hot_encode_column(df: pd.DataFrame, column_key: str) -> pd.DataFrame:
     # Encode column as categorical dtype
     cats = get_cats(column_key)
     cat_type = CategoricalDtype(categories=cats, ordered=True)
@@ -165,7 +178,7 @@ def one_hot_encode_column(df, column_key):
 
 
 # Get the possible categories of a feature based on the column key
-def get_cats(key):
+def get_cats(key: str) -> List[str]:
     if key == 'categoryid':
         return ['10', '11', '15', '16', '20', '21', '25', '26', '30', '31', '35', '40', '45', '50', '55', '60', '65']
     elif key == 'month':
@@ -175,7 +188,7 @@ def get_cats(key):
 
 
 # Get embeddings and add them to the dataframe
-def get_embeddings(df, config):
+def get_embeddings(df: pd.DataFrame, config: Config) -> pd.DataFrame:
     print('Reading embeddings from ' + embedding_path(config))
     start_time = time.time()
 
@@ -195,7 +208,7 @@ def get_embeddings(df, config):
 
 
 # Read embeddings from disk
-def read_embeddings(config):
+def read_embeddings(config: Config) -> pd.DataFrame:
     # Get the number of dimensions of the embeddings
     with open(embedding_path(config), 'r') as f:
         dim = int(f.readline().split(" ")[1].strip())
@@ -219,7 +232,7 @@ def read_embeddings(config):
 
 
 # Convert quarter feature column into a circular sinusoidal representation
-def convert_quarter(df):
+def convert_quarter(df: pd.DataFrame) -> pd.DataFrame:
     print("Converting \'quarter\' column to circular representation")
     start_time = time.time()
 
@@ -236,7 +249,7 @@ def convert_quarter(df):
 
 
 # Extract the label column from the features
-def extract_label(df, config):
+def extract_label(df: pd.DataFrame, config: Config) -> (pd.DataFrame, pd.DataFrame):
     print("Extracting label")
     start_time = time.time()
 
@@ -250,7 +263,7 @@ def extract_label(df, config):
 
 
 # Scale the dataframe
-def scale_df(df, config, re_scale):
+def scale_df(df: pd.DataFrame, config: Config, re_scale: bool) -> pd.DataFrame:
     start_time = time.time()
 
     # Cache the column names of the dataframe.
@@ -275,7 +288,7 @@ def scale_df(df, config, re_scale):
 
 
 # Create a new scaler
-def create_scaler(df, config):
+def create_scaler(df: pd.DataFrame, config: Config) -> StandardScaler:
     print("Creating scaler in " + model_path(config))
     scaler = StandardScaler()
     scaler.fit(df)
@@ -284,7 +297,7 @@ def create_scaler(df, config):
 
 
 # Save the scaler
-def save_scaler(scaler, config):
+def save_scaler(scaler: StandardScaler, config: Config):
     modelpath = model_path(config)
     if not os.path.isdir(modelpath):
         os.makedirs(modelpath)
@@ -301,7 +314,7 @@ def save_scaler(scaler, config):
 
 
 # Load an existing scaler
-def load_scaler(config):
+def load_scaler(config: Config) -> StandardScaler:
     modelpath = model_path(config)
     print("Loading scaler from " + modelpath)
     with open(modelpath + "scaler.json", "r") as f:
@@ -316,14 +329,14 @@ def load_scaler(config):
 
 
 # Return the path to the embeddings
-def embedding_path(config):
+def embedding_path(config: Config) -> str:
     if config["embedding"] is not None:
         return '{0}{1}.emb'.format(paths['embeddingDir'], config['embedding'])
     else:
         return "None"
 
 
-def printparams(config):
+def printparams(config: Config):
     print("Parameters used:")
     for key in sorted(config):
         print(" - " + key + ": " + str(config[key]))
@@ -331,7 +344,7 @@ def printparams(config):
 
 
 # Return the current month, weekday and quarter from midnight
-def current_time():
+def current_time() -> (str, str, str):
     now = datetime.datetime.today()
     return str(now.month), str(now.weekday()), str((now.hour * 4) + int(now.minute / 15))
 
