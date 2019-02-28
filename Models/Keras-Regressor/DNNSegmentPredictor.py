@@ -34,9 +34,14 @@ def do_predictions(config, df):
     print("Dataframe shape: %s" % str(features.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))
 
+    print()
+    print("------ Predicting " + config['target_feature'] + " ------")
+    start_time = time.time()
     model = load_model(config)
-    return pd.DataFrame(model.predict(features, batch_size=config['batch_size'], verbose=1),
+    res = pd.DataFrame(model.predict(features, batch_size=config['batch_size'], verbose=1),
                         columns=[config['target_feature'] + '_prediction'])
+    print("Time elapsed: %s seconds\n" % (time.time() - start_time))
+    return res
 
 
 def create_segment_predictions(config):
