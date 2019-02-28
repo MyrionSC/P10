@@ -32,7 +32,7 @@ def read_road_map_data():
 
     qry2 = """
         SELECT
-            avg(air_temperature) as temperature
+            avg(air_temperature) as temperature,
             avg(-wind.tailwind_magnitude) as headwind_speed
         FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
         JOIN experiments.mi904e18_wind_vectors wind
