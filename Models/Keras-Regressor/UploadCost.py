@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     table_qry = """
         CREATE TABLE models.{0} (
-            segmentkey BIGSERIAL PRIMARY KEY,
+            segmentkey bigint PRIMARY KEY,
             cost float
         );
     """.format(tablename)
