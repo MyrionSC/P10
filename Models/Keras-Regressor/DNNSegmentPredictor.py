@@ -32,8 +32,11 @@ def read_road_map_data():
 
     qry2 = """
         SELECT
-            avg(air_temperature) as temperature
+            avg(air_temperature) as temperature,
+            avg(-wind.tailwind_magnitude) as headwind_speed
         FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
+        JOIN experiments.mi904e18_wind_vectors wind
+        ON wind.vector_id = vit.id
         JOIN dims.dimdate dat
         ON vit.datekey = dat.datekey
         JOIN dims.dimtime tim
@@ -45,7 +48,9 @@ def read_road_map_data():
     """.format(month, quarter)
 
     df = pd.DataFrame(query(qry))
-    df['temperature'] = query(qry2)[0]['temperature']
+    df2 = query(qry2)[0]
+    df['temperature'] = df2['temperature']
+    df['headwind_speed'] = df2['headwind_speed']
     df['month'] = month
     df['quarter'] = quarter
     df['weekday'] = weekday
@@ -67,8 +72,7 @@ def do_predictions(config, df):
     features.set_index(['segmentkey'], inplace=True)
 
     model = load_model(config)
-    model.compile(loss='mean_squared_error', optimizer=config['optimizer'],
-                        metrics=['mae', 'mse', 'mape', rmse])
+    model.compile(loss='mean_squared_error', optimizer=config['optimizer'], metrics=['mae', 'mse', 'mape', rmse])
 
     return pd.DataFrame(model.predict(features, batch_size=config['batch_size'], verbose=1),
                         columns=[config['target_feature'] + '_prediction'])
@@ -81,8 +85,8 @@ def create_segment_predictions(config):
     df['speed_prediction'] = speed_predictions
     energy_predictions = do_predictions(config, df)
     energy_predictions['segmentkey'] = keys
-    res = energy_predictions[['segmentkey', 'energy_prediction']]
-    res.to_csv(model_path(energy_config) + "segment_predictions.csv", sep=';', header=True, index=False,
+    res = energy_predictions[['segmentkey', config['target_feature'] + '_prediction']]
+    res.to_csv(model_path(config) + "segment_predictions.csv", sep=';', header=True, index=False,
                encoding='utf8')
 
 
@@ -100,7 +104,8 @@ if __name__ == "__main__":
             print("Specified model does not exist")
             quit()
         print("Loading model configuration")
-        config = json.load(modelpath + "config.json")
+        with open(modelpath + "config.json", "r") as f:
+            config = json.load(f)
     else:
         config = energy_config
     create_segment_predictions(config)

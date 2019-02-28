@@ -7,13 +7,15 @@ import psycopg2
 from LocalSettings import local_db
 
 
-def exec(qry):
+def exec(qrys):
     conn = psycopg2.connect(
         "dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(local_db['name'], local_db['user'],
                                                                               local_db['port'], local_db['host'],
                                                                               local_db['password']))
     cur = conn.cursor()
-    cur.execute(qry)
+    for qry in qrys:
+        cur.execute(qry)
+    conn.commit()
     cur.close()
     conn.close()
 
@@ -34,14 +36,15 @@ if __name__ == "__main__":
     tablename = args[1].strip()
 
     print("Loading model configuration")
-    config = json.load(modelpath + "config.json")
+    with open(modelpath + "config.json", "r") as f:
+        config = json.load(f)
     if not os.path.isfile(model_path(config) + "segment_predictions.csv"):
         print("No predictions present: Generating")
         create_segment_predictions(config)
 
     table_qry = """
         CREATE TABLE models.{0} (
-            segmentkey BIGSERIAL PRIMARY KEY,
+            segmentkey bigint PRIMARY KEY,
             cost float
         );
     """.format(tablename)
@@ -52,10 +55,10 @@ if __name__ == "__main__":
 
     index_qry = """
         CREATE INDEX models_{0}_segmentkey_idx
-            ON models{0} USING btree
+            ON models.{0} USING btree
             (segmentkey)
             TABLESPACE pg_default;
-    """
+    """.format(tablename)
 
     update_qry = """
         ALTER TABLE maps.routing2
@@ -67,7 +70,4 @@ if __name__ == "__main__":
         WHERE maps.routing2.segmentkey = models.{0}.segmentkey;
     """.format(tablename)
 
-    exec(table_qry)
-    exec(copy_qry)
-    exec(index_qry)
-    exec(update_qry)
+    exec([table_qry, copy_qry, index_qry, update_qry])

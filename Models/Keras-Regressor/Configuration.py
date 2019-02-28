@@ -54,7 +54,7 @@ speed_config.update({
     'target_feature': 'speed',
     'features_used': ['incline', 'segment_length', 'temperature', 'categoryid', 'speedlimit', 'temperature', 'quarter', 'weekday', 'month', 'headwind_speed'],
     'model_name_base': 'SpeedModel-',
-    'batch_dir': "SpeedPredictor",
+    'batch_dir': "SpeedModel/",
     'speed_prediction_file': "predictions.csv",
     'scale': True,
     'cyclic_quarter': False
@@ -81,6 +81,7 @@ energy_config.update({
     'scale': True,
     'cyclic_quarter': False
 })
+
 
 def model_dir_name(config: Config) -> str:
     return config['batch_dir'] + config['model_name_base'] + 'epochs_{0}-hidden_layers_{1}-cells_per_layer_{2}-embeddings_{3}/'.format(config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])
