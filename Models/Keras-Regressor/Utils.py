@@ -147,16 +147,20 @@ def one_hot(df: pd.DataFrame) -> pd.DataFrame:
     print("One-hot encoding features")
     start_time = time.time()
 
+    pd.options.mode.chained_assignment = None
+
     # If the categorical features are present in the dataframe, encode them
     if 'categoryid' in list(df):
-        df['categoryid'].mask(True, str(df['categoryid']), inplace=True)
+        df['categoryid'] = df['categoryid'].map(str)
         df = one_hot_encode_column(df, 'categoryid')
     if 'month' in list(df):
-        df['month'].mask(True, str(df['month']), inplace=True)
+        df['month'] = df['month'].map(str)
         df = one_hot_encode_column(df, 'month')
     if 'weekday' in list(df):
-        df['month'].mask(True, str(df['month']), inplace=True)
+        df['weekday'] = df['weekday'].map(str)
         df = one_hot_encode_column(df, 'weekday')
+
+    pd.options.mode.chained_assignment = 'warn'
 
     print("Dataframe shape: %s" % str(df.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))
