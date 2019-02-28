@@ -200,8 +200,9 @@ def get_embeddings(df: pd.DataFrame, config: Config) -> pd.DataFrame:
     df = df.merge(emb_df, left_on='segmentkey', right_on=emb_df.index)
 
     # Sort dataframe and drop redundant columns
-    df.sort_values('mapmatched_id', inplace=True)
-    df.reset_index(drop=True, inplace=True)
+    if 'mapmatched_id' in list(df):
+        df.sort_values('mapmatched_id', inplace=True)
+        df.reset_index(drop=True, inplace=True)
 
     print("Dataframe shape: %s" % str(df.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))
@@ -348,6 +349,57 @@ def printparams(config: Config):
 def current_time() -> (str, str, str):
     now = datetime.datetime.today()
     return str(now.month), str(now.weekday()), str((now.hour * 4) + int(now.minute / 15))
+
+
+def read_road_map_data(month, quarter, weekday):
+    qry = """
+        SELECT 
+            osm.segmentkey,
+            CASE WHEN inc.incline IS NOT NULL 
+                 THEN inc.incline
+                 ELSE 0 
+            END as incline,
+            osm.meters as segment_length, 
+            sl.speedlimit, 
+            osm.categoryid
+        FROM maps.osm_dk_20140101 osm
+        FULL OUTER JOIN experiments.mi904e18_speedlimits sl
+        ON sl.segmentkey = osm.segmentkey
+        FULL OUTER JOIN experiments.mi904e18_segment_incline inc
+        ON inc.segmentkey = osm.segmentkey
+        WHERE osm.category != 'ferry'
+    """
+
+    qry2 = """
+        SELECT
+            avg(air_temperature) as temperature,
+            avg(-wind.tailwind_magnitude) as headwind_speed
+        FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
+        JOIN experiments.mi904e18_wind_vectors wind
+        ON wind.vector_id = vit.id
+        JOIN dims.dimdate dat
+        ON vit.datekey = dat.datekey
+        JOIN dims.dimtime tim
+        ON vit.timekey = tim.timekey
+        JOIN dims.dimweathermeasure wea
+        ON vit.weathermeasurekey = wea.weathermeasurekey
+        WHERE dat.month = {0}
+        AND tim.quarter = {1}
+    """.format(month, quarter)
+
+    print()
+    print("------ Reading road map ------")
+    start_time = time.time()
+    df = pd.DataFrame(query(qry))
+    df2 = query(qry2)[0]
+    df['temperature'] = df2['temperature']
+    df['headwind_speed'] = df2['headwind_speed']
+    df['month'] = month
+    df['quarter'] = quarter
+    df['weekday'] = weekday
+    print("Dataframe shape: %s" % str(df.shape))
+    print("Time elapsed: %s seconds\n" % (time.time() - start_time))
+    return df.sort_values('segmentkey')
 
 
 def general_converter(num_segments, limit=None):

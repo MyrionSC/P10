@@ -14,7 +14,11 @@ def exec(qrys):
                                                                               local_db['password']))
     cur = conn.cursor()
     for qry in qrys:
+        print("Executing query:")
+        print(qry)
+        print()
         cur.execute(qry)
+    print("Commiting changes.")
     conn.commit()
     cur.close()
     conn.close()
@@ -43,6 +47,8 @@ if __name__ == "__main__":
         create_segment_predictions(config)
 
     table_qry = """
+        DROP TABLE IF EXISTS models.{0};
+        
         CREATE TABLE models.{0} (
             segmentkey bigint PRIMARY KEY,
             cost float
@@ -50,7 +56,11 @@ if __name__ == "__main__":
     """.format(tablename)
 
     copy_qry = """
-        COPY models.{0} (segmentkey, cost) FROM '{1}' DELIMITER ';' CSV HEADER ENCODING 'UTF8';
+        COPY models.{0} (segmentkey, cost) 
+        FROM '{1}' 
+        DELIMITER ';' 
+        CSV HEADER 
+        ENCODING 'UTF8';
     """.format(tablename, os.path.abspath(model_path(config) + "segment_predictions.csv"))
 
     index_qry = """
@@ -62,7 +72,7 @@ if __name__ == "__main__":
 
     update_qry = """
         ALTER TABLE maps.routing2
-        ADD COLUMN {0} float;
+        ADD COLUMN IF NOT EXISTS {0} float;
         
         UPDATE maps.routing2
         SET {0} = models.{0}.cost

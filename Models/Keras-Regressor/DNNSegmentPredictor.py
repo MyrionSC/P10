@@ -1,85 +1,46 @@
-from Utils import load_model, query, one_hot, read_embeddings
+from Utils import load_model, one_hot, get_embeddings, read_road_map_data
 import pandas as pd
-from Metrics import rmse
 from Configuration import *
 import sys
 import json
 import os
+import time
 
 month = '2'
 quarter = '47'
 weekday = '4'
 
 
-def read_road_map_data():
-    qry = """
-        SELECT 
-            osm.segmentkey,
-            CASE WHEN inc.incline IS NOT NULL 
-                 THEN inc.incline
-                 ELSE 0 
-            END as incline,
-            osm.meters as segment_length, 
-            sl.speedlimit, 
-            osm.categoryid
-        FROM maps.osm_dk_20140101 osm
-        FULL OUTER JOIN experiments.mi904e18_speedlimits sl
-        ON sl.segmentkey = osm.segmentkey
-        FULL OUTER JOIN experiments.mi904e18_segment_incline inc
-        ON inc.segmentkey = osm.segmentkey
-        WHERE osm.category != 'ferry'
-    """
-
-    qry2 = """
-        SELECT
-            avg(air_temperature) as temperature,
-            avg(-wind.tailwind_magnitude) as headwind_speed
-        FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
-        JOIN experiments.mi904e18_wind_vectors wind
-        ON wind.vector_id = vit.id
-        JOIN dims.dimdate dat
-        ON vit.datekey = dat.datekey
-        JOIN dims.dimtime tim
-        ON vit.timekey = tim.timekey
-        JOIN dims.dimweathermeasure wea
-        ON vit.weathermeasurekey = wea.weathermeasurekey
-        WHERE dat.month = {0}
-        AND tim.quarter = {1}
-    """.format(month, quarter)
-
-    df = pd.DataFrame(query(qry))
-    df2 = query(qry2)[0]
-    df['temperature'] = df2['temperature']
-    df['headwind_speed'] = df2['headwind_speed']
-    df['month'] = month
-    df['quarter'] = quarter
-    df['weekday'] = weekday
-    return df.sort_values('segmentkey')
-
-
 def do_predictions(config, df):
+    print()
+    print("------ Removing redundant columns ------")
+    start_time = time.time()
     features = df[['segmentkey'] + config['features_used']]
+    print("Dataframe shape: %s" % str(features.shape))
+    print("Time elapsed: %s seconds\n" % (time.time() - start_time))
 
     if 'month' in config['features_used'] or 'weekday' in config['features_used']\
             or 'categoryid' in config['features_used']:
         features = one_hot(features)
 
     if config['embedding'] is not None:
-        emb_df = read_embeddings(config)
-        features = features.merge(emb_df, left_on='segmentkey', right_on=emb_df.index)
+        features = get_embeddings(features, config)
 
+    print()
+    print("------ Reindexing ------")
+    start_time = time.time()
     features.sort_values('segmentkey', inplace=True)
     features.set_index(['segmentkey'], inplace=True)
+    print("Dataframe shape: %s" % str(features.shape))
+    print("Time elapsed: %s seconds\n" % (time.time() - start_time))
 
     model = load_model(config)
-    model.compile(loss='mean_squared_error', optimizer=config['optimizer'], metrics=['mae', 'mse', 'mape', rmse])
-
     return pd.DataFrame(model.predict(features, batch_size=config['batch_size'], verbose=1),
                         columns=[config['target_feature'] + '_prediction'])
 
 
 def create_segment_predictions(config):
-    df = read_road_map_data()
+    df = read_road_map_data(month, quarter, weekday)
     keys = df[['segmentkey']]
     speed_predictions = do_predictions(speed_config, df)
     df['speed_prediction'] = speed_predictions
@@ -103,7 +64,6 @@ if __name__ == "__main__":
         if not os.path.isdir(modelpath):
             print("Specified model does not exist")
             quit()
-        print("Loading model configuration")
         with open(modelpath + "config.json", "r") as f:
             config = json.load(f)
     else:
