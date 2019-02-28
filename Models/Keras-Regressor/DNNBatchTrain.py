@@ -1,4 +1,4 @@
-import DNN_Regressor as DNN
+import DNNRegressor as DNN
 import Configuration
 from Configuration import Config
 from typing import List

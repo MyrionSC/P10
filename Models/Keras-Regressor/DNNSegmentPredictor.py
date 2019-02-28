@@ -2,6 +2,9 @@ from Utils import load_model, query, one_hot, read_embeddings
 import pandas as pd
 from Metrics import rmse
 from Configuration import *
+import sys
+import json
+import os
 
 month = '2'
 quarter = '47'
@@ -71,10 +74,33 @@ def do_predictions(config, df):
                         columns=[config['target_feature'] + '_prediction'])
 
 
-df = read_road_map_data()
-keys = df[['segmentkey']]
-speed_predictions = do_predictions(speed_config, df)
-energy_predictions = do_predictions(energy_config, df)
-energy_predictions['segmentkey'] = keys
-res = energy_predictions[['segmentkey', 'energy_prediction']]
-res.to_csv("../data/energy_predictions.csv", sep=';', header=False, index=False, encoding='utf8')
+def create_segment_predictions(config):
+    df = read_road_map_data()
+    keys = df[['segmentkey']]
+    speed_predictions = do_predictions(speed_config, df)
+    df['speed_prediction'] = speed_predictions
+    energy_predictions = do_predictions(config, df)
+    energy_predictions['segmentkey'] = keys
+    res = energy_predictions[['segmentkey', 'energy_prediction']]
+    res.to_csv(model_path(energy_config) + "segment_predictions.csv", sep=';', header=True, index=False,
+               encoding='utf8')
+
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+
+    if len(args) > 1:
+        print("Invalid number of arguments: " + str(len(args)))
+        print("Expected 0 or 1")
+        quit()
+
+    if len(args) == 1:
+        modelpath = args[0].strip()
+        if not os.path.isdir(modelpath):
+            print("Specified model does not exist")
+            quit()
+        print("Loading model configuration")
+        config = json.load(modelpath + "config.json")
+    else:
+        config = energy_config
+    create_segment_predictions(config)
