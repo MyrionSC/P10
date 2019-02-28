@@ -3,6 +3,7 @@ from flask_cors import CORS
 import psycopg2
 import json
 from db import *
+import yr
 
 app = Flask(__name__, static_folder="map")
 CORS(app)
@@ -21,3 +22,12 @@ def get_json():
 def emb():
     key = int(request.args.get('key'))
     return get_embedding(key)
+
+
+@app.route("/temperature/<segid>")
+def temperature(segid):
+    return str(yr.getTemperature(segid))
+
+@app.route("/winddata/<segid>")
+def winddata(segid):
+    return yr.getWind(segid)
