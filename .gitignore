@@ -52,6 +52,9 @@ Models/Baseline/model.csv
 .idea
 *.iml
 
+*.csv
+
+Baseline/segment_predictions.csv
 Baseline/predictions.csv
 Baseline/model.csv
 Baseline/ev_wh_prediction.csv
