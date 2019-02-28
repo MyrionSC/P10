@@ -55,10 +55,10 @@ if __name__ == "__main__":
 
     index_qry = """
         CREATE INDEX models_{0}_segmentkey_idx
-            ON models{0} USING btree
+            ON models.{0} USING btree
             (segmentkey)
             TABLESPACE pg_default;
-    """
+    """.format(tablename)
 
     update_qry = """
         ALTER TABLE maps.routing2
