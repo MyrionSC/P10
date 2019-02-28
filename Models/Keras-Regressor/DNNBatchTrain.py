@@ -6,7 +6,7 @@ from Plots import plot_history
 
 
 def generate_configs() -> List[Config]:
-    batch_name = "EnergyModel"
+    batch_name = "EnergyModelKWh"
     default_config = Configuration.energy_config
     default_config['batch_dir'] = batch_name + "/"
 

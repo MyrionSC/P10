@@ -1,7 +1,7 @@
 from LocalSettings import main_db
 import pandas as pd
 import numpy as np
-from Configuration import paths, model_path, Config
+from Configuration import paths, model_path, Config, speed_config
 import keras
 from keras.models import model_from_json
 from sklearn.preprocessing import StandardScaler
@@ -124,11 +124,11 @@ def get_base_data(path: str, config: Config) -> pd.DataFrame:
 
 # Get speed predictions from a file and add them to the dataframe
 def get_speed_predictions(df: pd.DataFrame, config: Config) -> pd.DataFrame:
-    print("Reading speed predictions from " + paths['speedPredPath'] + config['speed_prediction_file'])
+    print("Reading speed predictions from " + model_path(speed_config) + 'predictions.csv')
     start_time = time.time()
 
     # Read the speed predictions from the csv file
-    speed_df = pd.read_csv(paths['speedPredPath'] + config['speed_prediction_file'], header=0, sep=',')
+    speed_df = pd.read_csv(model_path(speed_config) + 'predictions.csv', header=0, sep=',')
     speed_df.rename(columns={'prediction': 'speed_prediction'}, inplace=True)
 
     # Merge the speed predictions into the main dataframe
