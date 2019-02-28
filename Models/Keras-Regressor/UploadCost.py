@@ -7,13 +7,15 @@ import psycopg2
 from LocalSettings import local_db
 
 
-def exec(qry):
+def exec(qrys):
     conn = psycopg2.connect(
         "dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(local_db['name'], local_db['user'],
                                                                               local_db['port'], local_db['host'],
                                                                               local_db['password']))
     cur = conn.cursor()
-    cur.execute(qry)
+    for qry in qrys:
+        cur.execute(qry)
+    conn.commit()
     cur.close()
     conn.close()
 
