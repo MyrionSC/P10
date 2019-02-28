@@ -54,7 +54,7 @@ speed_config.update({
     'target_feature': 'speed',
     'features_used': ['incline', 'segment_length', 'temperature', 'categoryid', 'speedlimit', 'temperature', 'quarter', 'weekday', 'month', 'headwind_speed'],
     'model_name_base': 'SpeedModel-',
-    'batch_dir': "SpeedPredictor",
+    'batch_dir': "SpeedModel/",
     'speed_prediction_file': "predictions.csv",
     'scale': True,
     'cyclic_quarter': False
