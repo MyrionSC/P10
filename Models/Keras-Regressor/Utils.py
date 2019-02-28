@@ -149,13 +149,13 @@ def one_hot(df: pd.DataFrame) -> pd.DataFrame:
 
     # If the categorical features are present in the dataframe, encode them
     if 'categoryid' in list(df):
-        df['categoryid'] = df['categoryid'].map(str)
+        df['categoryid'].mask(True, str(df['categoryid']), inplace=True)
         df = one_hot_encode_column(df, 'categoryid')
     if 'month' in list(df):
-        df['month'] = df['month'].map(str)
+        df['month'].mask(True, str(df['month']), inplace=True)
         df = one_hot_encode_column(df, 'month')
     if 'weekday' in list(df):
-        df['weekday'] = df['weekday'].map(str)
+        df['month'].mask(True, str(df['month']), inplace=True)
         df = one_hot_encode_column(df, 'weekday')
 
     print("Dataframe shape: %s" % str(df.shape))
