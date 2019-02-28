@@ -34,7 +34,8 @@ if __name__ == "__main__":
     tablename = args[1].strip()
 
     print("Loading model configuration")
-    config = json.load(modelpath + "config.json")
+    with open(modelpath + "config.json", "r") as f:
+        config = json.load(f)
     if not os.path.isfile(model_path(config) + "segment_predictions.csv"):
         print("No predictions present: Generating")
         create_segment_predictions(config)

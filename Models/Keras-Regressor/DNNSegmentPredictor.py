@@ -100,7 +100,8 @@ if __name__ == "__main__":
             print("Specified model does not exist")
             quit()
         print("Loading model configuration")
-        config = json.load(modelpath + "config.json")
+        with open(modelpath + "config.json", "r") as f:
+            config = json.load(f)
     else:
         config = energy_config
     create_segment_predictions(config)
