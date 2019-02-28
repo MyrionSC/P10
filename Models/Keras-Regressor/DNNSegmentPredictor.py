@@ -48,7 +48,9 @@ def read_road_map_data():
     """.format(month, quarter)
 
     df = pd.DataFrame(query(qry))
-    df['temperature'] = query(qry2)[0]['temperature']
+    df2 = query(qry2)[0]
+    df['temperature'] = df2['temperature']
+    df['headwind_speed'] = df2['headwind_speed']
     df['month'] = month
     df['quarter'] = quarter
     df['weekday'] = weekday
