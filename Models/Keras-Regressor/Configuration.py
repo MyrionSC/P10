@@ -73,7 +73,7 @@ energy_config.update({
     'activation': 'relu',
     'kernel_initializer': 'normal',
     'optimizer': 'adamax',
-    'target_feature': 'ev_wh',
+    'target_feature': 'ev_kwh',
     'features_used': ['incline', 'segment_length', 'speed_prediction', 'temperature', 'categoryid', 'speedlimit', 'temperature', 'quarter', 'weekday', 'month', 'headwind_speed'],
     'model_name_base': 'Model-',
     'batch_dir': "TestOutput/",

@@ -144,8 +144,11 @@ def get_speed_predictions(df: pd.DataFrame, config: Config) -> pd.DataFrame:
 # One hot encode categorical feature columns
 def one_hot(df: pd.DataFrame) -> pd.DataFrame:
     # One-hot encode category, month and weekday columns
-    print("One-hot encoding features")
+    print()
+    print("------ One-hot encoding features ------")
     start_time = time.time()
+
+    pd.options.mode.chained_assignment = None
 
     # If the categorical features are present in the dataframe, encode them
     if 'categoryid' in list(df):
@@ -157,6 +160,8 @@ def one_hot(df: pd.DataFrame) -> pd.DataFrame:
     if 'weekday' in list(df):
         df['weekday'] = df['weekday'].map(str)
         df = one_hot_encode_column(df, 'weekday')
+
+    pd.options.mode.chained_assignment = 'warn'
 
     print("Dataframe shape: %s" % str(df.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))
@@ -190,12 +195,15 @@ def get_cats(key: str) -> List[str]:
 
 # Get embeddings and add them to the dataframe
 def get_embeddings(df: pd.DataFrame, config: Config) -> pd.DataFrame:
+    print()
+    print("------ Getting embeddings ------")
     print('Reading embeddings from ' + embedding_path(config))
     start_time = time.time()
 
     # Read embeddings from the csv file
     emb_df = read_embeddings(config)
 
+    print("Merging embeddings")
     # Merge embeddings into main dataframe
     df = df.merge(emb_df, left_on='segmentkey', right_on=emb_df.index)
 
