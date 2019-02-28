@@ -5,6 +5,7 @@ from Configuration import model_path
 from DNNSegmentPredictor import create_segment_predictions
 import psycopg2
 from LocalSettings import local_db
+import time
 
 
 def exec(qrys):
@@ -16,8 +17,10 @@ def exec(qrys):
     for qry in qrys:
         print("Executing query:")
         print(qry)
-        print()
+        start_time = time.time()
         cur.execute(qry)
+        print("Time elapsed: %s seconds\n" % (time.time() - start_time))
+    print()
     print("Commiting changes.")
     conn.commit()
     cur.close()
