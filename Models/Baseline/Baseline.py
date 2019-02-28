@@ -97,7 +97,7 @@ if not (sys.argv[1] == 'train' or sys.argv[1] == 'predict' or sys.argv[1] == 'se
 
 if not sys.argv[1] == 'segments':
     df = pd.read_csv(data_path, header=0)
-    label = df['ev_wh']
+    label = df['ev_kwh']
     features = df[['segment_length', 'categoryid']]
 
 
@@ -131,7 +131,7 @@ elif(sys.argv[1] == "predict"):
 
     df = load_columns(data_path, columns=['mapmatched_id', 'segment_length', 'trip_id'])
 
-    for i, target in enumerate(["ev_wh"]):
+    for i, target in enumerate(["ev_kwh"]):
         target_predict = str(target + "_prediction")
         df[target_predict] = prediction
         df[target] = label
@@ -142,9 +142,9 @@ elif(sys.argv[1] == "predict"):
     column = df.columns
 
     grouped_df = df.groupby('trip_id')[column[3:]].sum()
-    trip_r2 = m.r2_score(grouped_df['ev_wh'], grouped_df['ev_wh_prediction'])
-    trip_mae = m.mean_absolute_error(grouped_df['ev_wh'], grouped_df['ev_wh_prediction'])
-    trip_rmse = root_mean_squared_error(grouped_df['ev_wh'], grouped_df['ev_wh_prediction'])
+    trip_r2 = m.r2_score(grouped_df['ev_kwh'], grouped_df['ev_kwh_prediction'])
+    trip_mae = m.mean_absolute_error(grouped_df['ev_kwh'], grouped_df['ev_kwh_prediction'])
+    trip_rmse = root_mean_squared_error(grouped_df['ev_kwh'], grouped_df['ev_kwh_prediction'])
     segment_r2 = m.r2_score(label, prediction)
     segment_mae = m.mean_absolute_error(label, prediction)
     segment_rmse = root_mean_squared_error(label, prediction)
