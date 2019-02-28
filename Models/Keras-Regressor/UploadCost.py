@@ -70,7 +70,4 @@ if __name__ == "__main__":
         WHERE maps.routing2.segmentkey = models.{0}.segmentkey;
     """.format(tablename)
 
-    exec(table_qry)
-    exec(copy_qry)
-    exec(index_qry)
-    exec(update_qry)
+    exec([table_qry, copy_qry, index_qry, update_qry])
