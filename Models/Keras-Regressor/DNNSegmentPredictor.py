@@ -72,8 +72,7 @@ def do_predictions(config, df):
     features.set_index(['segmentkey'], inplace=True)
 
     model = load_model(config)
-    model.compile(loss='mean_squared_error', optimizer=config['optimizer'],
-                        metrics=['mae', 'mse', 'mape', rmse])
+    model.compile(loss='mean_squared_error', optimizer=config['optimizer'], metrics=['mae', 'mse', 'mape', rmse])
 
     return pd.DataFrame(model.predict(features, batch_size=config['batch_size'], verbose=1),
                         columns=[config['target_feature'] + '_prediction'])
@@ -87,7 +86,7 @@ def create_segment_predictions(config):
     energy_predictions = do_predictions(config, df)
     energy_predictions['segmentkey'] = keys
     res = energy_predictions[['segmentkey', config['target_feature'] + '_prediction']]
-    res.to_csv(model_path(energy_config) + "segment_predictions.csv", sep=';', header=True, index=False,
+    res.to_csv(model_path(config) + "segment_predictions.csv", sep=';', header=True, index=False,
                encoding='utf8')
 
 
