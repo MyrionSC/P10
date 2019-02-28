@@ -30,4 +30,4 @@ def temperature(segid):
 
 @app.route("/winddata/<segid>")
 def winddata(segid):
-    return yr.getWind(segid)
+    return str(yr.getWind(segid))
