@@ -367,6 +367,7 @@ def read_road_map_data(month, quarter, weekday):
                  THEN inc.incline
                  ELSE 0 
             END as incline,
+            'FORWARD' as direction,
             osm.meters as segment_length, 
             sl.speedlimit, 
             osm.categoryid
@@ -376,6 +377,23 @@ def read_road_map_data(month, quarter, weekday):
         FULL OUTER JOIN experiments.mi904e18_segment_incline inc
         ON inc.segmentkey = osm.segmentkey
         WHERE osm.category != 'ferry'
+        UNION
+        SELECT 
+            osm.segmentkey,
+            CASE WHEN inc.incline IS NOT NULL 
+                 THEN -inc.incline
+                 ELSE 0 
+            END as incline,
+            'BACKWARD' as direction,
+            osm.meters as segment_length, 
+            sl.speedlimit, 
+            osm.categoryid
+        FROM maps.osm_dk_20140101 osm
+        FULL OUTER JOIN experiments.mi904e18_speedlimits sl
+        ON sl.segmentkey = osm.segmentkey
+        FULL OUTER JOIN experiments.mi904e18_segment_incline inc
+        ON inc.segmentkey = osm.segmentkey
+        WHERE osm.category != 'ferry' AND osm.direction = 'BOTH'
     """
 
     qry2 = """
@@ -407,7 +425,7 @@ def read_road_map_data(month, quarter, weekday):
     df['weekday'] = weekday
     print("Dataframe shape: %s" % str(df.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))
-    return df.sort_values('segmentkey')
+    return df.sort_values(['segmentkey', 'direction'])
 
 
 def general_converter(num_segments, limit=None):
