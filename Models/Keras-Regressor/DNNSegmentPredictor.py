@@ -15,7 +15,7 @@ def do_predictions(config, df):
     print()
     print("------ Removing redundant columns ------")
     start_time = time.time()
-    features = df[['segmentkey'] + config['features_used']]
+    features = df[['segmentkey', 'direction'] + config['features_used']]
     print("Dataframe shape: %s" % str(features.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))
 
@@ -29,8 +29,8 @@ def do_predictions(config, df):
     print()
     print("------ Reindexing ------")
     start_time = time.time()
-    features.sort_values('segmentkey', inplace=True)
-    features.set_index(['segmentkey'], inplace=True)
+    features.sort_values(['segmentkey', 'direction'], inplace=True)
+    features.set_index(['segmentkey', 'direction'], inplace=True)
     print("Dataframe shape: %s" % str(features.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))
 
@@ -46,12 +46,12 @@ def do_predictions(config, df):
 
 def create_segment_predictions(config):
     df = read_road_map_data(month, quarter, weekday)
-    keys = df[['segmentkey']]
+    keys = df[['segmentkey', 'direction']]
     if 'speed_prediction' in config['features_used']:
         speed_predictions = do_predictions(speed_config, df)
         df['speed_prediction'] = speed_predictions
     energy_predictions = do_predictions(config, df)
-    energy_predictions['segmentkey'] = keys
+    energy_predictions[['segmentkey', 'direction']] = keys
     res = energy_predictions[['segmentkey', config['target_feature'] + '_prediction']]
     res.to_csv(model_path(config) + "segment_predictions.csv", sep=';', header=True, index=False,
                encoding='utf8')
