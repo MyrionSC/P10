@@ -1,6 +1,6 @@
 import Configuration
 
-batch_name = "DirTestBatch"
+batch_name = "TestBatch"
 default_config = Configuration.energy_config
 default_config['batch_dir'] = batch_name + "/"
 
