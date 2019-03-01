@@ -36,5 +36,5 @@ def DNNRegressor(input_dim, output_dim, hidden_layers, cells_per_layer, activati
     # Uncomment this line for multi-GPU support
     # model = multi_gpu_model(model, gpus=2)
 
-    model.compile(loss='mean_squared_error', optimizer=optimizer, metrics=['mae', 'mse', 'mape', rmse])
+    model.compile(loss='mape', optimizer=optimizer, metrics=['mae', 'mse', 'mape', rmse])
     return model
