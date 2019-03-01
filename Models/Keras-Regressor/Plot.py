@@ -11,3 +11,5 @@ for mp in modelPaths:
     print("Creating plots for " + mp + ". Plots can be found in " + mp + "/plots.")
     config, history = load_hist(mp)
     plot_history(history, config)
+
+
