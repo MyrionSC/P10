@@ -53,13 +53,14 @@ if __name__ == "__main__":
         DROP TABLE IF EXISTS models.{0};
         
         CREATE TABLE models.{0} (
-            segmentkey bigint PRIMARY KEY,
+            segmentkey bigint,
+            direction functionality.driving_direction,
             cost float
         );
     """.format(tablename)
 
     copy_qry = """
-        COPY models.{0} (segmentkey, cost) 
+        COPY models.{0} (segmentkey, direction, cost) 
         FROM '{1}' 
         DELIMITER ';' 
         CSV HEADER 
@@ -67,6 +68,11 @@ if __name__ == "__main__":
     """.format(tablename, os.path.abspath(model_path(config) + "segment_predictions.csv"))
 
     index_qry = """
+        CREATE INDEX models_{0}_segmentkey_direction_idx
+            ON models.{0} USING btree
+            (segmentkey, direction)
+            TABLESPACE pg_default;
+            
         CREATE INDEX models_{0}_segmentkey_idx
             ON models.{0} USING btree
             (segmentkey)
