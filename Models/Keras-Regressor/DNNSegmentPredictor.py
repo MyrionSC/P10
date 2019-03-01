@@ -47,8 +47,9 @@ def do_predictions(config, df):
 def create_segment_predictions(config):
     df = read_road_map_data(month, quarter, weekday)
     keys = df[['segmentkey']]
-    speed_predictions = do_predictions(speed_config, df)
-    df['speed_prediction'] = speed_predictions
+    if 'speed_prediction' in config['target_features']:
+        speed_predictions = do_predictions(speed_config, df)
+        df['speed_prediction'] = speed_predictions
     energy_predictions = do_predictions(config, df)
     energy_predictions['segmentkey'] = keys
     res = energy_predictions[['segmentkey', config['target_feature'] + '_prediction']]
