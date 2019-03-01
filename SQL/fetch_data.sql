@@ -1,8 +1,6 @@
 DROP VIEW IF EXISTS experiments.segments_temp_view;
 CREATE VIEW experiments.segments_temp_view AS
-SELECT  trips_table.trip_id as trip_id,
         trips_table.id as mapmatched_id,
-        trips_table.trip_segmentno as trip_segmentno,
         trips_table.segmentkey as segmentkey,
         osm_map.categoryid,
         CASE WHEN incline_table.incline_percentage IS NOT NULL
@@ -19,16 +17,12 @@ SELECT  trips_table.trip_id as trip_id,
              THEN -wind_table.tailwind_magnitude 
              ELSE 0
         END as headwind_speed,
-        time_table.min_from_midnight,
         time_table.quarter,
         date_table.weekday,
         date_table.month,
         trips_table.ev_kwh,
-        osm_map.startpoint as startpoint,
-        osm_map.endpoint as endpoint,
-        accel_table.acceleration,
-        accel_table.deceleration,
-        speedlimit_table.speedlimit
+        speedlimit_table.speedlimit,
+        inter_table.intersection
 FROM experiments.mi904e18_training as trips_table, 
         maps.osm_dk_20140101 as osm_map,
         dims.dimdate as date_table, 
@@ -36,16 +30,16 @@ FROM experiments.mi904e18_training as trips_table,
         experiments.mi904e18_segment_incline as incline_table,
         dims.dimweathermeasure as weather_table, 
         experiments.mi904e18_wind_vectors as wind_table,
-         experiments.mi904e18_accel_decel as accel_table,
-         experiments.mi904e18_speedlimits as speedlimit_table
+        experiments.mi904e18_speedlimits as speedlimit_table,
+        experiments.rmp10_intersections as inter_table
 WHERE trips_table.segmentkey = osm_map.segmentkey 
     AND trips_table.datekey = date_table.datekey 
     AND trips_table.timekey = time_table.timekey 
     AND trips_table.segmentkey = incline_table.segmentkey
     AND trips_table.weathermeasurekey = weather_table.weathermeasurekey
     AND trips_table.id = wind_table.vector_id
+    AND trips_table.segmentkey = inter_table.segmentkey
     AND trips_table.ev_kwh IS NOT NULL
-    AND trips_table.id = accel_table.mapmatched_id
     AND trips_table.segmentkey = speedlimit_table.segmentkey;
 
 \copy (SELECT * FROM experiments.segments_temp_view) TO '../Models/data/Data.csv' HEADER CSV;  
