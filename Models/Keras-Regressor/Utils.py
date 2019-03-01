@@ -371,7 +371,7 @@ def read_road_map_data(month, quarter, weekday):
             osm.meters as segment_length, 
             sl.speedlimit, 
             osm.categoryid,
-            CASE WHEN inter.instersection THEN 1 ELSE 0 END as intersection
+            CASE WHEN inter.intersection THEN 1 ELSE 0 END as intersection
         FROM maps.osm_dk_20140101 osm
         FULL OUTER JOIN experiments.mi904e18_speedlimits sl
         ON sl.segmentkey = osm.segmentkey
@@ -391,7 +391,7 @@ def read_road_map_data(month, quarter, weekday):
             osm.meters as segment_length, 
             sl.speedlimit, 
             osm.categoryid,
-            CASE WHEN inter.instersection THEN 1 ELSE 0 END as intersection
+            CASE WHEN inter.intersection THEN 1 ELSE 0 END as intersection
         FROM maps.osm_dk_20140101 osm
         FULL OUTER JOIN experiments.mi904e18_speedlimits sl
         ON sl.segmentkey = osm.segmentkey
