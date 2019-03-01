@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from LocalSettings import database
 from Configuration import *
 import pandas as pd

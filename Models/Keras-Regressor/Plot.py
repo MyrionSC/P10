@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from Plots import plot_history, load_hist
 import sys
 

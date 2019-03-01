@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from Utils import save_model, read_data, load_model, printparams
 from Model import DNNRegressor
 import Configuration

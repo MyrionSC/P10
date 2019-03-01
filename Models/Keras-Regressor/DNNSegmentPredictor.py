@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from Utils import load_model, one_hot, get_embeddings, read_road_map_data
 import pandas as pd
 from Configuration import *
