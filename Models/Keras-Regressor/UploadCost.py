@@ -54,7 +54,7 @@ if __name__ == "__main__":
         
         CREATE TABLE models.{0} (
             segmentkey bigint,
-            direction functionality.driving_direction,
+            direction functionality.direction_driving,
             cost float
         );
     """.format(tablename)
