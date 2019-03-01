@@ -6,9 +6,8 @@ if len(sys.argv) < 2:
     print(help)
     exit()
 
-
-
-args = sys.argv[1:]
-model_path = args[0]
-config, history = load_hist(model_path)
-plot_history(history, config)
+modelPaths = sys.argv[1:]
+for mp in modelPaths:
+    print("Creating plots for " + mp + ". Plots can be found in " + mp + "/plots.")
+    config, history = load_hist(mp)
+    plot_history(history, config)
