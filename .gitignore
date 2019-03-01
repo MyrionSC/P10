@@ -77,4 +77,5 @@ Backend/db_settings.py
 
 Embeddings/LINE/line_input.csv
 
+nohup.out
 
