@@ -3,7 +3,7 @@ from psycopg2.extras import RealDictCursor
 import pandas as pd
 from db_settings import *
 
-dijkstra_qry = '\'SELECT segmentkey as id, startpoint as source, endpoint as target, segmentgeom as the_geom, test as cost FROM maps.routing2\''
+dijkstra_qry = '\'SELECT rou.segmentkey as id, startpoint as source, endpoint as target, segmentgeom as the_geom, model.cost FROM maps.routing3 rou JOIN models.no_time model ON model.segmentkey = rou.segmentkey AND model.direction = rou.direction\''
 
 def query(str, db):
     conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(db['name'], db['user'], db['port'], db['host'], db['password']))
