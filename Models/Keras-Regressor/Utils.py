@@ -384,7 +384,7 @@ def read_road_map_data(month, quarter, weekday):
                  THEN -inc.incline
                  ELSE 0 
             END as incline,
-            'BACKWARD' as direction
+            'BACKWARD' as direction,
             osm.meters as segment_length, 
             sl.speedlimit, 
             osm.categoryid
