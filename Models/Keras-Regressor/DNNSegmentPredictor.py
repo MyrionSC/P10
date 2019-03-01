@@ -52,7 +52,7 @@ def create_segment_predictions(config):
         df['speed_prediction'] = speed_predictions
     energy_predictions = do_predictions(config, df)
     energy_predictions[['segmentkey', 'direction']] = keys
-    res = energy_predictions[['segmentkey', config['target_feature'] + '_prediction']]
+    res = energy_predictions[['segmentkey', 'direction', config['target_feature'] + '_prediction']]
     res.to_csv(model_path(config) + "segment_predictions.csv", sep=';', header=True, index=False,
                encoding='utf8')
 
