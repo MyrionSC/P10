@@ -25,7 +25,7 @@ SELECT
     date_table.month,
     trips_table.ev_kwh,
     speedlimit_table.speedlimit,
-    inter_table.intersection
+    CASE WHEN inter_table.intersection THEN 1 ELSE 0 END as intersection
 FROM experiments.mi904e18_training as trips_table, 
     maps.osm_dk_20140101 as osm_map,
     dims.dimdate as date_table, 
