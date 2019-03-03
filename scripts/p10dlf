@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# With the powers granted unto us by fasd, download files from the server
+
+if [ "$#" -lt 1 ]; then
+    echo "Usage: arguments should be a fasd match string."
+    echo "Example: mo ke up would probably give you the file /home/rmp10/P10/Models/Keras-Regressor/UploadCost.py"
+    echo "Remember: Files has to be index by fasd on the server for this to work. If you cannot find a file, then that is probably the problem."
+    exit
+   exit
+fi
+
+P10=rmp10@172.25.11.191
+
+FILES=$(ssh $P10 "fasd -fl home rmp10 ${@:1}")
+
+for FILE in $FILES; do
+    scp -r $P10:$FILE .
+done
+

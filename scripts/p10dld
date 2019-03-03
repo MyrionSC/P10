@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+# With the powers granted unto us by fasd, download directories from the server
+
+if [ "$#" -lt 1 ]; then
+    echo "Usage: arguments should be a fasd match string."
+    echo "Example: mo ke vis would probably give you the directory /home/rmp10/P10/Models/Keras-Regressor/Visualization"
+    echo "Remember: Directories have to be index by fasd on the server for this to work. If you cannot find a directory, then that is probably the problem."
+    exit
+fi
+
+P10=rmp10@172.25.11.191
+
+DIRS=$(ssh $P10 "fasd -dl home rmp10 ${@:1}")
+
+for DIR in $DIRS; do
+    scp -r $P10:$DIR .
+done
+

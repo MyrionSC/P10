@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# show the files and dirs indexed by fasd on the server, from a match string
+
+if [ "$#" -lt 1 ]; then
+    echo "Usage: arguments should be a fasd match string."
+    exit
+fi
+
+P10=rmp10@172.25.11.191
+
+RESULT=$(ssh $P10 "fasd -al home rmp10 ${@:1}")
+
+for ITEM in $RESULT; do
+    echo $ITEM
+done
+
