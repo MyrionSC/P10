@@ -6,14 +6,17 @@ default_config['batch_dir'] = batch_name + "/"
 configs = []
 
 configScale = default_config.copy()
+configScale['model_name_base'] = "Scale"
 configScale['embedding'] = None
 configScale['features_used'] = ['categoryid', 'segment_length', 'height_change', 'temperature', 'quarter', 'weekday', 'month']
 configs.append(configScale)
 
 
 configNoScale = default_config.copy()
+configNoScale['model_name_base'] = "NoScale"
 configNoScale['embedding'] = None
 configNoScale['features_used'] = ['categoryid', 'segment_length', 'height_change', 'temperature', 'quarter', 'weekday', 'month']
+configNoScale['scale'] = True
 configs.append(configNoScale)
 
 
