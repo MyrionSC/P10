@@ -126,13 +126,9 @@ def predict(config: Config, save_predictions: bool=False):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    do_train = True
-    if len(args) > 0 and args[0] == "predict":
-        do_train = False
-
     default_config = Configuration.energy_config
 
-    if do_train:
-        train(default_config)
-    else:
+    if len(args) > 0 and args[0] == "predict":
         predict(default_config)
+    else:
+        train(default_config)
