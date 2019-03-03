@@ -1,19 +1,24 @@
 import Configuration
 
-batch_name = "PlotTest2"
+batch_name = "MinimalModel"
 default_config = Configuration.energy_config
 default_config['batch_dir'] = batch_name + "/"
+configs = []
+
+configScale = default_config.copy()
+configScale['embedding'] = None
+configScale['features_used'] = ['categoryid', 'segment_length', 'height_change', 'temperature', 'quarter', 'weekday', 'month']
+configs.append(configScale)
 
 
-config = default_config.copy()
-config['epochs'] = 10
-config['hidden_layers'] = 1
-config['cells_per_layer'] = 100
-config['features_used'] = ['categoryid']
-
-configs = [config]
+configNoScale = default_config.copy()
+configNoScale['embedding'] = None
+configNoScale['features_used'] = ['categoryid', 'segment_length', 'height_change', 'temperature', 'quarter', 'weekday', 'month']
+configs.append(configNoScale)
 
 
+# Possible features: ['categoryid', 'incline', 'segment_length', 'height_change',
+# 'speed', 'temperature', 'headwind_speed', 'quarter', 'weekday', 'month', 'speedlimit', 'intersection']
 # energy_config.update({
 #     'embedding': "node2vec-64d",
 #     'batch_size': 8192,
@@ -34,10 +39,3 @@ configs = [config]
 #     'scale': True,
 #     'cyclic_quarter': False
 # })
-
-
-# for i in range(1, 2):
-#     config = default_config.copy()
-#     config['epochs'] = i
-#     configs.append(config)
-

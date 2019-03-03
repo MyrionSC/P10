@@ -82,6 +82,8 @@ energy_config.update({
     'cyclic_quarter': False
 })
 
+# Possible features: ['categoryid', 'incline', 'segment_length', 'height_change', 'speed', 'temperature', 'headwind_speed', 'quarter', 'weekday', 'month', 'speedlimit', 'intersection']
+
 
 def model_dir_name(config: Config) -> str:
     return config['batch_dir'] + config['model_name_base'] + 'epochs_{0}-hidden_layers_{1}-cells_per_layer_{2}-embeddings_{3}/'.format(config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])

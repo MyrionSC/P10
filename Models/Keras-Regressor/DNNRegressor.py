@@ -27,7 +27,7 @@ def read_predicting_data_sets(config: Config, retain_id: bool) -> (pd.DataFrame,
     return X, Y
 
 
-def read_training_data_sets(config: Config) -> (pd.DataFrame, pd.DataFrame):
+def read_training_data_sets(config: Config) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame):
     print()
     printparams(config)
 
