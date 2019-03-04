@@ -38,6 +38,16 @@ class Config(dict):
         super().__init__(**kwargs)
 
 
+def model_dir_name(config: Config) -> str:
+    return config['batch_dir'] + config['model_name_base'] + \
+           'epochs_{0}-hidden_layers_{1}-cells_per_layer_{2}-embeddings_{3}/'.format(
+               config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])
+
+
+def model_path(config: Config) -> str:
+    return paths['modelDir'] + model_dir_name(config)
+
+
 speed_config = Config()
 speed_config.update({
     'embedding': "node2vec-64d",
@@ -60,7 +70,7 @@ speed_config.update({
     'scale': True,
     'cyclic_quarter': False,
     'loss': 'mse',
-    'speed_config': None
+    'speed_model': None
 })
 
 energy_config = Config()
@@ -85,16 +95,7 @@ energy_config.update({
     'scale': True,
     'cyclic_quarter': False,
     'loss': 'mse',
-    'speed_config': speed_config
+    'speed_model': model_path(speed_config)
 })
 
 # Possible features: ['categoryid', 'incline', 'segment_length', 'speed_prediction', 'height_change', 'speed', 'temperature', 'headwind_speed', 'quarter', 'weekday', 'month', 'speedlimit', 'intersection']
-
-
-def model_dir_name(config: Config) -> str:
-    return config['batch_dir'] + config['model_name_base'] + 'epochs_{0}-hidden_layers_{1}-cells_per_layer_{2}-embeddings_{3}/'.format(config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])
-
-
-def model_path(config: Config) -> str:
-    return paths['modelDir'] + model_dir_name(config)
-
