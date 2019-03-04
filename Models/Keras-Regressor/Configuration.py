@@ -58,7 +58,8 @@ speed_config.update({
     'speed_prediction_file': "predictions.csv",
     'scale': True,
     'cyclic_quarter': False,
-    'loss': 'mse'
+    'loss': 'mse',
+    'speed_config': None
 })
 
 energy_config = Config()
@@ -81,7 +82,8 @@ energy_config.update({
     'speed_prediction_file': "predictions.csv",
     'scale': True,
     'cyclic_quarter': False,
-    'loss': 'mse'
+    'loss': 'mse',
+    'speed_config': speed_config
 })
 
 # Possible features: ['categoryid', 'incline', 'segment_length', 'height_change', 'speed', 'temperature', 'headwind_speed', 'quarter', 'weekday', 'month', 'speedlimit', 'intersection']

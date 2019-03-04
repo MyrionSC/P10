@@ -68,7 +68,7 @@ def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=F
 
     # If speed predictions are set to be used, include them
     if 'speed_prediction' in config['features_used']:
-        df = get_speed_predictions(df, config)
+        df = get_speed_predictions(df, config['speed_config'])
 
     # One hot encode categorical features
     if 'month' in config['features_used'] or 'weekday' in config['features_used']\
@@ -123,7 +123,7 @@ def get_base_data(path: str, config: Config) -> pd.DataFrame:
 
 
 # Get speed predictions from a file and add them to the dataframe
-def get_speed_predictions(df: pd.DataFrame, config: Config) -> pd.DataFrame:
+def get_speed_predictions(df: pd.DataFrame, speed_config: Config) -> pd.DataFrame:
     print("Reading speed predictions from " + model_path(speed_config) + 'predictions.csv')
     start_time = time.time()
 

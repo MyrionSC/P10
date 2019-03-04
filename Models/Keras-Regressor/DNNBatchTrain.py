@@ -31,7 +31,6 @@ print("starttime: " + str(starttime))
 
 
 for config in configFile['configs']:
-    pprint.pprint(config)
     history = DNN.train(config)
     plot_history(history.history, config)
     #DNN.predict(config, True)
