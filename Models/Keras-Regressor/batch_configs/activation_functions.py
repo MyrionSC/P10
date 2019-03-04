@@ -10,20 +10,29 @@ configs = []
 
 configRELU = default_config.copy()
 configRELU['model_name_base'] = "RELU"
-configRELU['embedding'] = 'node2vec-64d'
 configRELU['activation'] = 'relu'
-configRELU['loss'] = 'mae'
 configs.append(configRELU)
 
 configTanH = default_config.copy()
-configTanH['model_name_base'] = "ArcTan"
-configTanH['embedding'] = 'node2vec-64d'
+configTanH['model_name_base'] = "TanH"
 configTanH['activation'] = 'tanh'
-configTanH['loss'] = 'mae'
-# configTanH['speed_model'] = "Speed_Models/Speed_Model_MAE_epochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d"
 configs.append(configTanH)
 
+configSigmoid = default_config.copy()
+configSigmoid['model_name_base'] = "Sigmoid"
+configSigmoid['activation'] = 'sigmoid'
+# configSigmoid['speed_model'] = "Speed_Models/Speed_Model_MAE_epochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d"
+configs.append(configSigmoid)
+
+configSoftSign = default_config.copy()
+configSoftSign['model_name_base'] = "SoftSign"
+configSoftSign['activation'] = 'softsign'
+configs.append(configSoftSign)
+
+
+
 # Speed_Models/Speed_Model_MAE_epochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d
+# configSoftSign['speed_model'] = "Speed_Models/Speed_Model_MAE_epochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d"
 
 
 
