@@ -12,7 +12,10 @@ if len(sys.argv) != 2:
 print("Training with configs from batch file: " + sys.argv[1])
 
 configFile = {}
-exec(open(sys.argv[1]).read(), configFile)
+if sys.argv[1].startswith('batch_configs/'):
+    exec(open(sys.argv[1]).read(), configFile)
+else:
+    exec(open(('batch_configs/' + sys.argv[1])).read(), configFile)
 
 batchDir = configFile['batch_name']
 starttime = datetime.now()
@@ -26,7 +29,7 @@ for config in configFile['configs']:
     pprint.pprint(config)
     history = DNN.train(config)
     plot_history(history.history, config)
-    DNN.predict(config, True)
+    #DNN.predict(config, True)
 
 # print and save model training runtime
 endtime = datetime.now()

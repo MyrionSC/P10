@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from Utils import load_model, one_hot, get_embeddings, read_road_map_data
+from Utils import load_model, one_hot, get_embeddings, read_road_map_data, scale_df
 import pandas as pd
 from Configuration import *
 import sys
@@ -34,6 +34,9 @@ def do_predictions(config, df):
     features.set_index(['segmentkey', 'direction'], inplace=True)
     print("Dataframe shape: %s" % str(features.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))
+
+    if config['scale']:
+        features = scale_df(features, config)
 
     print()
     print("------ Predicting " + config['target_feature'] + " ------")

@@ -273,7 +273,7 @@ def extract_label(df: pd.DataFrame, config: Config) -> (pd.DataFrame, pd.DataFra
 
 
 # Scale the dataframe
-def scale_df(df: pd.DataFrame, config: Config, re_scale: bool) -> pd.DataFrame:
+def scale_df(df: pd.DataFrame, config: Config, re_scale=False) -> pd.DataFrame:
     start_time = time.time()
 
     # Cache the column names of the dataframe.
@@ -366,6 +366,10 @@ def read_road_map_data(month, quarter, weekday):
             CASE WHEN inc.incline IS NOT NULL 
                  THEN inc.incline
                  ELSE 0 
+            END as height_change,
+            CASE WHEN inc.incline IS NOT NULL
+                 THEN inc.incline_percentage
+                 ELSE 0
             END as incline,
             'FORWARD' as direction,
             osm.meters as segment_length, 
@@ -386,6 +390,10 @@ def read_road_map_data(month, quarter, weekday):
             CASE WHEN inc.incline IS NOT NULL 
                  THEN -inc.incline
                  ELSE 0 
+            END as height_change,
+            CASE WHEN inc.incline IS NOT NULL
+                 THEN -inc.incline_percentage
+                 ELSE 0
             END as incline,
             'BACKWARD' as direction,
             osm.meters as segment_length, 

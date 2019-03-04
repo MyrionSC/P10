@@ -54,9 +54,7 @@ def train_model(X_train: pd.DataFrame, Y_train: pd.DataFrame, X_validation: pd.D
     start_time = time.time()
 
     # Create estimator
-    estimator = DNNRegressor(len(list(X_train)), len(list(Y_train)), config['hidden_layers'], config['cells_per_layer'],
-                             config['activation'], config['kernel_initializer'], config['optimizer'],
-                             config['initial_dropout'], config['dropout'])
+    estimator = DNNRegressor(len(list(X_train)), len(list(Y_train)), config)
 
     # Train estimator and get training history
     history = estimator.fit(X_train, Y_train, epochs=config['epochs'], validation_data=(X_validation, Y_validation),
