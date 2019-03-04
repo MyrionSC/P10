@@ -44,13 +44,14 @@ def plot_history(history, config):
         os.makedirs(modelpath + "plots/")
     with PdfPages(modelpath + '/plots/combined.pdf') as pdf:
         for key in [x for x in sorted(history) if not x.startswith('val') and x != 'train_r2']:
-            plt.plot([x for x in range(len(history[key]))], history[key], 'b-', label="Training " + key)
-            plt.plot([x for x in range(len(history[key]))], history['val_' + key], 'r-', label="Validation " + key)
-            plt.legend()
-            plt.savefig(modelpath + "plots/" + key + ".pdf", bbox_inches='tight')
-            pdf.savefig()
-            plt.clf()
-            plt.close()
+            if len(history[key]) > 1:
+                plt.plot([x for x in range(1, len(history[key]))], history[key], 'b-', label="Training " + key)
+                plt.plot([x for x in range(1, len(history[key]))], history['val_' + key], 'r-', label="Validation " + key)
+                plt.legend()
+                plt.savefig(modelpath + "plots/" + key + ".pdf", bbox_inches='tight')
+                pdf.savefig()
+                plt.clf()
+                plt.close()
 
 
 
