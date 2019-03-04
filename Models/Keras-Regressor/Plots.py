@@ -42,12 +42,12 @@ def plot_history(history, config):
     modelpath = model_path(config)
     if not os.path.isdir(modelpath + "plots/"):
         os.makedirs(modelpath + "plots/")
-    with PdfPages(modelpath + '/plots/combined.pdf') as pdf:
+    with PdfPages(modelpath + '/plots/' + config['model_name_base'] + '_combined.pdf') as pdf:
         for key in [x for x in sorted(history) if not x.startswith('val') and x != 'train_r2']:
             plt.plot([x for x in range(len(history[key]))], history[key], 'b-', label="Training " + key)
             plt.plot([x for x in range(len(history[key]))], history['val_' + key], 'r-', label="Validation " + key)
             plt.legend()
-            plt.savefig(modelpath + "plots/" + key + ".pdf", bbox_inches='tight')
+            plt.savefig(modelpath + "plots/" + config['model_name_base'] + "_" + key + ".pdf", bbox_inches='tight')
             pdf.savefig()
             plt.clf()
             plt.close()
