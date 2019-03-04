@@ -6,6 +6,7 @@ import sys
 import json
 import os
 import time
+import errno
 
 month = '2'
 quarter = '47'
@@ -67,13 +68,13 @@ if __name__ == "__main__":
     if len(args) > 1:
         print("Invalid number of arguments: " + str(len(args)))
         print("Expected 0 or 1")
-        quit()
+        exit(errno.E2BIG)
 
     if len(args) == 1:
         modelpath = args[0].strip()
         if not os.path.isdir(modelpath):
             print("Specified model does not exist")
-            quit()
+            exit(errno.ENOENT)
         with open(modelpath + "config.json", "r") as f:
             config = json.load(f)
     else:

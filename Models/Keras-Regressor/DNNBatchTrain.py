@@ -3,19 +3,24 @@ from datetime import datetime
 import pprint
 import sys
 import DNNRegressor as DNN
+import os
+import errno
 from Plots import plot_history
 
 if len(sys.argv) != 2:
     print("First argument must be a batch_config file. Can usually be found in batch_configs dir")
-    exit()
+    exit(errno.E2BIG)
 
 print("Training with configs from batch file: " + sys.argv[1])
 
 configFile = {}
-if sys.argv[1].startswith('batch_configs/'):
-    exec(open(sys.argv[1]).read(), configFile)
-else:
-    exec(open(('batch_configs/' + sys.argv[1])).read(), configFile)
+
+if not os.path.exists(sys.argv[1]):
+    print("No such configuration found!")
+    exit(errno.ENOENT)
+with open(sys.argv[1]) as f:
+    exec(f.read(), configFile)
+
 
 batchDir = configFile['batch_name']
 starttime = datetime.now()
