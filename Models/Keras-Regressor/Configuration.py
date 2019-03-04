@@ -52,7 +52,8 @@ speed_config.update({
     'kernel_initializer': 'normal',
     'optimizer': 'adamax',
     'target_feature': 'speed',
-    'features_used': ['incline', 'segment_length', 'categoryid', 'speedlimit'],
+    'features_used': ['categoryid', 'segment_length', 'speedlimit', 'height_change', 'temperature',
+                      'quarter', 'weekday', 'month'],
     'model_name_base': 'SpeedModel-',
     'batch_dir': "SpeedModel/",
     'speed_prediction_file': "predictions.csv",
@@ -76,7 +77,8 @@ energy_config.update({
     'kernel_initializer': 'normal',
     'optimizer': 'adamax',
     'target_feature': 'ev_kwh',
-    'features_used': ['incline', 'segment_length', 'speed_prediction', 'categoryid', 'speedlimit'],
+    'features_used': ['categoryid', 'segment_length', 'speed_prediction', 'height_change', 'temperature',
+                      'quarter', 'weekday', 'month'],
     'model_name_base': 'Model-',
     'batch_dir': "TestOutput/",
     'speed_prediction_file': "predictions.csv",
@@ -86,7 +88,7 @@ energy_config.update({
     'speed_config': speed_config
 })
 
-# Possible features: ['categoryid', 'incline', 'segment_length', 'height_change', 'speed', 'temperature', 'headwind_speed', 'quarter', 'weekday', 'month', 'speedlimit', 'intersection']
+# Possible features: ['categoryid', 'incline', 'segment_length', 'speed_prediction', 'height_change', 'speed', 'temperature', 'headwind_speed', 'quarter', 'weekday', 'month', 'speedlimit', 'intersection']
 
 
 def model_dir_name(config: Config) -> str:
