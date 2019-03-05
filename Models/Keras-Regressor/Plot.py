@@ -9,7 +9,7 @@ if len(sys.argv) < 2:
 
 modelPaths = sys.argv[1:]
 for mp in modelPaths:
-    print("Creating plots for " + mp + ". Plots can be found in " + mp + "/plots.")
+    print("Creating plots for " + mp + ". Plots can be found in " + mp + "plots.")
     config, history = load_hist(mp)
     plot_history(history, config)
 

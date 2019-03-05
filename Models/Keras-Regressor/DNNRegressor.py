@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from Utils import save_model, read_data, load_model, printparams
 from Model import DNNRegressor
+from Plots import plot_history
 import Configuration
 from Configuration import paths, model_path, Config
 from tensorflow import set_random_seed
@@ -77,19 +78,18 @@ def calculate_results(estimator, X: pd.DataFrame, Y: pd.DataFrame, config: Confi
     return pd.DataFrame(prediction, columns=['prediction']), r2
 
 
-def save_history(history, train_r2: float, val_r2: float, config: Config):
+def save_history(history, config: Config):
     modelpath = model_path(config)
     print("")
     print("------ Saving history ------")
     start_time = time.time()
-    history.history['train_r2'] = train_r2
-    history.history['val_r2'] = val_r2
     if not os.path.isdir(modelpath):
         os.makedirs(modelpath)
     with open(modelpath + 'history.json', "w") as f:
         f.write(json.dumps(history.history, indent=4))
     print("History saved")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
+    return history
 
 
 def train(config: Config):
@@ -114,7 +114,10 @@ def train(config: Config):
     val_predictions, val_r2 = calculate_results(model, X_validation, Y_validation, config)
     print("")
     print("Train R2: {:f}".format(train_r2) + "  -  Validation R2: {:f}".format(val_r2))
-    save_history(history, train_r2, val_r2, config)
+    history.history['train_r2'] = train_r2
+    history.history['val_r2'] = val_r2
+    save_history(history, config)
+    plot_history(history, config)
     return history
 
 
