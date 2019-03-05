@@ -1,6 +1,6 @@
 import Configuration
 
-batch_name = "ActivationFunctions"
+batch_name = "EnergyLossActivationGrid"
 default_config = Configuration.energy_config
 default_config['batch_dir'] = batch_name + "/"
 configs = []
