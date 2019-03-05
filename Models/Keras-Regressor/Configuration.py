@@ -93,7 +93,7 @@ energy_config.update({
     'scale': True,
     'cyclic_quarter': False,
     'loss': 'mse',
-    'speed_model_path': 'saved_models/Speed_Models/Speed_Model_MSE_epochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d' # should be relative path from Keras, eg: saved_models/Speed_Models/Some_Model
+    'speed_model_path': 'saved_models/SpeedActivationLossGrid/MSE_TanHepochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d' # should be relative path from Keras, eg: saved_models/Speed_Models/Some_Model
 })
 
 # Possible features: ['categoryid', 'incline', 'segment_length', 'speed_prediction', 'height_change', 'speed', 'temperature', 'headwind_speed', 'quarter', 'weekday', 'month', 'speedlimit', 'intersection']
