@@ -7,25 +7,25 @@ configs = []
 
 # MSE
 config_MSE_RELU = default_speed_config.copy()
-config_MSE_RELU['model_name_base'] = "MSE-RELU"
+config_MSE_RELU['model_name_base'] = "MSE_RELU"
 config_MSE_RELU['activation'] = 'relu'
 config_MSE_RELU['loss'] = 'mse'
 configs.append(config_MSE_RELU)
 
 config_MSE_TanH = default_speed_config.copy()
-config_MSE_TanH['model_name_base'] = "MSE-TanH"
+config_MSE_TanH['model_name_base'] = "MSE_TanH"
 config_MSE_TanH['activation'] = 'tanh'
 config_MSE_TanH['loss'] = 'mse'
 configs.append(config_MSE_TanH)
 
 config_MSE_Sigmoid = default_speed_config.copy()
-config_MSE_Sigmoid['model_name_base'] = "MSE-Sigmoid"
+config_MSE_Sigmoid['model_name_base'] = "MSE_Sigmoid"
 config_MSE_Sigmoid['activation'] = 'sigmoid'
 config_MSE_Sigmoid['loss'] = 'mse'
 configs.append(config_MSE_Sigmoid)
 
 config_MSE_SoftSign = default_speed_config.copy()
-config_MSE_SoftSign['model_name_base'] = "MSE-SoftSign"
+config_MSE_SoftSign['model_name_base'] = "MSE_SoftSign"
 config_MSE_SoftSign['activation'] = 'softsign'
 config_MSE_SoftSign['loss'] = 'mse'
 configs.append(config_MSE_SoftSign)
@@ -34,25 +34,25 @@ configs.append(config_MSE_SoftSign)
 config_MAE_RELU = default_speed_config.copy()
 config_MAE_RELU['model_name_base'] = "MAE_RELU"
 config_MAE_RELU['activation'] = 'relu'
-config_MAE_RELU['loss'] = 'mse'
+config_MAE_RELU['loss'] = 'mae'
 configs.append(config_MAE_RELU)
 
 config_MAE_TanH = default_speed_config.copy()
 config_MAE_TanH['model_name_base'] = "MAE_TanH"
 config_MAE_TanH['activation'] = 'tanh'
-config_MAE_TanH['loss'] = 'mse'
+config_MAE_TanH['loss'] = 'mae'
 configs.append(config_MAE_TanH)
 
 config_MAE_Sigmoid = default_speed_config.copy()
 config_MAE_Sigmoid['model_name_base'] = "MAE_Sigmoid"
 config_MAE_Sigmoid['activation'] = 'sigmoid'
-config_MAE_Sigmoid['loss'] = 'mse'
+config_MAE_Sigmoid['loss'] = 'mae'
 configs.append(config_MAE_Sigmoid)
 
 config_MAE_SoftSign = default_speed_config.copy()
 config_MAE_SoftSign['model_name_base'] = "MAE_SoftSign"
 config_MAE_SoftSign['activation'] = 'softsign'
-config_MAE_SoftSign['loss'] = 'mse'
+config_MAE_SoftSign['loss'] = 'mae'
 configs.append(config_MAE_SoftSign)
 
 
