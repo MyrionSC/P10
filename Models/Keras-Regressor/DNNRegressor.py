@@ -93,6 +93,21 @@ def save_history(history, train_r2: float, val_r2: float, config: Config):
 
 
 def train(config: Config):
+    # If using speed model, before doing anything else, check if speed model exists and predictions are generated
+    if 'speed_prediction' in config['features_used']:
+        if not os.path.isdir(config['speed_model_path']):
+            print("Error: A speed model at the given speed_model_path does not exist: " + config['speed_model_path'])
+            exit(1)
+
+        if not os.path.exists(config['speed_model_path'] + '/predictions.csv'):
+            print("a prediction file for the given speed model does not exist: " + config['speed_model_path'])
+            print("Generating speed model predictions before continuing with training...")
+
+            print(config['speed_model_path'] + "/config.json")
+            with open(config['speed_model_path'] + "/config.json") as configFile:
+                speed_config = json.load(configFile)
+            predict(speed_config, True)
+
     X_train, Y_train, X_validation, Y_validation = read_training_data_sets(config)
     model, history = train_model(X_train, Y_train, X_validation, Y_validation, config)
     train_predictions, train_r2 = calculate_results(model, X_train, Y_train, config)
@@ -119,7 +134,8 @@ def predict(config: Config, save_predictions: bool=False):
     if save_predictions:
         predictions.rename(columns={'0': 'prediction'})
         predictions['mapmatched_id'] = keys
-        predictions[['mapmatched_id', 'prediction']].to_csv(model_path(config) + "predictions.csv", index=False)
+        predictions[['mapmatched_id', 'prediction']].to_csv(model_path(config) + "/predictions.csv", index=False)
+        print("Predictions saved to file:" + model_path(config) + "/predictions.csv")
 
 
 if __name__ == "__main__":

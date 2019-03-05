@@ -65,12 +65,11 @@ speed_config.update({
     'features_used': ['categoryid', 'segment_length', 'speedlimit', 'height_change', 'temperature',
                       'quarter', 'weekday', 'month'],
     'model_name_base': 'SpeedModel-',
-    'batch_dir': "SpeedModel/",
-    'speed_prediction_file': "predictions.csv",
+    'batch_dir': "Default_Speed_Models/",
     'scale': True,
     'cyclic_quarter': False,
     'loss': 'mse',
-    'speed_model': None
+    'speed_model_path': None
 })
 
 energy_config = Config()
@@ -90,12 +89,11 @@ energy_config.update({
     'features_used': ['categoryid', 'segment_length', 'speed_prediction', 'height_change', 'temperature',
                       'quarter', 'weekday', 'month'],
     'model_name_base': 'Model-',
-    'batch_dir': "TestOutput/",
-    'speed_prediction_file': "predictions.csv",
+    'batch_dir': "Default_Energy_Models/",
     'scale': True,
     'cyclic_quarter': False,
     'loss': 'mse',
-    'speed_model': model_path(speed_config)
+    'speed_model_path': 'saved_models/Speed_Models/Speed_Model_MSE_epochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d' # should be relative path from Keras, eg: saved_models/Speed_Models/Some_Model
 })
 
 # Possible features: ['categoryid', 'incline', 'segment_length', 'speed_prediction', 'height_change', 'speed', 'temperature', 'headwind_speed', 'quarter', 'weekday', 'month', 'speedlimit', 'intersection']
