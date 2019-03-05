@@ -117,7 +117,7 @@ def train(config: Config):
     history.history['train_r2'] = train_r2
     history.history['val_r2'] = val_r2
     save_history(history, config)
-    plot_history(history, config)
+    plot_history(history.history, config)
     return history
 
 
