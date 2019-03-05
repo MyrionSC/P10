@@ -6,27 +6,16 @@ default_config['batch_dir'] = batch_name + "/"
 configs = []
 
 
-configRELU = default_config.copy()
-configRELU['model_name_base'] = "RELU"
-configRELU['activation'] = 'relu'
-configs.append(configRELU)
+lossList = ["mse", "mae"]
+actiList = ["relu", "tanh", "sigmoid", "softsign"]
 
-configTanH = default_config.copy()
-configTanH['model_name_base'] = "TanH"
-configTanH['activation'] = 'tanh'
-configs.append(configTanH)
-
-configSigmoid = default_config.copy()
-configSigmoid['model_name_base'] = "Sigmoid"
-configSigmoid['activation'] = 'sigmoid'
-# configSigmoid['speed_model_path'] = "Speed_Models/Speed_Model_MAE_epochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d"
-configs.append(configSigmoid)
-
-configSoftSign = default_config.copy()
-configSoftSign['model_name_base'] = "SoftSign"
-configSoftSign['activation'] = 'softsign'
-configs.append(configSoftSign)
-
+for loss in lossList:
+    for acti in actiList:
+        config = default_config.copy()
+        config['model_name_base'] = loss.upper() + "_" + acti.upper()
+        config['loss'] = loss
+        config['activation'] = acti
+        configs.append(config)
 
 
 # Speed_Models/Speed_Model_MAE_epochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d
