@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 if [ "$#" -ne 1 ]; then
     echo "Usage: First argument should be a model batch dir in /home/rmp10/P10/Models/Keras-Regressor/saved_models on the server, or 'latest' to get the most recently trained batch"
     exit
@@ -23,17 +22,23 @@ if [ "$MODELDIRS" = "" ]; then
     exit
 fi
 
-rm -rf "$BATCHNAME-plots"
-mkdir "$BATCHNAME-plots"
+rm -rf "$BATCHNAME"
+mkdir "$BATCHNAME"
 
 for MODEL in $MODELDIRS; do
-    if [ "$MODEL" = "runtime.txt" ]; then
+    # too lazy to research how to do OR operation
+    MODELDIR="$BATCHNAME/$MODEL"
+    if [ "$MODEL" = "batch_metrics.csv" ]; then
+        scp $P10:$MODELBATCHPATH/batch_metrics.csv $MODELDIR
         continue
     fi
-    MODELDIR="$BATCHNAME-plots/$MODEL-plots"
+    if [ "$MODEL" = "runtime.txt" ]; then
+        scp $P10:$MODELBATCHPATH/runtime.txt $MODELDIR
+        continue
+    fi
+    MODELDIR="$BATCHNAME/$MODEL"
     echo "copying plots for $MODEL into $MODELDIR"
     rm -rf $MODELDIR
     mkdir $MODELDIR
     scp $P10:$MODELBATCHPATH/$MODEL/plots/* $MODELDIR
 done
-
