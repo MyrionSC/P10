@@ -38,10 +38,18 @@ def main():
     runtime = endtime - starttime
     print("runtime: " + str(runtime))
 
+    msg = "Done training batch: {0}\n".format(batchDir)
+
     with open("saved_models/" + batchDir + "/runtime.txt", "w+") as file:  # creates / overwrites file
         file.write("starttime: " + str(starttime) + "\n")
+        msg += "starttime: " + str(starttime) + "\n"
         file.write("endtime: " + str(endtime) + "\n")
+        msg += "endtime: " + str(endtime) + "\n"
         file.write("runtime: " + str(runtime) + "\n")
+        msg += "runtime: " + str(runtime) + "\n"
+
+    if os.path.exists("d-msg"):
+        os.system("python d-msg '{0}'".format(msg))
 
     # After batch training is done, grab all metrics and put them into csv file
     compileBatchMetrics("saved_models/" + batchDir)
