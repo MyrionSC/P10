@@ -13,7 +13,7 @@ for initial in init_dropout:
     for rest in dropout:
         for act in actii:
             config = default_config.copy()
-            config['model_name_base'] = "Speed-" + act.upper() + "-Init_{0.1f}-Dropout_{1.1f}".format(initial, rest)
+            config['model_name_base'] = "Speed-" + act.upper() + "-Init_{0:.2f}-Dropout_{1:.2f}".format(initial, rest)
             config['initial_dropout'] = initial
             config['dropout'] = rest
             config['activation'] = act
