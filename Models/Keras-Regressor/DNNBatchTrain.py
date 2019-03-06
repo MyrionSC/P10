@@ -66,18 +66,15 @@ def compileBatchMetrics(batch_path: str):
         file.write("\n")
 
         # write model metrics
-        for model_name, model_metrics in batch_metrics.items():
-            print()
-            print(model_name)
+        sorted_model_names = sorted(batch_metrics.keys())
+        # for model_name, model_metrics in batch_metrics.items():
+        for model_name in sorted_model_names:
             file.write(model_name)
-
             for key in headers:
-                if type(model_metrics[key]) is list:
-                    print(str(model_metrics[key][-1]))
-                    file.write(", " + str(model_metrics[key][-1]))
+                if type(batch_metrics[model_name][key]) is list:
+                    file.write(", " + str(batch_metrics[model_name][key][-1]))
                 else:
-                    print(str(str(model_metrics[key])))
-                    file.write(", " + str(model_metrics[key]))
+                    file.write(", " + str(batch_metrics[model_name][key]))
             file.write("\n")
 
 
