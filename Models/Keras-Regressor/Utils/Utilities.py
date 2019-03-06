@@ -14,9 +14,7 @@ def get_cats(key: str) -> List[str]:
 
 
 def model_dir_name(config: Config) -> str:
-    return config['batch_dir'] + config['model_name_base'] + \
-           'epochs_{0}-hidden_layers_{1}-cells_per_layer_{2}-embeddings_{3}/'.format(
-               config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])
+    return config['batch_dir'] + config['model_name_base'] + '/'
 
 
 def model_path(config: Config) -> str:
