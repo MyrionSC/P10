@@ -2,30 +2,10 @@
 import sys
 import os
 import json
-from Configuration import model_path
+from Utils.Model import model_path
 from DNNSegmentPredictor import create_segment_predictions
-import psycopg2
-from LocalSettings import local_db
-import time
-
-
-def exec(qrys):
-    conn = psycopg2.connect(
-        "dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(local_db['name'], local_db['user'],
-                                                                              local_db['port'], local_db['host'],
-                                                                              local_db['password']))
-    cur = conn.cursor()
-    for qry in qrys:
-        print("Executing query:")
-        print(qry)
-        start_time = time.time()
-        cur.execute(qry)
-        print("Time elapsed: %s seconds\n" % (time.time() - start_time))
-    print()
-    print("Commiting changes.")
-    conn.commit()
-    cur.close()
-    conn.close()
+from Utils.LocalSettings import local_db
+from Utils.SQL import index_qry, copy_qry, table_qry, write_transaction
 
 
 if __name__ == "__main__":
@@ -50,34 +30,10 @@ if __name__ == "__main__":
         print("No predictions present: Generating")
         create_segment_predictions(config)
 
-    table_qry = """
-        DROP TABLE IF EXISTS models.{0};
-        
-        CREATE TABLE models.{0} (
-            segmentkey bigint,
-            direction functionality.direction_driving,
-            cost float
-        );
-    """.format(tablename)
+    qrys = [
+        table_qry(tablename),
+        copy_qry(tablename, os.path.abspath(model_path(config))),
+        index_qry(tablename)
+    ]
 
-    copy_qry = """
-        COPY models.{0} (segmentkey, direction, cost) 
-        FROM '{1}' 
-        DELIMITER ';' 
-        CSV HEADER 
-        ENCODING 'UTF8';
-    """.format(tablename, os.path.abspath(model_path(config) + "segment_predictions.csv"))
-
-    index_qry = """
-        CREATE INDEX models_{0}_segmentkey_direction_idx
-            ON models.{0} USING btree
-            (segmentkey, direction)
-            TABLESPACE pg_default;
-            
-        CREATE INDEX models_{0}_segmentkey_idx
-            ON models.{0} USING btree
-            (segmentkey)
-            TABLESPACE pg_default;
-    """.format(tablename)
-
-    exec([table_qry, copy_qry, index_qry])
+    write_transaction(qrys, local_db)

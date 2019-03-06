@@ -1,4 +1,4 @@
-import Configuration
+from Utils import Configuration
 
 batch_name = "Speed_Models"
 default_config = Configuration.speed_config

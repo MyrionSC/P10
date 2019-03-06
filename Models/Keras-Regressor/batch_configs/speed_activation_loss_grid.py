@@ -1,4 +1,4 @@
-import Configuration
+from Utils import Configuration
 
 batch_name = "SpeedActivationLossGrid"
 default_speed_config = Configuration.speed_config

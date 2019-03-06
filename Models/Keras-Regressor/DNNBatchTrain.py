@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import json
 from datetime import datetime
-from pprint import pprint
 import sys
 import DNNRegressor as DNN
 import os
@@ -46,6 +45,7 @@ def main():
 
     # After batch training is done, grab all metrics and put them into csv file
     compileBatchMetrics("saved_models/" + batchDir)
+
 
 def compileBatchMetrics(batch_path: str):
     batch_metrics = {}

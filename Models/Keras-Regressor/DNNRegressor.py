@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-from Utils import save_model, read_data, load_model, printparams
-from Model import DNNRegressor
-from Plots import plot_history
-import Configuration
-from Configuration import paths, model_path, Config
+from Utils.ReadData import read_data
+from Utils.Model import DNNRegressor, save_model, load_model
+from Utils.Plot import plot_history
+from Utils.Configuration import paths, Config, energy_config
+from Utils.Utilities import model_path, printparams
 from tensorflow import set_random_seed
 from numpy.random import seed
 from sklearn.metrics import r2_score
@@ -143,7 +143,7 @@ def predict(config: Config, save_predictions: bool=False):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    default_config = Configuration.energy_config
+    default_config = energy_config
 
     if len(args) > 0 and args[0] == "predict":
         predict(default_config)

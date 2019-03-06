@@ -38,16 +38,6 @@ class Config(dict):
         super().__init__(**kwargs)
 
 
-def model_dir_name(config: Config) -> str:
-    return config['batch_dir'] + config['model_name_base'] + \
-           'epochs_{0}-hidden_layers_{1}-cells_per_layer_{2}-embeddings_{3}/'.format(
-               config['epochs'], config['hidden_layers'], config['cells_per_layer'], config['embedding'])
-
-
-def model_path(config: Config) -> str:
-    return paths['modelDir'] + model_dir_name(config)
-
-
 speed_config = Config()
 speed_config.update({
     'embedding': "node2vec-64d",

@@ -1,4 +1,4 @@
-import Configuration
+from Utils import Configuration
 
 batch_name = "EnergyLossActivationGrid"
 default_config = Configuration.energy_config

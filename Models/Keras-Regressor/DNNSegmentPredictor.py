@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-from Utils import load_model, one_hot, get_embeddings, read_road_map_data, scale_df
 import pandas as pd
-from Configuration import *
+from Utils.Configuration import *
+from Utils.Model import load_model
+from Utils.ReadData import one_hot, get_embeddings, read_road_map_data, scale_df
+from Utils.Utilities import model_path
 import sys
 import json
 import os

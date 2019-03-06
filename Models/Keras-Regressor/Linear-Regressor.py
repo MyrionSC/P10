@@ -1,7 +1,7 @@
-from Utils import save_model, load_model
-from Utils import read_data
-from Model import LinearRegressor
-from Metrics import *
+from Utils.Model import save_model, load_model
+from Utils.ReadData import read_data
+from Utils.Model import LinearRegressor
+from Utils.Metrics import *
 import pandas as pd
 import time
 from tensorflow import set_random_seed
@@ -12,6 +12,7 @@ import os
 import json
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 from math import sqrt
+
 
 def load_columns(filename, columns=[], index=None):
     """
@@ -33,8 +34,10 @@ def load_columns(filename, columns=[], index=None):
 
     return df
 
+
 def root_mean_squared_error(y_true, y_pred):
     return sqrt(mean_squared_error(y_true, y_pred))
+
 
 train = False
 epochs = 4

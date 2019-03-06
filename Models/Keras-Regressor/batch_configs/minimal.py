@@ -1,4 +1,4 @@
-import Configuration
+from Utils import Configuration
 
 batch_name = "MinimalModel"
 default_config = Configuration.energy_config
