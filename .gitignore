@@ -64,12 +64,10 @@ venv
 data/
 
 # Keras
-#Models/Keras-Regressor/saved-**
-Models/Keras-Regressor/ev_wh_prediction.csv
-Models/Keras-Regressor/saved_history/
 Models/Keras-Regressor/saved_models/
-Models/Keras-Regressor/saved_scaler/
+Models/Keras-Regressor/saved_models
 Models/Keras-Regressor/saved_embeddings/
+Models/Keras-Regressor/saved_embeddings
 
 Backend/map/
 Backend/model/
