@@ -48,7 +48,7 @@ speed_config.update({
     'cells_per_layer': 1000,
     'initial_dropout': 0,  # Dropout value for the first layer
     'dropout': 0,  # Dropout value for all layers after the first layer
-    'activation': 'softsign',
+    'activation': 'tanh',
     'kernel_initializer': 'normal',
     'optimizer': 'adamax',
     'target_feature': 'speed',
@@ -83,7 +83,7 @@ energy_config.update({
     'scale': True,
     'cyclic_quarter': False,
     'loss': 'mse',
-    'speed_model_path': 'saved_models/SpeedActivationLossGrid/MSE_TanHepochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d' # should be relative path from Keras, eg: saved_models/Speed_Models/Some_Model
+    'speed_model_path': 'saved_models/Default_Speed_Models/MSE_TanHepochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d' # should be relative path from Keras, eg: saved_models/Speed_Models/Some_Model
 })
 
 # Possible features: ['categoryid', 'incline', 'segment_length', 'speed_prediction', 'height_change', 'speed', 'temperature', 'headwind_speed', 'quarter', 'weekday', 'month', 'speedlimit', 'intersection']
