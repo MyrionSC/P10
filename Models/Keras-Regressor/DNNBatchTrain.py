@@ -27,29 +27,24 @@ def main():
     starttime = datetime.now()
 
     print("Trained models output dir: " + batchDir)
-    print("starttime: " + str(starttime))
 
     for config in configFile['configs']:
         DNN.train(config)
 
     # print and save model training runtime
     endtime = datetime.now()
-    print("endtime: " + str(endtime))
     runtime = endtime - starttime
-    print("runtime: " + str(runtime))
 
-    msg = "Done training batch: {0}\n".format(batchDir)
+    training_done_msg = "Done training batch: {0}\nstarttime: {1}\nendtime: {2}\nruntime: {3}\n"\
+        .format(batchDir, starttime, endtime, runtime)
+
+    print(training_done_msg)
 
     with open("saved_models/" + batchDir + "/runtime.txt", "w+") as file:  # creates / overwrites file
-        file.write("starttime: " + str(starttime) + "\n")
-        msg += "starttime: " + str(starttime) + "\n"
-        file.write("endtime: " + str(endtime) + "\n")
-        msg += "endtime: " + str(endtime) + "\n"
-        file.write("runtime: " + str(runtime) + "\n")
-        msg += "runtime: " + str(runtime) + "\n"
+        file.write(training_done_msg)
 
-    if os.path.exists("d-msg"):
-        os.system("python d-msg '{0}'".format(msg))
+    if os.path.exists("Utils/d-msg"):
+        os.system("python Utils/d-msg '{0}'".format(training_done_msg))
 
     # After batch training is done, grab all metrics and put them into csv file
     compileBatchMetrics("saved_models/" + batchDir)
