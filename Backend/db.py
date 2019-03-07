@@ -1,21 +1,16 @@
 import psycopg2
-from psycopg2.extras import RealDictCursor
-import pandas as pd
 from db_settings import *
 
-dijkstra_qry = '\'SELECT rou.segmentkey as id, startpoint as source, endpoint as target, segmentgeom as the_geom, model.cost FROM maps.routing3 rou JOIN models.no_time model ON model.segmentkey = rou.segmentkey AND model.direction = rou.direction\''
 
-def query(str, db):
-    conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(db['name'], db['user'], db['port'], db['host'], db['password']))
-    cur = conn.cursor()
-    cur.execute(str)
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-    return rows
+chosen_model = 'no_time'
 
-def get_route(origin, dest):
-    qry = """
+
+def dijkstra_qry(model=chosen_model):
+    return '\'SELECT rou.segmentkey as id, startpoint as source, endpoint as target, segmentgeom as the_geom, model.cost FROM maps.routing3 rou JOIN models.{0} model ON model.segmentkey = rou.segmentkey AND model.direction = rou.direction\''.format(model)
+
+
+def routing_qry(origin, dest, model=chosen_model):
+    return """
     	SELECT row_to_json(fc)::text as path
         FROM(
             SELECT
@@ -35,8 +30,26 @@ def get_route(origin, dest):
                 ) as q
             ) as f
         ) as fc
-    """.format(origin, dest, dijkstra_qry)
-    return query(qry, local_db)[0][0]
+    """.format(origin, dest, dijkstra_qry(model))
+
+
+def query(qry, db):
+    conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(db['name'], db['user'], db['port'], db['host'], db['password']))
+    cur = conn.cursor()
+    cur.execute(qry)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return rows
+
+
+def get_route(origin, dest):
+    return query(routing_qry(origin, dest, chosen_model), local_db)[0][0]
+
+
+def get_baseline(origin, dest):
+    return query(routing_qry(origin, dest, 'baseline'), local_db)[0][0]
+
 
 def get_embedding(key):
 	qry = """
@@ -47,10 +60,10 @@ def get_embedding(key):
 	return str(list(query(qry, local_db)[0])[1:])
 
 
-def getWeatherStation(segmentKey: int) -> str:
+def get_weather_station(segmentkey: int) -> str:
     qry = """
     	SELECT wsname
     	FROM weather.segment_weatherstation_map
     	WHERE segmentkey = {0}
-    """.format(segmentKey)
+    """.format(segmentkey)
     return query(qry, local_db)[0][0]
