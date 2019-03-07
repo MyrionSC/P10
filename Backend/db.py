@@ -6,7 +6,11 @@ chosen_model = 'no_time'
 
 
 def dijkstra_qry(model=chosen_model):
-    return '\'SELECT rou.segmentkey as id, startpoint as source, endpoint as target, segmentgeom as the_geom, model.cost FROM maps.routing3 rou JOIN models.{0} model ON model.segmentkey = rou.segmentkey AND model.direction = rou.direction\''.format(model)
+    if model == 'baseline':
+        return '\'SELECT rou.segmentkey as id, startpoint as source, endpoint as target, segmentgeom as the_geom, model.cost FROM maps.routing3 rou JOIN models.{0} / 1000 + 1 model ON model.segmentkey = rou.segmentkey AND model.direction = rou.direction\''.format(model)
+    else:
+        return '\'SELECT rou.segmentkey as id, startpoint as source, endpoint as target, segmentgeom as the_geom, model.cost FROM maps.routing3 rou JOIN models.{0} + 1 model ON model.segmentkey = rou.segmentkey AND model.direction = rou.direction\''.format(model)
+
 
 
 def routing_qry(origin, dest, model=chosen_model):
