@@ -42,7 +42,7 @@ def read_training_data_sets(config: Config) -> (pd.DataFrame, pd.DataFrame, pd.D
     print("")
     print("------ Reading validation data ------")
     start_time = time.time()
-    X_validation, Y_validation = read_data(paths['validationPath'], config)
+    X_validation, Y_validation, _ = read_data(paths['validationPath'], config)
     print("Validation data read")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
 
