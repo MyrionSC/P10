@@ -50,7 +50,9 @@ def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=F
     if config['embedding'] is not None:
         df = get_embeddings(df, config)
 
-    df.drop(['segmentkey'], axis=1, inplace=True)
+    trip_ids = df[['trip_id']]
+
+    df.drop(['segmentkey', 'trip_id'], axis=1, inplace=True)
     if not retain_id:
         df.drop(['mapmatched_id'], axis=1, inplace=True)
 
@@ -73,7 +75,7 @@ def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=F
     if retain_id:
         features['mapmatched_id'] = keys
 
-    return features, label
+    return features, label, trip_ids
 
 
 # Read the base dataframe
@@ -85,7 +87,7 @@ def get_base_data(path: str, config: Config) -> pd.DataFrame:
     df = pd.read_csv(path, header=0)
 
     # Remove redundant columns
-    df = df[['segmentkey', 'mapmatched_id'] + [config['target_feature']] + [x for x in config['features_used'] if
+    df = df[['segmentkey', 'mapmatched_id', 'trip_id'] + [config['target_feature']] + [x for x in config['features_used'] if
                                                                             not x == 'speed_prediction']]
 
     print("Dataframe shape: %s" % str(df.shape))

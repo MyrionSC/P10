@@ -21,11 +21,11 @@ def read_predicting_data_sets(config: Config, retain_id: bool) -> (pd.DataFrame,
     print("")
     print("------ Reading data ------")
     start_time = time.time()
-    X, Y = read_data(paths['dataPath'], config, retain_id=retain_id)
+    X, Y, trip_ids = read_data(paths['dataPath'], config, retain_id=retain_id)
     print("Data read")
     print("Time elapsed: %s" % (time.time() - start_time))
 
-    return X, Y
+    return X, Y, trip_ids
 
 
 def read_training_data_sets(config: Config) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame):
@@ -35,7 +35,7 @@ def read_training_data_sets(config: Config) -> (pd.DataFrame, pd.DataFrame, pd.D
     print("")
     print("------ Reading training data ------")
     start_time = time.time()
-    X_train, Y_train = read_data(paths['trainPath'], config, re_scale=True)
+    X_train, Y_train, trip_ids = read_data(paths['trainPath'], config, re_scale=True)
     print("Training data read")
     print("Time elapsed: %s" % (time.time() - start_time))
 
@@ -46,7 +46,7 @@ def read_training_data_sets(config: Config) -> (pd.DataFrame, pd.DataFrame, pd.D
     print("Validation data read")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
 
-    return X_train, Y_train, X_validation, Y_validation
+    return X_train, Y_train, X_validation, Y_validation, trip_ids
 
 
 def train_model(X_train: pd.DataFrame, Y_train: pd.DataFrame, X_validation: pd.DataFrame, Y_validation: pd.DataFrame, config: Config):
@@ -67,15 +67,24 @@ def train_model(X_train: pd.DataFrame, Y_train: pd.DataFrame, X_validation: pd.D
     return estimator, history
 
 
-def calculate_results(estimator, X: pd.DataFrame, Y: pd.DataFrame, config: Config) -> (pd.DataFrame, float):
+def calculate_results(estimator, X: pd.DataFrame, Y: pd.DataFrame, trip_ids: pd.DataFrame, config: Config) -> (pd.DataFrame, float):
     print("")
     print("------ Calculating R2-score ------")
     start_time = time.time()
     prediction = estimator.predict(X, batch_size=config['batch_size'], verbose=1)
     r2 = r2_score(Y, prediction)
+
+    trip_prediction = pd.concat([pd.DataFrame(prediction, columns=['prediction']), trip_ids[['trip_id']]], axis=1)\
+        .groupby(['trip_id']).sum().sort_values(by=['trip_id'])
+
+    trip_Y = pd.concat([pd.DataFrame(Y, columns=['true']), trip_ids[['trip_id']]], axis=1)\
+        .groupby(['trip_id']).sum().sort_values(by=['trip_id'])
+
+    trip_r2 = r2_score(trip_Y['true'], trip_prediction['prediction'])
+
     print("")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
-    return pd.DataFrame(prediction, columns=['prediction']), r2
+    return pd.DataFrame(prediction, columns=['prediction']), r2, trip_r2
 
 
 def save_history(history, config: Config):
@@ -108,21 +117,28 @@ def train(config: Config):
                 speed_config = json.load(configFile)
             predict(speed_config, True)
 
-    X_train, Y_train, X_validation, Y_validation = read_training_data_sets(config)
+    X_train, Y_train, X_validation, Y_validation, trip_ids = read_training_data_sets(config)
     model, history = train_model(X_train, Y_train, X_validation, Y_validation, config)
-    train_predictions, train_r2 = calculate_results(model, X_train, Y_train, config)
-    val_predictions, val_r2 = calculate_results(model, X_validation, Y_validation, config)
-    print("")
+
+    train_predictions, train_r2, train_trip_r2 = calculate_results(model, X_train, Y_train, trip_ids, config)
+    val_predictions, val_r2, train_val_r2 = calculate_results(model, X_validation, Y_validation, trip_ids, config)
+
+    print()
+    print("Segments:")
     print("Train R2: {:f}".format(train_r2) + "  -  Validation R2: {:f}".format(val_r2))
+    print("Trips:")
+    print("Train R2: {:f}".format(train_trip_r2) + "  -  Validation R2: {:f}".format(train_val_r2))
     history.history['train_r2'] = train_r2
     history.history['val_r2'] = val_r2
+    history.history['train_trip_r2'] = train_trip_r2
+    history.history['train_val_r2'] = train_val_r2
     save_history(history, config)
     plot_history(history.history, config)
     return history
 
 
 def predict(config: Config, save_predictions: bool=False):
-    X, Y = read_predicting_data_sets(config, save_predictions)
+    X, Y, trip_ids = read_predicting_data_sets(config, save_predictions)
 
     keys = None
     if save_predictions:
@@ -130,9 +146,12 @@ def predict(config: Config, save_predictions: bool=False):
         X.drop(['mapmatched_id'], axis=1, inplace=True)
 
     model = load_model(config)
-    predictions, r2 = calculate_results(model, X, Y, config)
-    print("")
+    predictions, r2, trip_r2 = calculate_results(model, X, Y, trip_ids, config)
+    print()
+    print("Segments:")
     print("R2-score: {:f}".format(r2))
+    print("Trips:")
+    print("R2-score: {:f}".format(trip_r2))
 
     if save_predictions:
         predictions.rename(columns={'0': 'prediction'})
