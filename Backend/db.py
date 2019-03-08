@@ -12,7 +12,6 @@ def dijkstra_qry(model=chosen_model):
         return '\'SELECT rou.segmentkey as id, startpoint as source, endpoint as target, segmentgeom as the_geom, model.cost + 1 as cost FROM maps.routing3 rou JOIN models.{0} model ON model.segmentkey = rou.segmentkey AND model.direction = rou.direction\''.format(model)
 
 
-
 def routing_qry(origin, dest, model=chosen_model):
     return """
     	SELECT row_to_json(fc)::text as path
@@ -24,10 +23,10 @@ def routing_qry(origin, dest, model=chosen_model):
                 SELECT
                     'Feature' as "type",
                     ST_AsGeoJSON(segmentgeom, 6) :: json as "geometry",
-                    json_build_object('cost', cost, 'agg_cost', agg_cost, 'length', length, 'agg_length', agg_length) :: json as "properties"
+                    json_build_object('cost', cost, 'agg_cost', agg_cost, 'length', length, 'agg_length', agg_length, 'segmentkey', id) :: json as "properties"
                 FROM (
                     SELECT
-                        segmentgeom, pgr.cost, pgr.agg_cost, length, sum(length) OVER (ORDER BY pgr.path_seq) as agg_length
+                        osm.segmentkey, segmentgeom, pgr.cost, pgr.agg_cost, length, sum(length) OVER (ORDER BY pgr.path_seq) as agg_length
                     FROM pgr_dijkstra({2}::text, {0}::bigint, {1}::bigint) pgr
                     JOIN maps.routing osm
                     ON pgr.edge = osm.segmentkey
