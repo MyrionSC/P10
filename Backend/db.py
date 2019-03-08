@@ -23,7 +23,7 @@ def routing_qry(origin, dest, model=chosen_model):
                 SELECT
                     'Feature' as "type",
                     ST_AsGeoJSON(segmentgeom, 6) :: json as "geometry",
-                    json_build_object('cost', cost, 'agg_cost', agg_cost, 'length', length, 'agg_length', agg_length, 'segmentkey', id) :: json as "properties"
+                    json_build_object('cost', cost, 'agg_cost', agg_cost, 'length', length, 'agg_length', agg_length, 'segmentkey', segmentkey) :: json as "properties"
                 FROM (
                     SELECT
                         osm.segmentkey, segmentgeom, pgr.cost, pgr.agg_cost, length, sum(length) OVER (ORDER BY pgr.path_seq) as agg_length
