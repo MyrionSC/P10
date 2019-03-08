@@ -20,9 +20,10 @@ def query(str):
     return rows
 
 qry = """
-	SELECT startpoint, endpoint, meters as weight FROM experiments.mi904e18_node_transform
+	SELECT startpoint, endpoint FROM experiments.mi904e18_node_transform
 """
 
 df = pd.DataFrame(query(qry))
+df['weight'] = 1
 
 df.to_csv('line_input.csv', sep=" ", header=False, index=False)
