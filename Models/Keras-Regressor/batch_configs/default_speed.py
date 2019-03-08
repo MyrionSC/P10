@@ -6,7 +6,7 @@ default_config['batch_dir'] = batch_name + "/"
 configs = []
 
 config = default_config.copy()
-config['epocs'] = 20
+config['epochs'] = 20
 config['model_name_base'] = "DefaultSpeed-epochs_20"
 configs.append(config)
 
