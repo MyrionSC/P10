@@ -77,10 +77,10 @@ def calculate_results(estimator, X: pd.DataFrame, Y: pd.DataFrame, trip_ids: pd.
     trip_prediction = pd.concat([pd.DataFrame(prediction, columns=['prediction']), trip_ids[['trip_id']]], axis=1)\
         .groupby(['trip_id']).sum().sort_values(by=['trip_id'])
 
-    trip_Y = pd.concat([pd.DataFrame(Y, columns=['true']), trip_ids[['trip_id']]], axis=1)\
+    trip_Y = pd.concat([Y[[config['target_feature']]], trip_ids[['trip_id']]], axis=1)\
         .groupby(['trip_id']).sum().sort_values(by=['trip_id'])
 
-    trip_r2 = r2_score(trip_Y['true'], trip_prediction['prediction'])
+    trip_r2 = r2_score(trip_Y[config['target_feature']], trip_prediction['prediction'])
 
     print("")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
