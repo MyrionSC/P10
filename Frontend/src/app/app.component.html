@@ -6,8 +6,13 @@
         <input class="input location-input" [(ngModel)]="dest"><br>
         <button type="submit" class="button calculate-button"
                 [ngClass]="{'is-loading': routeLoading}"
-                (click)="getRoute()"
+                (click)="getRoute('route')"
                 >Calculate route</button>
+        <div class="navbar-divider"></div>
+        <button type="submit" class="button calculate-button"
+                [ngClass]="{'is-loading': routeLoading}"
+                (click)="getRoute('baseline')"
+                >Calculate baseline</button>
         <div class="navbar-divider"></div>
 
         <div *ngIf="routeLoaded" class="box resultsContainer">

@@ -42,7 +42,7 @@ speed_config = Config()
 speed_config.update({
     'embedding': "node2vec-64d",
     'batch_size': 8192,
-    'epochs': 10,
+    'epochs': 10, # When training the BESTEST model possible, use 20 or more epochs
     'iterations': 1,
     'hidden_layers': 6,
     'cells_per_layer': 1000,
@@ -66,7 +66,7 @@ energy_config = Config()
 energy_config.update({
     'embedding': "node2vec-64d",
     'batch_size': 8192,
-    'epochs': 10,
+    'epochs': 10, # When training the BESTEST model possible, use 20 or more epochs
     'iterations': 1,
     'hidden_layers': 6,
     'cells_per_layer': 1000,

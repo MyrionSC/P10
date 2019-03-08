@@ -31,11 +31,11 @@ export class AppComponent implements OnInit {
     routeLoading = false;
     routeLoaded = false;
 
-    getRoute() {
-        const url = this.hostUrl + '/route?origin=' + this.origin + '&dest=' + this.dest;
+    getRoute(endpoint: string) {
+        const url = this.hostUrl + '/' + endpoint + '?origin=' + this.origin + '&dest=' + this.dest;
         console.log('GET: ' + url);
         this.routeLoading = true;
-        this.http.get(url).subscribe(res => {
+        this.http.get(url).subscribe((res: any) => {
             this.routeJson = res;
             this.routeEnergyCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_cost - this.routeJson.features.length;
             this.routeDistance = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_length / 1000;
@@ -43,6 +43,11 @@ export class AppComponent implements OnInit {
             this.map.fitBounds(this.layers[0].getBounds());
             this.routeLoaded = true;
             this.routeLoading = false;
+
+            const segmentKeys = res.features.map(seg => seg.properties.segmentkey );
+            const segmentKeysString = segmentKeys.join(", ");
+            console.log("Segmentkeys of trip:");
+            console.log(segmentKeysString);
         });
     }
 
@@ -51,9 +56,10 @@ export class AppComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.hostUrl = this.document.location.hostname === '172.25.11.191' ?
-            this.hostUrl = 'http://172.25.11.191:5000' :
-            this.hostUrl = 'http://localhost:5000';
+        this.hostUrl = 'http://172.25.11.191:5000';
+        // this.hostUrl = this.document.location.hostname === '172.25.11.191' ?
+        //     this.hostUrl = 'http://172.25.11.191:5000' :
+        //     this.hostUrl = 'http://localhost:5000';
 
         this.options = {
             layers: [
@@ -64,4 +70,5 @@ export class AppComponent implements OnInit {
         };
         this.layers = [];
     }
+
 }
