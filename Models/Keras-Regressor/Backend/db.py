@@ -1,7 +1,7 @@
 import psycopg2
-from db_settings import *
-from Utilities.Model import load_model
-from Configuration import energy_config
+from Utils.LocalSettings import *
+from Utils.Model import load_model
+from Utils.Configuration import energy_config
 
 model = load_model(energy_config)
 

@@ -1,7 +1,7 @@
 from flask import Flask, request, send_from_directory
 from flask_cors import CORS
-from db import *
-import yr
+from Backend.db import *
+import Backend.yr as yr
 
 app = Flask(__name__, static_folder="map")
 CORS(app)

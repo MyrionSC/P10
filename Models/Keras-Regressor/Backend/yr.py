@@ -1,9 +1,9 @@
 import json
-import db
+import Backend.db
 import urllib.request
 import urllib.parse
 from xmltodict import parse as xmlParse
-from Utils import url_ascii_encode
+from Backend.Utils import url_ascii_encode
 
 county_url_dict = {
     "Taastrup": "http://www.yr.no/place/Denmark/Capital/Taastrup/forecast_hour_by_hour.xml",

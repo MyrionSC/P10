@@ -71,6 +71,7 @@ Models/Keras-Regressor/saved_embeddings
 Models/Keras-Regressor/Utils/d-msg
 
 Backend/map/
+Keras-Regressor/Backend/map/
 Backend/model/
 Backend/db_settings.py
 
