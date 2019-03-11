@@ -19,7 +19,7 @@ for x in intervals:
     configs.append(config)
 
     config = energy_config.copy()
-    config['model_name_base'] = "Speed-" + x.upper()
+    config['model_name_base'] = "Energy-" + x.upper()
     if 'quarter' in config['features_used']:
         config['features_used'].remove('quarter')
     config['features_used'].append(x)
