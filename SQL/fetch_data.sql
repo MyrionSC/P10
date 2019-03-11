@@ -8,6 +8,13 @@ SELECT
     osm_map.categoryid,
     CASE WHEN incline_table.incline_percentage IS NOT NULL
          THEN CASE WHEN trips_table.direction = 'BACKWARD'
+                   THEN -incline_table.incline
+                   ELSE incline_table.incline
+              END 
+         ELSE 0
+    END AS height_change,
+    CASE WHEN incline_table.incline_percentage IS NOT NULL
+         THEN CASE WHEN trips_table.direction = 'BACKWARD'
                    THEN -incline_table.incline_percentage
                    ELSE incline_table.incline_percentage
               END 
