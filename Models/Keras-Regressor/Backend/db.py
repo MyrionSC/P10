@@ -1,10 +1,5 @@
 import psycopg2
 from Utils.LocalSettings import *
-from Utils.Model import load_model
-from Utils.Configuration import energy_config
-
-model = load_model(energy_config)
-
 
 chosen_model = 'no_time'
 

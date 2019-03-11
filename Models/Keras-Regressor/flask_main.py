@@ -3,13 +3,13 @@ from flask_cors import CORS
 from Backend.db import *
 import Backend.yr as yr
 
-app = Flask(__name__, static_folder="map")
+app = Flask(__name__, static_folder="Backend/map")
 CORS(app)
 
 
 @app.route("/map")  # serve frontend, which is in map dir
 def map():
-    return send_from_directory('map', 'index.html')
+    return send_from_directory('Backend/map', 'index.html')
 
 
 @app.route("/baseline")
