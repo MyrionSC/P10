@@ -21,6 +21,11 @@ SELECT
          ELSE 0
     END as headwind_speed,
     time_table.quarter,
+    time_table.hour,
+    (time_table.hour / 2)::smallint as two_hour,
+    (time_table.hour / 4)::smallint as four_hour,
+    (time_table.hour / 6)::smallint as six_hour,
+    (time_table.hour / 12)::smallint as twelve_hour,
     date_table.weekday,
     date_table.month,
     trips_table.ev_kwh,
