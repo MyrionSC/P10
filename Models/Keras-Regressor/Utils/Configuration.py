@@ -57,7 +57,7 @@ speed_config.update({
     'model_name_base': 'SpeedModel-',
     'batch_dir': "Default_Speed_Models/",
     'scale': True,
-    'cyclic_quarter': False,
+    'cyclic_time': False,
     'loss': 'mse',
     'speed_model_path': None
 })
@@ -81,7 +81,7 @@ energy_config.update({
     'model_name_base': 'Model-',
     'batch_dir': "Default_Energy_Models/",
     'scale': True,
-    'cyclic_quarter': False,
+    'cyclic_time': False,
     'loss': 'mae',
     'speed_model_path': 'saved_models/Default_Speed_Models/DefaultSpeed-epochs_20' # should be relative path from Keras, eg: saved_models/Speed_Models/Some_Model
 })

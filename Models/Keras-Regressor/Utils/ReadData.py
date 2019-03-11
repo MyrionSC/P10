@@ -57,8 +57,8 @@ def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=F
         df.drop(['mapmatched_id'], axis=1, inplace=True)
 
     # Convert quarter column to a sinusoidal representation if specified
-    if config['cyclic_quarter']:
-        df = convert_quarter(df)
+    if config['cyclic_time']:
+        df = convert_time(df)
 
     # Split data into features and label
     features, label = extract_label(df, config)
@@ -205,16 +205,35 @@ def read_embeddings(config: Config) -> pd.DataFrame:
 
 
 # Convert quarter feature column into a circular sinusoidal representation
-def convert_quarter(df: pd.DataFrame) -> pd.DataFrame:
-    print("Converting \'quarter\' column to circular representation")
+def convert_time(df: pd.DataFrame) -> pd.DataFrame:
+    possible_values = {
+        'quarter': 96,
+        'hour': 24,
+        'two_hour': 12,
+        'four_hour': 6,
+        'six_hour': 4,
+        'twelve_hour': 2
+    }
+
+    targets = [x for x in possible_values.keys() if x in list(df)]
+
+    if len(targets) == 0:
+        print("No time interval columns to convert to circular representation")
+        return df
+    elif len(targets) == 1:
+        print("Converting \'" + targets[0] + "\' column to circular representation")
+    else:
+        print("Converting colums: " + ", ".join(["\'" + x + "\'" for x in targets[:-1]]) + ", and \'" + targets[-1] + "\' to circular representation")
+
     start_time = time.time()
 
-    # Calculate sine and cosine features based on the quarter column
-    sin = np.sin(2 * np.pi * df['quarter'] / 95.0)
-    cos = np.cos(2 * np.pi * df['quarter'] / 95.0)
-    df.drop('quarter', axis=1, inplace=True)
-    df['sin_quarter'] = sin
-    df['cos_quarter'] = cos
+    for target in targets:
+        # Calculate sine and cosine features based on the quarter column
+        sin = np.sin(2 * np.pi * df[target] / (possible_values[target] - 1))
+        cos = np.cos(2 * np.pi * df[target] / (possible_values[target] - 1))
+        df.drop(target, axis=1, inplace=True)
+        df['sin_' + target] = sin
+        df['cos_' + target] = cos
 
     print("Dataframe shape: %s" % str(df.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))
