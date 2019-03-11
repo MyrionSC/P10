@@ -12,7 +12,7 @@ from pandas.api.types import CategoricalDtype
 
 
 # Reads the road map from database
-def read_road_map_data(month, quarter, weekday):
+def read_road_map_data(month, quarter, hour, two_hour, four_hour, six_hour, twelve_hour, weekday):
     qry = road_map_qry()
 
     qry2 = average_weather_qry(month, quarter)
@@ -26,6 +26,11 @@ def read_road_map_data(month, quarter, weekday):
     df['headwind_speed'] = df2['headwind_speed']
     df['month'] = month
     df['quarter'] = quarter
+    df['hour'] = hour
+    df['two_hour'] = two_hour
+    df['four_hour'] = four_hour
+    df['six_hour'] = six_hour
+    df['twelve_hour'] = twelve_hour
     df['weekday'] = weekday
     print("Dataframe shape: %s" % str(df.shape))
     print("Time elapsed: %s seconds\n" % (time.time() - start_time))

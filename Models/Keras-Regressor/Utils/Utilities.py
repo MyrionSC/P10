@@ -1,6 +1,7 @@
 from typing import List
 from Utils.Configuration import Config
 from Utils.Configuration import paths
+import json
 
 
 # Get the possible categories of a feature based on the column key
@@ -33,3 +34,9 @@ def printparams(config: Config):
     for key in sorted(config):
         print(" - " + key + ": " + str(config[key]))
     print()
+
+
+def load_speed_config(energy_config: Config) -> Config:
+    with open(energy_config['speed_model_path'] + "/config.json") as configFile:
+        speed_config = json.load(configFile)
+    return speed_config

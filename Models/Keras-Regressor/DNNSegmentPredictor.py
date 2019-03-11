@@ -3,15 +3,21 @@ import pandas as pd
 from Utils.Configuration import *
 from Utils.Model import load_model
 from Utils.ReadData import one_hot, get_embeddings, read_road_map_data, scale_df
-from Utils.Utilities import model_path
+from Utils.Utilities import model_path, load_speed_config
 import sys
 import json
 import os
 import time
 import errno
+import math
 
 month = '2'
 quarter = '47'
+hour = str(math.floor(int(quarter) / 4))
+two_hour = hour = str(math.floor(int(hour) / 2))
+four_hour = hour = str(math.floor(int(hour) / 4))
+six_hour = hour = str(math.floor(int(hour) / 6))
+twelve_hour = hour = str(math.floor(int(hour) / 12))
 weekday = '4'
 
 
@@ -52,10 +58,10 @@ def do_predictions(config, df):
 
 
 def create_segment_predictions(config):
-    df = read_road_map_data(month, quarter, weekday)
+    df = read_road_map_data(month, quarter, hour, two_hour, four_hour, six_hour, twelve_hour, weekday)
     keys = df[['segmentkey', 'direction']]
     if 'speed_prediction' in config['features_used']:
-        speed_predictions = do_predictions(speed_config, df)
+        speed_predictions = do_predictions(load_speed_config(config), df)
         df['speed_prediction'] = speed_predictions
     energy_predictions = do_predictions(config, df)
     energy_predictions[['segmentkey', 'direction']] = keys

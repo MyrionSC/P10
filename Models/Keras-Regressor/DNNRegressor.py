@@ -17,7 +17,25 @@ seed(1337)  # Numpy seed
 set_random_seed(1337)  # TensorFlow seed
 
 
+def do_speed_predictions_if_not_there(config: Config):
+    if 'speed_prediction' in config['features_used']:
+        if not os.path.isdir(config['speed_model_path']):
+            print("Error: A speed model at the given speed_model_path does not exist: " + config['speed_model_path'])
+            exit(1)
+
+        if not os.path.exists(config['speed_model_path'] + '/predictions.csv'):
+            print("a prediction file for the given speed model does not exist: " + config['speed_model_path'])
+            print("Generating speed model predictions before continuing with training...")
+
+            print(config['speed_model_path'] + "/config.json")
+            with open(config['speed_model_path'] + "/config.json") as configFile:
+                speed_config = json.load(configFile)
+            predict(speed_config, True)
+
+
 def read_predicting_data_sets(config: Config, retain_id: bool) -> (pd.DataFrame, pd.DataFrame):
+    do_speed_predictions_if_not_there(config)
+
     print("")
     print("------ Reading data ------")
     start_time = time.time()
@@ -31,6 +49,8 @@ def read_predicting_data_sets(config: Config, retain_id: bool) -> (pd.DataFrame,
 def read_training_data_sets(config: Config) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame):
     print()
     printparams(config)
+
+    do_speed_predictions_if_not_there(config)
 
     print("")
     print("------ Reading training data ------")
@@ -103,19 +123,6 @@ def save_history(history, config: Config):
 
 def train(config: Config):
     # If using speed model, before doing anything else, check if speed model exists and predictions are generated
-    if 'speed_prediction' in config['features_used']:
-        if not os.path.isdir(config['speed_model_path']):
-            print("Error: A speed model at the given speed_model_path does not exist: " + config['speed_model_path'])
-            exit(1)
-
-        if not os.path.exists(config['speed_model_path'] + '/predictions.csv'):
-            print("a prediction file for the given speed model does not exist: " + config['speed_model_path'])
-            print("Generating speed model predictions before continuing with training...")
-
-            print(config['speed_model_path'] + "/config.json")
-            with open(config['speed_model_path'] + "/config.json") as configFile:
-                speed_config = json.load(configFile)
-            predict(speed_config, True)
 
     X_train, Y_train, X_validation, Y_validation, trip_ids = read_training_data_sets(config)
     model, history = train_model(X_train, Y_train, X_validation, Y_validation, config)

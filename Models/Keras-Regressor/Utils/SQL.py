@@ -138,6 +138,8 @@ def table_qry(tablename):
 
 
 def copy_qry(tablename, path):
+    if not path[:-1] == "/":
+        path += "/"
     return """
         COPY models.{0} (segmentkey, direction, cost) 
         FROM '{1}' 
