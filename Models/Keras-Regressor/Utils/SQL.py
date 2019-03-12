@@ -161,3 +161,19 @@ def index_qry(tablename):
             (segmentkey)
             TABLESPACE pg_default;
     """.format(tablename)
+
+def get_trip_info(trip_id, db):
+    tripSegsQuery = """
+        select *
+        from mapmatched_data.viterbi_match_osm_dk_20140101
+        where trip_id={0}
+        ORDER by trip_segmentno
+    """.format(trip_id)
+    tripMetaQuery = """
+        select *
+        from mapmatched_data.viterbi_meta_osm_dk_20140101
+        where trip_id={0}
+    """.format(trip_id)
+    tripsegs = read_query(tripSegsQuery, db)
+    meta = read_query(tripMetaQuery, db)
+    return tripsegs, meta
