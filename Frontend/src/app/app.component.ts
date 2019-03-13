@@ -24,11 +24,18 @@ export class AppComponent implements OnInit {
     aalLatLong = latLng(57.046707, 9.935932);
     attribution = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors,' +
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>';
+
+    // Routing
     origin: bigint;
     dest: bigint;
     routeJson: any;
     routeEnergyCost: number;
     routeDistance: number;
+
+    // Estimation
+    tripId: any;
+    estimationDirections: any;
+    estimationSegments: any;
 
     hostUrl: string;
 

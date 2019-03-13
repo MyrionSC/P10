@@ -9,11 +9,21 @@ import json
 app = Flask(__name__, static_folder="Backend/map")
 CORS(app)
 
-
+#Serve frontend
 @app.route("/map")  # serve frontend, which is in map dir
 def map():
     return send_from_directory('Backend/map', 'index.html')
 
+
+
+# api
+@app.route("/estimate")  # serve frontend, which is in map dir
+def predict():
+    segments = request.args.get('segments')
+    directions = request.args.get('directions')
+
+
+    return send_from_directory('Backend/map', 'index.html')
 
 @app.route("/baseline")
 def baseline():

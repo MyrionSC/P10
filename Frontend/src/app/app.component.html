@@ -1,38 +1,64 @@
 <div class="outerContainer">
     <div class="formsContainer">
-        <p class="p">Choose model</p>
-        <select class="select model-select" [(ngModel)]="selectedModel">
-            <option *ngFor="let model of modelList" [ngValue]="model">{{model}}</option>
-        </select>
-        <button type="submit" class="button calculate-button"
-                (click)="loadModel()"
-                >Load model</button>
-        <p class="p">Origin</p>
-        <input autofocus class="input location-input" [(ngModel)]="origin"><br>
-        <p class="p">Destination</p>
-        <input class="input location-input" [(ngModel)]="dest"><br>
-        <button type="submit" class="button calculate-button"
-                [ngClass]="{'is-loading': routeLoading}"
-                (click)="getRoute('route')"
-                >Calculate route</button>
-        <div class="navbar-divider"></div>
-        <button type="submit" class="button calculate-button"
-                [ngClass]="{'is-loading': routeLoading}"
-                (click)="getRoute('baseline')"
-                >Calculate baseline</button>
-        <div class="navbar-divider"></div>
+        <p style="margin-top: 0;" class="p function-title">Model</p>
+        <div class="content-box">
+            <select class="select model-select" [(ngModel)]="selectedModel">
+                <option *ngFor="let model of modelList" [ngValue]="model">{{model}}</option>
+            </select>
+            <button type="submit" class="button calculate-button"
+                    (click)="loadModel()">
+                Load model</button>
+        </div>
 
-        <div *ngIf="routeLoaded" class="box resultsContainer">
-            <!-- example results-->
-            <p class="results-p">
-                <i class="mdi mdi-map-marker-distance" aria-hidden="true"></i>
-                {{routeDistance | number:'0.0-2':'en-DK' }} km
-            </p>
-            <p class="results-p">
-                <i class="mdi mdi-flash" aria-hidden="true"></i>
-                {{routeEnergyCost | number:'0.0-2':'en-DK'}} kWh
-            </p>
-            <!--<p><i class="mdi mdi-clock-outline" aria-hidden="true"></i> 1:23</p>-->
+        <!-- Routing -->
+        <p class="function-title">Routing</p>
+        <div class="content-box">
+            <p class="p function-p">Origin</p>
+            <input autofocus class="input location-input" [(ngModel)]="origin"><br>
+            <p class="p function-p">Destination</p>
+            <input class="input location-input" [(ngModel)]="dest"><br>
+            <button type="submit" class="button calculate-button"
+                    [ngClass]="{'is-loading': routeLoading}"
+                    (click)="getRoute('route')">
+                Calculate route</button>
+            <button type="submit" class="button calculate-button"
+                    [ngClass]="{'is-loading': routeLoading}"
+                    (click)="getRoute('baseline')">
+                Calculate baseline</button>
+
+            <div *ngIf="routeLoaded" class="box resultsContainer">
+                <div class="navbar-divider"></div>
+                <!-- example results-->
+                <p class="results-p">
+                    <i class="mdi mdi-map-marker-distance" aria-hidden="true"></i>
+                    {{routeDistance | number:'0.0-2':'en-DK' }} km
+                </p>
+                <p class="results-p">
+                    <i class="mdi mdi-flash" aria-hidden="true"></i>
+                    {{routeEnergyCost | number:'0.0-2':'en-DK'}} kWh
+                </p>
+                <!--<p><i class="mdi mdi-clock-outline" aria-hidden="true"></i> 1:23</p>-->
+            </div>
+        </div>
+
+        <!-- Estimation -->
+        <p class="function-title">Estimation</p>
+        <div class="content-box">
+
+            <p class="p function-p">Known Trip</p>
+            <input class="input location-input" placeholder="Known trip id" [(ngModel)]="tripId"><br>
+
+            <div class="divider-container">
+                <div class="is-divider divider-with-text"></div>
+                <span class="divider-text">OR</span>
+                <div class="is-divider divider-with-text"></div>
+            </div>
+
+            <p class="p function-p">Segments</p>
+            <input class="input location-input" placeholder="[1, 2, ...]" [(ngModel)]="estimationSegments"><br>
+
+            <p class="p function-p">Directions</p>
+            <input class="input location-input" placeholder="['FORWARDS', ...]" [(ngModel)]="estimationDirections"><br>
         </div>
     </div>
 

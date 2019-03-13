@@ -9,7 +9,7 @@ p {
 
 .formsContainer {
     width: 300px;
-    padding: 20px;
+    padding: 10px;
 }
 
 .mapContainer {
@@ -47,6 +47,38 @@ p {
 .results-p {
     margin-bottom: 6px;
     font-size: 18px;
+}
+
+.function-title {
+    margin-left: 20px;
+    margin-top: 10px;
+    font-size: 20px;
+}
+
+.function-p {
+    margin-left: 5px;
+}
+
+.content-box {
+    border: solid 2px #ddd;
+    padding: 10px;
+}
+
+
+
+
+.divider-container {
+    display: flex;
+    width: 100%;
+}
+.divider-with-text {
+    background-color: #ddd;
+    height: 2px;
+    width: 100%;
+    margin: auto;
+}
+.divider-text {
+    margin: 0 5px;
 }
 
 
