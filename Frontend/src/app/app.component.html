@@ -1,5 +1,12 @@
 <div class="outerContainer">
     <div class="formsContainer">
+        <p class="p">Choose model</p>
+        <select class="select model-select" [(ngModel)]="selectedModel">
+            <option *ngFor="let model of modelList" [ngValue]="model">{{model}}</option>
+        </select>
+        <button type="submit" class="button calculate-button"
+                (click)="loadModel()"
+                >Load model</button>
         <p class="p">Origin</p>
         <input autofocus class="input location-input" [(ngModel)]="origin"><br>
         <p class="p">Destination</p>

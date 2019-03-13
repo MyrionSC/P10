@@ -4,6 +4,7 @@ import {geoJSON, latLng, tileLayer} from 'leaflet';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../environments/environment';
 import { DOCUMENT } from '@angular/platform-browser';
+import { map } from "rxjs/operators";
 
 @Component({
     selector: 'app-root',
@@ -12,6 +13,10 @@ import { DOCUMENT } from '@angular/platform-browser';
 })
 export class AppComponent implements OnInit {
     constructor(private http: HttpClient, @Inject(DOCUMENT) private document: any) {}
+
+    modelList = [];
+
+    selectedModel = "";
 
     options = {};
     layers = {};
@@ -51,8 +56,24 @@ export class AppComponent implements OnInit {
         });
     }
 
-    mapReady(map) {
-        this.map = map;
+    getModels(): any {
+        const url = this.hostUrl + '/current_models';
+        this.http.get(url).subscribe((res: any) => {
+           this.modelList = res;
+           this.selectedModel = res[0];
+        });
+    }
+
+    loadModel() {
+        const strs = this.selectedModel.split("/");
+        const url = this.hostUrl + '/load_model?batch=' + strs[0] + '&model_name=' + strs[1];
+        this.http.get<any>(url).subscribe((res: any) => {
+            console.log(res);
+        });
+    }
+
+    mapReady(mp) {
+        this.map = mp;
     }
 
     ngOnInit(): void {
@@ -69,6 +90,7 @@ export class AppComponent implements OnInit {
             center: this.aalLatLong
         };
         this.layers = [];
+        this.getModels();
     }
 
 }
