@@ -1,11 +1,11 @@
 import json
 
-import SQL as db
-import LocalSettings as settings
+import Utils.SQL as db
+import Utils.LocalSettings as settings
 from pprint import pprint
 import pandas as pd
 
-known_energy_trips = [77064, 116699, 138937, 91881, 121462, 4537, 76966, 52557, 175355, 103715]
+known_energy_trips = [116699, 91881, 4537, 76966, 52557, 175355, 103715]
 
 data = {
     'known_energy_route_data': [],
@@ -19,10 +19,14 @@ for trip_id in known_energy_trips:
 
     trip_data = {
         'trip_id': trip_id,
-        'segmentkeys': trip_segs_df['segmentkey'].values.tolist(),
-        'directions': trip_segs_df['direction'].values.tolist(),
         'ev_kwh_trip': trip_segs_df['ev_kwh_trip'].values[-1],
-        'seconds_trip': trip_segs_df['seconds_trip'].values[-1]
+        'seconds_trip': trip_segs_df['seconds_trip'].values[-1],
+        'segments': [
+            {
+                'segmentkey': int(trip_segs_df['segmentkey'][i]),
+                'direction': trip_segs_df['direction'][i]
+            }
+            for i in range(len(trip_segs_df['segmentkey']))]
     }
     data['known_energy_route_data'].append(trip_data)
 

@@ -1,5 +1,5 @@
 from Utils.LocalSettings import main_db
-from Utils.SQL import read_query, road_map_qry, average_weather_qry
+from Utils.SQL import read_query, road_map_qry, average_weather_qry, get_existing_trips
 import pandas as pd
 import numpy as np
 from Utils.Configuration import Config
@@ -9,6 +9,7 @@ import time
 import os
 import json
 from pandas.api.types import CategoricalDtype
+from typing import List
 
 
 # Reads the road map from database
@@ -38,16 +39,24 @@ def read_road_map_data(month, quarter, hour, two_hour, four_hour, six_hour, twel
 
 
 # Read data from csv file at path
-def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=False) -> (pd.DataFrame, pd.DataFrame):
+def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
     # Get the base data from the csv
     df = get_base_data(path, config)
+    return preprocess_data(df, config, re_scale, retain_id)
 
+
+def get_candidate_trip_data(trip_ids: List[int], config: Config, re_scale: bool=False, retain_id: bool=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+    df = get_existing_trips(trip_ids)
+    return preprocess_data(df, config, re_scale, retain_id)
+
+
+def preprocess_data(df: pd.DataFrame, config: Config, re_scale: bool=False, retain_id: bool=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
     # If speed predictions are set to be used, include them
     if 'speed_prediction' in config['features_used']:
         df = get_speed_predictions(df, config['speed_model_path'])
 
     # One hot encode categorical features
-    if 'month' in config['features_used'] or 'weekday' in config['features_used']\
+    if 'month' in config['features_used'] or 'weekday' in config['features_used'] \
             or 'categoryid' in config['features_used']:
         df = one_hot(df)
 
@@ -81,6 +90,20 @@ def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=F
         features['mapmatched_id'] = keys
 
     return features, label, trip_ids
+
+
+def get_base_data_trips(trip_ids, config: Config) -> pd.DataFrame:
+    print("Reading trip data")
+    start_time = time.time()
+
+    df = read_query(get_existing_trips(trip_ids), main_db)
+
+    df = df[['segmentkey', 'mapmatched_id', 'trip_id'] + [config['target_feature']] + [x for x in config['features_used'] if
+                                                                                   not x == 'speed_prediction']]
+
+    print("Dataframe shape: %s" % str(df.shape))
+    print("Time elapsed: %s seconds\n" % (time.time() - start_time))
+    return df
 
 
 # Read the base dataframe

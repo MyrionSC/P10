@@ -2,6 +2,7 @@ from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from Backend.db import *
 import Backend.yr as yr
+import Backend.model as model
 
 app = Flask(__name__, static_folder="Backend/map")
 CORS(app)
@@ -40,3 +41,9 @@ def temperature(segid):
 @app.route("/winddata/<segid>")
 def winddata(segid):
     return str(yr.get_wind(segid))
+
+
+@app.route("/latest_preds")
+def latest_predictions():
+    return model.existing_trips_prediction()
+
