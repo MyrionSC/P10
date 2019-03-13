@@ -66,4 +66,4 @@ def load_model():
     model_name = str(request.args.get('model_name'))
     path = "saved_models/" + batch + "/" + model_name
     model.load_new_model(path)
-    return "Model loaded: " + path
+    return json.dumps("Model loaded: " + path)
