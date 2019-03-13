@@ -4,6 +4,7 @@ from Utils.Model import model_path, load_model
 from Utils.SQL import copy_latest_preds_transaction
 from Utils.LocalSettings import main_db
 from Utils.Utilities import load_config
+from keras import backend as K
 
 known_energy_trips = [116699, 91881, 4537, 76966, 52557, 175355, 103715]
 
@@ -12,7 +13,7 @@ config = load_config(current_model)
 model = load_model(config)
 
 
-def existing_trips_prediction(model, config):
+def existing_trips_prediction():
     X, Y, trip_ids = get_candidate_trip_data(known_energy_trips, config, retain_id=True)
 
     keys = X[['mapmatched_id']]
@@ -34,4 +35,5 @@ def existing_trips_prediction(model, config):
 def load_new_model(path):
     global config, model
     config = load_config(path)
-    model = load_model(path)
+    K.clear_session()
+    model = load_model(config)

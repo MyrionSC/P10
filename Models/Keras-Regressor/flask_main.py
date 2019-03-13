@@ -4,6 +4,7 @@ from Backend.db import *
 import Backend.yr as yr
 import Backend.model as model
 import os
+import json
 
 app = Flask(__name__, static_folder="Backend/map")
 CORS(app)
@@ -54,12 +55,15 @@ def current_models():
     models = []
     batches = os.listdir("saved_models")
     for batch in batches:
-        models += [batch + "/" + model for model in os.listdir("saved_models/" + batch) if
-                   os.path.isdir("saved_models/" + batch + "/" + model)]
-    return models
+        models += [batch + "/" + model_name for model_name in os.listdir("saved_models/" + batch) if
+                   os.path.isdir("saved_models/" + batch + "/" + model_name)]
+    return json.dumps(models)
 
 
 @app.route("/load_model")
 def load_model():
-    path = request.args.get('model')
+    batch = str(request.args.get('batch'))
+    model_name = str(request.args.get('model_name'))
+    path = "saved_models/" + batch + "/" + model_name
     model.load_new_model(path)
+    return "Model loaded: " + path
