@@ -3,6 +3,7 @@ from flask_cors import CORS
 from Backend.db import *
 import Backend.yr as yr
 import Backend.model as model
+import os
 
 app = Flask(__name__, static_folder="Backend/map")
 CORS(app)
@@ -47,3 +48,18 @@ def winddata(segid):
 def latest_predictions():
     return model.existing_trips_prediction()
 
+
+@app.route("/current_models")
+def current_models():
+    models = []
+    batches = os.listdir("saved_models")
+    for batch in batches:
+        models += [batch + "/" + model for model in os.listdir("saved_models/" + batch) if
+                   os.path.isdir("saved_models/" + batch + "/" + model)]
+    return models
+
+
+@app.route("/load_model")
+def load_model():
+    path = request.args.get('model')
+    model.load_new_model(path)

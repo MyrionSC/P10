@@ -12,7 +12,7 @@ config = load_config(current_model)
 model = load_model(config)
 
 
-def existing_trips_prediction():
+def existing_trips_prediction(model, config):
     X, Y, trip_ids = get_candidate_trip_data(known_energy_trips, config, retain_id=True)
 
     keys = X[['mapmatched_id']]
@@ -29,3 +29,9 @@ def existing_trips_prediction():
     copy_latest_preds_transaction(path, main_db)
 
     return "Database updated with trip predictions for model: " + current_model
+
+
+def load_new_model(path):
+    global config, model
+    config = load_config(path)
+    model = load_model(path)
