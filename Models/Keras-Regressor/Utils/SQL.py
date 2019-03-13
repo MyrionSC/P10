@@ -18,6 +18,20 @@ def read_query(qry: str, db: dict):
     return rows
 
 
+def copy_latest_preds_transaction(path, db):
+    conn = psycopg2.connect(
+        "dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(db['name'], db['user'],
+                                                                              db['port'], db['host'],
+                                                                              db['password']))
+    cur = conn.cursor()
+    cur.execute(delete_latest_predictions_qry())
+    with open(path, "r") as file:
+        cur.copy_from(file, "experiments.rmp10_latest_prediction", sep=",", columns=('id', 'prediction'))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
 def write_transaction(qrys: List[str], db: dict):
     conn = psycopg2.connect(
         "dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(db['name'], db['user'],
@@ -180,18 +194,10 @@ def get_trip_info(trip_id, db):
     return tripsegs, meta
 
 
-def update_latest_predictions_qry(path):
-    if not path[:-1] == "/":
-        path += "/"
+def delete_latest_predictions_qry():
     return """
         DELETE FROM experiments.rmp10_latest_prediction;
-
-        COPY experiments.rmp10_latest_prediction (id, prediction) 
-        FROM '{0}' 
-        DELIMITER ';' 
-        CSV HEADER 
-        ENCODING 'UTF8';
-    """.format(path + "segment_predictions.csv")
+    """
 
 
 def get_existing_trips(trip_ids):
@@ -243,7 +249,7 @@ def get_existing_trips(trip_ids):
             experiments.mi904e18_wind_vectors as wind_table,
             experiments.mi904e18_speedlimits as speedlimit_table,
             experiments.rmp10_intersections as inter_table
-        WHERE trips_table.trip_id = ANY(ARRAY[{0}}])
+        WHERE trips_table.trip_id = ANY(ARRAY[{0}])
         AND trips_table.segmentkey = osm_map.segmentkey 
         AND trips_table.datekey = date_table.datekey 
         AND trips_table.timekey = time_table.timekey 
@@ -253,4 +259,4 @@ def get_existing_trips(trip_ids):
         AND trips_table.segmentkey = inter_table.segmentkey
         AND trips_table.ev_kwh IS NOT NULL
         AND trips_table.segmentkey = speedlimit_table.segmentkey;
-    """.format(", ".join(trip_ids))
+    """.format(", ".join([str(x) for x in trip_ids]))

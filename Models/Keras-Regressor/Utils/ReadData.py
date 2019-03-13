@@ -46,7 +46,7 @@ def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=F
 
 
 def get_candidate_trip_data(trip_ids: List[int], config: Config, re_scale: bool=False, retain_id: bool=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
-    df = get_existing_trips(trip_ids)
+    df = get_base_data_trips(trip_ids, config)
     return preprocess_data(df, config, re_scale, retain_id)
 
 
@@ -96,7 +96,7 @@ def get_base_data_trips(trip_ids, config: Config) -> pd.DataFrame:
     print("Reading trip data")
     start_time = time.time()
 
-    df = read_query(get_existing_trips(trip_ids), main_db)
+    df = pd.DataFrame(read_query(get_existing_trips(trip_ids), main_db))
 
     df = df[['segmentkey', 'mapmatched_id', 'trip_id'] + [config['target_feature']] + [x for x in config['features_used'] if
                                                                                    not x == 'speed_prediction']]

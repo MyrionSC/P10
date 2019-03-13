@@ -68,4 +68,5 @@ def load_model(config: Config) -> keras.models.Sequential:
     loaded_model.load_weights(modelpath + 'model.h5')
     print('Model loaded: ' + modelpath)
     loaded_model.compile(loss='mean_squared_error', optimizer=config['optimizer'], metrics=['mae', 'mse', 'mape', rmse])
+    loaded_model._make_predict_function()
     return loaded_model
