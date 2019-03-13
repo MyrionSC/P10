@@ -42,7 +42,7 @@ speed_config = Config()
 speed_config.update({
     'embedding': "node2vec-64d",
     'batch_size': 8192,
-    'epochs': 10, # When training the BESTEST model possible, use 20 or more epochs
+    'epochs': 20, # When training the BESTEST model possible, use 20 or more epochs
     'iterations': 1,
     'hidden_layers': 6,
     'cells_per_layer': 1000,
@@ -66,7 +66,7 @@ energy_config = Config()
 energy_config.update({
     'embedding': "node2vec-64d",
     'batch_size': 8192,
-    'epochs': 10, # When training the BESTEST model possible, use 20 or more epochs
+    'epochs': 20, # When training the BESTEST model possible, use 20 or more epochs
     'iterations': 1,
     'hidden_layers': 6,
     'cells_per_layer': 1000,
@@ -78,7 +78,7 @@ energy_config.update({
     'target_feature': 'ev_kwh',
     'features_used': ['categoryid', 'segment_length', 'speed_prediction', 'height_change', 'temperature',
                       'quarter', 'weekday', 'month'],
-    'model_name_base': 'Model-epochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d',
+    'model_name_base': 'DefaultEnergy-epochs_20',
     'batch_dir': "Default_Energy_Models/",
     'scale': True,
     'cyclic_time': False,
