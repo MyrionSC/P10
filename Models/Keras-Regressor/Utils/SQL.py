@@ -162,6 +162,7 @@ def index_qry(tablename):
             TABLESPACE pg_default;
     """.format(tablename)
 
+
 def get_trip_info(trip_id, db):
     tripSegsQuery = """
         select *
@@ -177,3 +178,79 @@ def get_trip_info(trip_id, db):
     tripsegs = read_query(tripSegsQuery, db)
     meta = read_query(tripMetaQuery, db)
     return tripsegs, meta
+
+
+def update_latest_predictions_qry(path):
+    if not path[:-1] == "/":
+        path += "/"
+    return """
+        DELETE FROM experiments.rmp10_latest_prediction;
+
+        COPY experiments.rmp10_latest_prediction (id, prediction) 
+        FROM '{0}' 
+        DELIMITER ';' 
+        CSV HEADER 
+        ENCODING 'UTF8';
+    """.format(path + "segment_predictions.csv")
+
+
+def get_existing_trips(trip_ids):
+    return """
+        SELECT
+            trips_table.trip_id as trip_id,
+            trips_table.trip_segmentno as trip_segmentno,
+            trips_table.id as mapmatched_id,
+            trips_table.segmentkey as segmentkey,
+            osm_map.categoryid,
+            CASE WHEN incline_table.incline_percentage IS NOT NULL
+                 THEN CASE WHEN trips_table.direction = 'BACKWARD'
+                           THEN -incline_table.incline
+                           ELSE incline_table.incline
+                      END 
+                 ELSE 0
+            END AS height_change,
+            CASE WHEN incline_table.incline_percentage IS NOT NULL
+                 THEN CASE WHEN trips_table.direction = 'BACKWARD'
+                           THEN -incline_table.incline_percentage
+                           ELSE incline_table.incline_percentage
+                      END 
+                 ELSE 0
+            END AS incline,
+            trips_table.meters_segment as segment_length,
+            trips_table.speed / 3.6 as speed,
+            weather_table.air_temperature as temperature,
+            CASE WHEN wind_table.tailwind_magnitude IS NOT NULL
+                 THEN -wind_table.tailwind_magnitude 
+                 ELSE 0
+            END as headwind_speed,
+            time_table.quarter,
+            time_table.hour,
+            (time_table.hour / 2)::smallint as two_hour,
+            (time_table.hour / 4)::smallint as four_hour,
+            (time_table.hour / 6)::smallint as six_hour,
+            (time_table.hour / 12)::smallint as twelve_hour,
+            date_table.weekday,
+            date_table.month,
+            trips_table.ev_kwh,
+            speedlimit_table.speedlimit,
+            CASE WHEN inter_table.intersection THEN 1 ELSE 0 END as intersection
+        FROM experiments.mi904e18_training as trips_table, 
+            maps.osm_dk_20140101 as osm_map,
+            dims.dimdate as date_table, 
+            dims.dimtime as time_table, 
+            experiments.mi904e18_segment_incline as incline_table,
+            dims.dimweathermeasure as weather_table, 
+            experiments.mi904e18_wind_vectors as wind_table,
+            experiments.mi904e18_speedlimits as speedlimit_table,
+            experiments.rmp10_intersections as inter_table
+        WHERE trips_table.trip_id = ANY(ARRAY[{0}}])
+        AND trips_table.segmentkey = osm_map.segmentkey 
+        AND trips_table.datekey = date_table.datekey 
+        AND trips_table.timekey = time_table.timekey 
+        AND trips_table.segmentkey = incline_table.segmentkey
+        AND trips_table.weathermeasurekey = weather_table.weathermeasurekey
+        AND trips_table.id = wind_table.vector_id
+        AND trips_table.segmentkey = inter_table.segmentkey
+        AND trips_table.ev_kwh IS NOT NULL
+        AND trips_table.segmentkey = speedlimit_table.segmentkey;
+    """.format(", ".join(trip_ids))

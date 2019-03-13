@@ -40,3 +40,9 @@ def load_speed_config(energy_config: Config) -> Config:
     with open(energy_config['speed_model_path'] + "/config.json") as configFile:
         speed_config = json.load(configFile)
     return speed_config
+
+
+def load_config(path: str) -> Config:
+    with open(path + "/config.json") as file:
+        config = json.load(file)
+    return config
