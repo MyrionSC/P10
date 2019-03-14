@@ -64,6 +64,10 @@ export class AppComponent implements OnInit {
             const segmentKeysString = segmentKeys.join(", ");
             console.log("Segmentkeys of trip:");
             console.log(segmentKeysString);
+            const directions = res.features.map(seg => seg.properties.segmentkey );
+            const directionsString = directions.join(", ");
+            console.log("Directions of trip:");
+            console.log(directionsString);
         });
     }
 
