@@ -238,7 +238,10 @@ def get_existing_trips(trip_ids):
             (time_table.hour / 12)::smallint as twelve_hour,
             date_table.weekday,
             date_table.month,
-            trips_table.ev_kwh,
+            CASE WHEN trips_table.ev_kwh IS NOT NULL
+                 THEN trips_table.ev_kwh
+                 ELSE 0.0
+            END AS ev_kwh,
             speedlimit_table.speedlimit,
             CASE WHEN inter_table.intersection THEN 1 ELSE 0 END as intersection
         FROM experiments.mi904e18_training as trips_table, 
@@ -258,6 +261,5 @@ def get_existing_trips(trip_ids):
         AND trips_table.weathermeasurekey = weather_table.weathermeasurekey
         AND trips_table.id = wind_table.vector_id
         AND trips_table.segmentkey = inter_table.segmentkey
-        AND trips_table.ev_kwh IS NOT NULL
         AND trips_table.segmentkey = speedlimit_table.segmentkey;
     """.format(", ".join([str(x) for x in trip_ids]))

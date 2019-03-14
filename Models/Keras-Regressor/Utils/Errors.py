@@ -1,0 +1,3 @@
+class TripNotFoundError(Exception):
+    pass
+

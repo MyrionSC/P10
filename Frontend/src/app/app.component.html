@@ -48,7 +48,12 @@
             <p class="p function-p">Known Trip</p>
             <input class="input location-input" placeholder="Known trip id" [(ngModel)]="tripId"><br>
 
-            <div class="divider-container">
+            <button type="submit" class="button calculate-button"
+                    [ngClass]="{'is-loading': tripLoading}"
+                    (click)="getTrip()">
+                Calculate trip</button>
+
+            <!--<div class="divider-container">
                 <div class="is-divider divider-with-text"></div>
                 <span class="divider-text">OR</span>
                 <div class="is-divider divider-with-text"></div>
@@ -58,7 +63,30 @@
             <input class="input location-input" placeholder="[1, 2, ...]" [(ngModel)]="estimationSegments"><br>
 
             <p class="p function-p">Directions</p>
-            <input class="input location-input" placeholder="['FORWARDS', ...]" [(ngModel)]="estimationDirections"><br>
+            <input class="input location-input" placeholder="['FORWARDS', ...]" [(ngModel)]="estimationDirections"><br>-->
+
+            <div *ngIf="tripLoaded" class="box resultsContainer">
+                <div class="navbar-divider"></div>
+                <p class="results-p">
+                    <i class="mdi mdi-map-marker-distance" aria-hidden="true"></i>
+                    {{routeDistance | number:'0.0-2':'en-DK' }} km
+                </p>
+                <p>Model</p>
+                <p class="results-p">
+                    <i class="mdi mdi-flash" aria-hidden="true"></i>
+                    {{routeEnergyCost | number:'0.0-2':'en-DK'}} kWh
+                </p>
+                <p>Baseline</p>
+                <p class="results-p">
+                    <i class="mdi mdi-flash" aria-hidden="true"></i>
+                    {{routeBaselineCost | number:'0.0-2':'en-DK'}} kWh
+                </p>
+                <p>Actual</p>
+                <p class="results-p">
+                    <i class="mdi mdi-flash" aria-hidden="true"></i>
+                    {{routeActualCost | number:'0.0-2':'en-DK'}} kWh
+                </p>
+            </div>
         </div>
     </div>
 

@@ -9,6 +9,7 @@ from Backend.db import get_baseline_and_actual
 import geojson
 import pandas as pd
 import numpy as np
+from Utils.Errors import TripNotFoundError
 
 known_energy_trips = [116699, 91881, 4537, 76966, 52557, 175355, 103715]
 
@@ -18,7 +19,11 @@ model = load_model(config)
 
 
 def trip_prediction(trip):
-    X, Y, extras = get_candidate_trip_data([trip], config)
+    try:
+        X, Y, extras = get_candidate_trip_data([trip], config)
+    except TripNotFoundError as e:
+        print(e)
+        raise e
     predictions, _, _ = calculate_results(model, X, Y, extras[['trip_id']], config)
     predictions.rename(columns={'prediction': config['target_feature']}, inplace=True)
     geos = extras['segmentgeo'].map(geojson.loads).values
@@ -30,7 +35,7 @@ def trip_prediction(trip):
     for i in range(len(props[0])):
         temp[i] = props[0][i] if i == 0 else temp[i-1] + props[0][i]
     props = np.vstack([props, temp])
-    other_preds_df = get_baseline_and_actual(trip).values.T
+    other_preds_df = get_baseline_and_actual(trip)
     geostrings = [geojson.Feature() for _ in range(len(geos))]
     for i in range(len(geos)):
         geostrings[i] = geojson.Feature(geometry=geos[i],
@@ -38,10 +43,10 @@ def trip_prediction(trip):
                                                     'agg_cost': props[2][i],
                                                     'length': props[0][i],
                                                     'agg_length': props[3][i],
-                                                    'baseline': other_preds_df[3][i],
-                                                    'agg_baseline': other_preds_df[2][i],
-                                                    'actual': other_preds_df[1][i],
-                                                    'agg_actual': other_preds_df[0][i]})
+                                                    'baseline': other_preds_df['baseline'][i],
+                                                    'agg_baseline': other_preds_df['agg_baseline'][i],
+                                                    'actual': other_preds_df['actual'][i],
+                                                    'agg_actual': other_preds_df['agg_actual'][i]})
     return str(geojson.dumps(geojson.FeatureCollection(geostrings)))
 
 

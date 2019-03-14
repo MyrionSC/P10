@@ -31,6 +31,8 @@ export class AppComponent implements OnInit {
     routeJson: any;
     routeEnergyCost: number;
     routeDistance: number;
+    routeBaselineCost: number;
+    routeActualCost: number;
 
     // Estimation
     tripId: any;
@@ -42,6 +44,8 @@ export class AppComponent implements OnInit {
     // visual bools
     routeLoading = false;
     routeLoaded = false;
+    tripLoaded = false;
+    tripLoading = false;
 
     getRoute(endpoint: string) {
         const url = this.hostUrl + '/' + endpoint + '?origin=' + this.origin + '&dest=' + this.dest;
@@ -61,6 +65,30 @@ export class AppComponent implements OnInit {
             console.log("Segmentkeys of trip:");
             console.log(segmentKeysString);
         });
+    }
+
+    getTrip() {
+        const url = this.hostUrl + '/predict?trip=' + this.tripId;
+        console.log('GET: ' + url);
+        this.tripLoading = true;
+        this.http.get(url).subscribe(
+            (res: any) => {
+                this.routeJson = res;
+                this.routeEnergyCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_cost;
+                this.routeDistance = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_length / 1000;
+                this.routeBaselineCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_baseline;
+                this.routeActualCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_actual;
+                this.layers[0] = geoJSON(this.routeJson);
+                this.map.fitBounds(this.layers[0].getBounds());
+                this.tripLoaded = true;
+                this.tripLoading = false;
+            },
+            error1 => {
+                this.tripLoaded = false;
+                this.tripLoading = false;
+                console.log(error1)
+            }
+        );
     }
 
     getModels(): any {

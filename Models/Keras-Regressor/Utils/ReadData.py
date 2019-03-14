@@ -10,6 +10,7 @@ import os
 import json
 from pandas.api.types import CategoricalDtype
 from typing import List
+from Utils.Errors import TripNotFoundError
 
 
 # Reads the road map from database
@@ -101,6 +102,15 @@ def get_base_data_trips(trip_ids, config: Config) -> pd.DataFrame:
     start_time = time.time()
 
     df = pd.DataFrame(read_query(get_existing_trips(trip_ids), main_db))
+
+    if len(list(df)) == 0:
+        raise TripNotFoundError("ERROR: No trips with ids " + str(trip_ids))
+    no_trip = []
+    for trip in trip_ids:
+        if not df['trip_id'].contains(trip):
+            no_trip.append(trip)
+    if len(no_trip) > 0:
+        raise TripNotFoundError("ERROR: No trips with ids " + str(no_trip))
 
     df = df[['segmentkey', 'mapmatched_id', 'trip_id', 'segmentgeo'] + [config['target_feature']] + [x for x in config['features_used'] if
                                                                                    not x == 'speed_prediction']]

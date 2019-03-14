@@ -1,10 +1,12 @@
-from flask import Flask, request, send_from_directory
+from flask import Flask, request, send_from_directory, Response
 from flask_cors import CORS
 from Backend.db import *
 import Backend.yr as yr
 import Backend.model as model
 import os
 import json
+from Utils.Errors import TripNotFoundError
+
 
 app = Flask(__name__, static_folder="Backend/map")
 CORS(app)
@@ -62,7 +64,11 @@ def latest_predictions():
 @app.route("/predict")
 def predict():
     trip = int(request.args.get('trip'))
-    return model.trip_prediction(trip)
+    try:
+        res = model.trip_prediction(trip)
+    except TripNotFoundError as e:
+        return Response(str(e), status=404)
+    return res
 
 
 @app.route("/current_models")
