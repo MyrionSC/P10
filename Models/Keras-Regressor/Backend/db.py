@@ -1,5 +1,7 @@
 import psycopg2
 from Utils.LocalSettings import *
+from psycopg2.extras import RealDictCursor
+import pandas as pd
 
 chosen_model = 'no_time'
 
@@ -35,9 +37,12 @@ def routing_qry(origin, dest, model=chosen_model):
     """.format(origin, dest, dijkstra_qry(model))
 
 
-def query(qry, db):
+def query(qry, db, cursor=None):
     conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(db['name'], db['user'], db['port'], db['host'], db['password']))
-    cur = conn.cursor()
+    if cursor is not None:
+        cur = conn.cursor(cursor_factory=cursor)
+    else:
+        cur = conn.cursor()
     cur.execute(qry)
     rows = cur.fetchall()
     cur.close()
@@ -69,3 +74,20 @@ def get_weather_station(segmentkey: int) -> str:
     	WHERE segmentkey = {0}
     """.format(segmentkey)
     return query(qry, local_db)[0][0]
+
+
+def get_baseline_and_actual(trip_id):
+    qry = """
+        SELECT 
+            vit.id, 
+            preds.ev_wh / 1000 as baseline, 
+            sum(preds.ev_wh / 1000) OVER (ORDER BY vit.trip_segmentno) as agg_baseline,
+            vit.ev_kwh as actual,
+            sum(vit.ev_kwh) OVER (ORDER BY vit.trip_segmentno) as agg_actual
+        FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
+        JOIN experiments.rmp10_baseline_trip_segment_predictions preds
+        ON vit.id = preds.mapmatched_id
+        WHERE vit.trip_id = {0}
+        ORDER BY vit.trip_segmentno
+    """.format(trip_id)
+    return pd.DataFrame(query(qry, main_db, cursor=RealDictCursor))

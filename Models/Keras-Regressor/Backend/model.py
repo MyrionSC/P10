@@ -5,6 +5,7 @@ from Utils.SQL import copy_latest_preds_transaction
 from Utils.LocalSettings import main_db
 from Utils.Utilities import load_config
 from keras import backend as K
+from Backend.db import get_baseline_and_actual
 import geojson
 import pandas as pd
 import numpy as np
@@ -24,18 +25,23 @@ def trip_prediction(trip):
     props = pd.concat([extras['segment_length'], predictions[config['target_feature']]], axis=1).values.T
     temp = [0 for _ in range(len(props[0]))]
     for i in range(len(props[0])):
-        temp[i] = 0 if i == 0 else temp[i-1] + props[1][i]
+        temp[i] = props[1][i] if i == 0 else temp[i-1] + props[1][i]
     props = np.vstack([props, temp])
     for i in range(len(props[0])):
-        temp[i] = 0 if i == 0 else temp[i-1] + props[0][i]
+        temp[i] = props[0][i] if i == 0 else temp[i-1] + props[0][i]
     props = np.vstack([props, temp])
+    other_preds_df = get_baseline_and_actual(trip).values.T
     geostrings = [geojson.Feature() for _ in range(len(geos))]
     for i in range(len(geos)):
         geostrings[i] = geojson.Feature(geometry=geos[i],
                                         properties={'cost': props[1][i],
                                                     'agg_cost': props[2][i],
                                                     'length': props[0][i],
-                                                    'agg_length': props[3][i]})
+                                                    'agg_length': props[3][i],
+                                                    'baseline': other_preds_df[3][i],
+                                                    'agg_baseline': other_preds_df[2][i],
+                                                    'actual': other_preds_df[1][i],
+                                                    'agg_actual': other_preds_df[0][i]})
     return str(geojson.dumps(geojson.FeatureCollection(geostrings)))
 
 
