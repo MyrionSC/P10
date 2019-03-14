@@ -42,8 +42,7 @@ speed_config = Config()
 speed_config.update({
     'embedding': "node2vec-64d",
     'batch_size': 8192,
-    'epochs': 20, # When training the BESTEST model possible, use 20 or more epochs
-    'iterations': 1,
+    'epochs': 20,  # When training the BESTEST model possible, use 20 or more epochs
     'hidden_layers': 6,
     'cells_per_layer': 1000,
     'initial_dropout': 0,  # Dropout value for the first layer
@@ -66,8 +65,7 @@ energy_config = Config()
 energy_config.update({
     'embedding': "node2vec-64d",
     'batch_size': 8192,
-    'epochs': 20, # When training the BESTEST model possible, use 20 or more epochs
-    'iterations': 1,
+    'epochs': 20,  # When training the BESTEST model possible, use 20 or more epochs
     'hidden_layers': 6,
     'cells_per_layer': 1000,
     'initial_dropout': 0,  # Dropout value for the first layer
