@@ -86,7 +86,7 @@ export class AppComponent implements OnInit {
             error1 => {
                 this.tripLoaded = false;
                 this.tripLoading = false;
-                console.log(error1);
+                console.log(error1.error);
             }
         );
     }

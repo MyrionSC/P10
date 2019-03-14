@@ -24,10 +24,30 @@ def routing_qry(origin, dest, model=chosen_model):
                 SELECT
                     'Feature' as "type",
                     ST_AsGeoJSON(segmentgeom, 6) :: json as "geometry",
-                    json_build_object('cost', cost, 'agg_cost', agg_cost, 'length', length, 'agg_length', agg_length, 'segmentkey', segmentkey) :: json as "properties"
+                    json_build_object(
+                        'cost', cost, 
+                        'agg_cost', agg_cost,
+                        'length', length,
+                        'agg_length', agg_length,
+                        'segmentkey', segmentkey,
+                        'direction', direction,
+                        'startpoint', startpoint,
+                        'endpoint', endpoint
+                    ) :: json as "properties"
                 FROM (
                     SELECT
-                        osm.segmentkey, segmentgeom, pgr.cost, pgr.agg_cost, length, sum(length) OVER (ORDER BY pgr.path_seq) as agg_length
+                        osm.segmentkey, 
+                        segmentgeom, 
+                        pgr.cost, 
+                        pgr.agg_cost, 
+                        length, 
+                        sum(length) OVER (ORDER BY pgr.path_seq) as agg_length,
+                        CASE WHEN pgr.node = osm.startpoint
+                             THEN 'FORWARD'::functionality.direction_driving
+                             ELSE 'BACKWARD'::functionality.direction_driving
+                        END AS direction,
+                        osm.startpoint,
+                        osm.endpoint
                     FROM pgr_dijkstra({2}::text, {0}::bigint, {1}::bigint) pgr
                     JOIN maps.routing osm
                     ON pgr.edge = osm.segmentkey
