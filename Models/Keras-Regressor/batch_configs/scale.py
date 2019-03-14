@@ -5,17 +5,17 @@ default_config = Configuration.energy_config
 default_config['batch_dir'] = batch_name + "/"
 configs = []
 
-config1 = default_config.copy()
-config1['model_name_base'] = 'Scale'
-config1['epochs'] = 20
-config1['scale'] = True
+# config1 = default_config.copy()
+# config1['model_name_base'] = 'Scale'
+# config1['epochs'] = 20
+# config1['scale'] = True
+# configs.append(config1)
 
 config2 = default_config.copy()
 config2['model_name_base'] = 'NoScale'
 config2['epochs'] = 20
 config2['scale'] = False
-
-
+configs.append(config2)
 
 # Speed_Models/Speed_Model_MAE_epochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d
 # configSoftSign['speed_model_path'] = "Speed_Models/Speed_Model_MAE_epochs_10-hidden_layers_6-cells_per_layer_1000-embeddings_node2vec-64d"

@@ -2,6 +2,8 @@
 import json
 from datetime import datetime
 import sys
+from pprint import pprint
+
 import DNNRegressor as DNN
 import os
 import errno
@@ -22,6 +24,11 @@ def main():
 
     with open(sys.argv[1]) as f:
         exec(f.read(), configFile)
+
+    if 'configs' not in configFile or len(configFile['configs']) == 0:
+        print("no configs found. You probably forgot to create configs array or to append your config"
+              " objects to the configs array.")
+        exit()
 
     batchDir = configFile['batch_name']
     starttime = datetime.now()
