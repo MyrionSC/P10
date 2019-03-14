@@ -60,6 +60,12 @@ def latest_predictions():
     return model.existing_trips_prediction()
 
 
+@app.route("/predict")
+def predict():
+    trip = int(request.args.get('trip'))
+    return model.trip_prediction(trip)
+
+
 @app.route("/current_models")
 def current_models():
     models = []

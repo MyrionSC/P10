@@ -65,6 +65,10 @@ def preprocess_data(df: pd.DataFrame, config: Config, re_scale: bool=False, reta
         df = get_embeddings(df, config)
 
     trip_ids = df[['trip_id']]
+    trip_ids['segment_length'] = df['segment_length']
+    if 'segmentgeo' in list(df):
+        trip_ids['segmentgeo'] = df['segmentgeo']
+        df.drop(['segmentgeo'], axis=1, inplace=True)
 
     df.drop(['segmentkey', 'trip_id'], axis=1, inplace=True)
     if not retain_id:
@@ -98,7 +102,7 @@ def get_base_data_trips(trip_ids, config: Config) -> pd.DataFrame:
 
     df = pd.DataFrame(read_query(get_existing_trips(trip_ids), main_db))
 
-    df = df[['segmentkey', 'mapmatched_id', 'trip_id'] + [config['target_feature']] + [x for x in config['features_used'] if
+    df = df[['segmentkey', 'mapmatched_id', 'trip_id', 'segmentgeo'] + [config['target_feature']] + [x for x in config['features_used'] if
                                                                                    not x == 'speed_prediction']]
 
     print("Dataframe shape: %s" % str(df.shape))

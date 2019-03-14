@@ -204,6 +204,7 @@ def get_existing_trips(trip_ids):
     return """
         SELECT
             trips_table.trip_id as trip_id,
+            ST_AsGeoJson(osm_map.segmentgeo) as segmentgeo,
             trips_table.trip_segmentno as trip_segmentno,
             trips_table.id as mapmatched_id,
             trips_table.segmentkey as segmentkey,
