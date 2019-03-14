@@ -107,7 +107,7 @@ def get_base_data_trips(trip_ids, config: Config) -> pd.DataFrame:
         raise TripNotFoundError("ERROR: No trips with ids " + str(trip_ids))
     no_trip = []
     for trip in trip_ids:
-        if not df['trip_id'].contains(trip):
+        if trip not in df['trip_id'].values:
             no_trip.append(trip)
     if len(no_trip) > 0:
         raise TripNotFoundError("ERROR: No trips with ids " + str(no_trip))
