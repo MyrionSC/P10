@@ -62,6 +62,7 @@ p {
 .content-box {
     border: solid 2px #ddd;
     padding: 10px;
+    margin-bottom: 15px;
 }
 
 

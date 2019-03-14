@@ -42,6 +42,7 @@ export class AppComponent implements OnInit {
     hostUrl: string;
 
     // visual bools
+    estimateShown = true;
     routeLoading = false;
     routeLoaded = false;
     tripLoaded = false;
