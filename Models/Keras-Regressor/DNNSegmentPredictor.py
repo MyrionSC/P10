@@ -11,14 +11,14 @@ import time
 import errno
 import math
 
-month = '2'
-quarter = '47'
+month = '3'
+quarter = '35'
 hour = str(math.floor(int(quarter) / 4))
 two_hour = hour = str(math.floor(int(hour) / 2))
 four_hour = hour = str(math.floor(int(hour) / 4))
 six_hour = hour = str(math.floor(int(hour) / 6))
 twelve_hour = hour = str(math.floor(int(hour) / 12))
-weekday = '4'
+weekday = '3'
 
 
 def do_predictions(config, df):

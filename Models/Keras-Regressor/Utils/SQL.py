@@ -2,6 +2,19 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 from typing import List
+import math
+from Utils.LocalSettings import main_db
+import pandas as pd
+import numpy as np
+
+month = '3'
+quarter = '35'
+hour = str(math.floor(int(quarter) / 4))
+two_hour = hour = str(math.floor(int(hour) / 2))
+four_hour = hour = str(math.floor(int(hour) / 4))
+six_hour = hour = str(math.floor(int(hour) / 6))
+twelve_hour = hour = str(math.floor(int(hour) / 12))
+weekday = '3'
 
 
 # Execute a read query against the database
@@ -198,6 +211,62 @@ def delete_latest_predictions_qry():
     return """
         DELETE FROM experiments.rmp10_latest_prediction;
     """
+
+
+def get_route(segmentkeys, directions):
+    qry = """
+        SELECT
+            osm_map.segmentkey as segmentkey,
+            osm_map.categoryid,
+            CASE WHEN incline_table.incline IS NOT NULL
+                 THEN incline_table.incline
+                 ELSE 0
+            END AS height_change,
+            CASE WHEN incline_table.incline_percentage IS NOT NULL
+                 THEN incline_table.incline_percentage
+                 ELSE 0
+            END AS incline,
+            osm_map.meters as segment_length,
+            10::smallint as temperature,
+            {0}::smallint as quarter,
+            {1}::smallint as hour,
+            {2}::smallint as two_hour,
+            {3}::smallint as four_hour,
+            {4}::smallint as six_hour,
+            {5}::smallint as twelve_hour,
+            {6}::smallint as weekday,
+            {7}::smallint as month,
+            speedlimit_table.speedlimit,
+            CASE WHEN inter_table.intersection 
+                 THEN 1 
+                 ELSE 0 
+            END as intersection
+        FROM maps.osm_dk_20140101 as osm_map,
+            experiments.mi904e18_segment_incline as incline_table,
+            experiments.rmp10_intersections as inter_table,
+            experiments.mi904e18_speedlimits as speedlimit_table
+        WHERE osm_map.segmentkey = ANY(ARRAY[{8}])
+        AND osm_map.segmentkey = incline_table.segmentkey
+        AND osm_map.segmentkey = inter_table.segmentkey
+        AND osm_map.segmentkey = speedlimit_table.segmentkey;
+    """.format(
+        quarter,
+        hour,
+        two_hour,
+        four_hour,
+        six_hour,
+        twelve_hour,
+        weekday,
+        month,
+        ", ".join([str(x) for x in segmentkeys])
+    )
+    df = pd.DataFrame(read_query(qry, main_db))
+    df = pd.merge(df, pd.DataFrame({'direction': directions, 'segmentkey': segmentkeys}), left_on='segmentkey',
+                  right_on='segmentkey')
+    df['height_change'] = np.where(df['direction'] == "FORWARD", df['height_change'], -df['height_change'])
+    df['incline'] = np.where(df['direction'] == "FORWARD", df['incline'], -df['incline'])
+    df.drop(['direction'], axis=1, inplace=True)
+    return df
 
 
 def get_existing_trips(trip_ids):

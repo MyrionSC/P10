@@ -50,6 +50,10 @@ def trip_prediction(trip):
     return str(geojson.dumps(geojson.FeatureCollection(geostrings)))
 
 
+def segmentlist_prediction(route):
+    pass
+
+
 def existing_trips_prediction():
     X, Y, extras = get_candidate_trip_data(known_energy_trips, config, retain_id=True)
 
