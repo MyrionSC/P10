@@ -77,7 +77,7 @@ JOIN experiments.rmp10_aalborg_intersection1 x3
 ON x2.endpoint = x3.startpoint 
 AND not x3.internal;
 
-DROP TABLE IF EXISTS experiments.rmp10_intersection1_supersegments;
+DROP TABLE IF EXISTS experiments.rmp10_intersection1_supersegments CASCADE;
 
 CREATE TABLE experiments.rmp10_intersection1_supersegments AS
 SELECT *, 'RIGHT' as direction FROM experiments.rmp10_intersection1_right_swings
