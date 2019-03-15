@@ -1,6 +1,7 @@
 import keras
 from keras.models import model_from_json
 from keras import Sequential, initializers
+import keras.backend as K
 from keras.layers import Dense, Dropout
 from Utils.Metrics import rmse
 from Utils.Configuration import Config
@@ -58,6 +59,7 @@ def save_model(model: keras.models.Sequential, config: Config):
 
 # Load a model from disk
 def load_model(config: Config) -> keras.models.Sequential:
+    K.clear_session()
     modelpath = model_path(config)
     # Load model structure json
     with open(modelpath + 'model.json', 'r') as json_file:

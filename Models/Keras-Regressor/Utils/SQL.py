@@ -81,56 +81,79 @@ def supersegment_qry(num_segments, limit=None):
     return qrt
 
 
-def road_map_qry():
+def road_map_qry(segmentkeys=None, directions=None):
+    order_string = "" if segmentkeys is None else """
+        LEFT JOIN unnest(ARRAY[{0}]::int[]) WITH ORDINALITY o(segmentkey, ord) USING (segmentkey)
+        ORDER BY o.ord;
+    """.format(", ".join([str(x) for x in segmentkeys]))
+
+    forwards = []
+    backwards = []
+    for i in range(len(directions)):
+        if directions[i] == 'FORWARD':
+            forwards.append(segmentkeys[i])
+        else:
+            backwards.append(segmentkeys[i])
+
     return """
-        SELECT 
-            osm.segmentkey,
-            CASE WHEN inc.incline IS NOT NULL 
-                 THEN inc.incline
-                 ELSE 0 
-            END as height_change,
-            CASE WHEN inc.incline IS NOT NULL
-                 THEN inc.incline_percentage
-                 ELSE 0
-            END as incline,
-            'FORWARD' as direction,
-            osm.meters as segment_length, 
-            sl.speedlimit, 
-            osm.categoryid,
-            CASE WHEN inter.intersection THEN 1 ELSE 0 END as intersection
-        FROM maps.osm_dk_20140101 osm
-        FULL OUTER JOIN experiments.mi904e18_speedlimits sl
-        ON sl.segmentkey = osm.segmentkey
-        FULL OUTER JOIN experiments.mi904e18_segment_incline inc
-        ON inc.segmentkey = osm.segmentkey
-        FULL OUTER JOIN experiments.rmp10_intersections inter
-        ON inter.segmentkey = osm.segmentkey
-        WHERE osm.category != 'ferry'
-        UNION
-        SELECT 
-            osm.segmentkey,
-            CASE WHEN inc.incline IS NOT NULL 
-                 THEN -inc.incline
-                 ELSE 0 
-            END as height_change,
-            CASE WHEN inc.incline IS NOT NULL
-                 THEN -inc.incline_percentage
-                 ELSE 0
-            END as incline,
-            'BACKWARD' as direction,
-            osm.meters as segment_length, 
-            sl.speedlimit, 
-            osm.categoryid,
-            CASE WHEN inter.intersection THEN 1 ELSE 0 END as intersection
-        FROM maps.osm_dk_20140101 osm
-        FULL OUTER JOIN experiments.mi904e18_speedlimits sl
-        ON sl.segmentkey = osm.segmentkey
-        FULL OUTER JOIN experiments.mi904e18_segment_incline inc
-        ON inc.segmentkey = osm.segmentkey
-        FULL OUTER JOIN experiments.rmp10_intersections inter
-        ON inter.segmentkey = osm.segmentkey
-        WHERE osm.category != 'ferry' AND osm.direction = 'BOTH'
-    """
+        SELECT x.*
+        FROM (
+            SELECT 
+                osm.segmentkey,
+                ST_AsGeoJson(osm.segmentgeo) as segmentgeo,
+                CASE WHEN inc.incline IS NOT NULL 
+                     THEN inc.incline
+                     ELSE 0 
+                END as height_change,
+                CASE WHEN inc.incline IS NOT NULL
+                     THEN inc.incline_percentage
+                     ELSE 0
+                END as incline,
+                'FORWARD' as direction,
+                osm.meters as segment_length, 
+                sl.speedlimit, 
+                osm.categoryid,
+                CASE WHEN inter.intersection THEN 1 ELSE 0 END as intersection
+            FROM maps.osm_dk_20140101 osm
+            FULL OUTER JOIN experiments.mi904e18_speedlimits sl
+            ON sl.segmentkey = osm.segmentkey
+            FULL OUTER JOIN experiments.mi904e18_segment_incline inc
+            ON inc.segmentkey = osm.segmentkey
+            FULL OUTER JOIN experiments.rmp10_intersections inter
+            ON inter.segmentkey = osm.segmentkey
+            WHERE osm.category != 'ferry' {0}
+            UNION
+            SELECT 
+                osm.segmentkey,
+                ST_AsGeoJson(osm.segmentgeo) as segmentgeo,
+                CASE WHEN inc.incline IS NOT NULL 
+                     THEN -inc.incline
+                     ELSE 0 
+                END as height_change,
+                CASE WHEN inc.incline IS NOT NULL
+                     THEN -inc.incline_percentage
+                     ELSE 0
+                END as incline,
+                'BACKWARD' as direction,
+                osm.meters as segment_length, 
+                sl.speedlimit, 
+                osm.categoryid,
+                CASE WHEN inter.intersection THEN 1 ELSE 0 END as intersection
+            FROM maps.osm_dk_20140101 osm
+            FULL OUTER JOIN experiments.mi904e18_speedlimits sl
+            ON sl.segmentkey = osm.segmentkey
+            FULL OUTER JOIN experiments.mi904e18_segment_incline inc
+            ON inc.segmentkey = osm.segmentkey
+            FULL OUTER JOIN experiments.rmp10_intersections inter
+            ON inter.segmentkey = osm.segmentkey
+            WHERE osm.category != 'ferry' AND osm.direction = 'BOTH' {1}
+        ) as x
+        {2}
+    """.format(
+        "" if segmentkeys is None else "AND osm.segmentkey=ANY(ARRAY[" + ", ".join([str(x) for x in forwards]) + "]::int[])",
+        "" if segmentkeys is None else "AND osm.segmentkey=ANY(ARRAY[" + ", ".join([str(x) for x in backwards]) + "]::int[])",
+        order_string
+    )
 
 
 def average_weather_qry(month, quarter):

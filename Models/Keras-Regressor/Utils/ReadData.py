@@ -14,8 +14,8 @@ from Utils.Errors import TripNotFoundError
 
 
 # Reads the road map from database
-def read_road_map_data(month, quarter, hour, two_hour, four_hour, six_hour, twelve_hour, weekday):
-    qry = road_map_qry()
+def read_road_map_data(month, quarter, hour, two_hour, four_hour, six_hour, twelve_hour, weekday, segments=None, directions=None):
+    qry = road_map_qry(segments, directions)
 
     qry2 = average_weather_qry(month, quarter)
 
