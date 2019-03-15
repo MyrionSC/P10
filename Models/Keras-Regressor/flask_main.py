@@ -86,3 +86,11 @@ def load_model():
     model.load_new_model(path)
     model.current_model = path
     return json.dumps("Model loaded: " + path)
+
+
+@app.route("/predict_segs", methods=['GET', 'POST'])
+def predict_segs():
+    body = request.get_json()
+    segs = body['segments']
+    directions = body['directions']
+    return model.do_segment_predictions(segs, directions)

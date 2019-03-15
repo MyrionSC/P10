@@ -57,17 +57,23 @@ def do_predictions(config, df):
     return res
 
 
-def create_segment_predictions(config):
-    df = read_road_map_data(month, quarter, hour, two_hour, four_hour, six_hour, twelve_hour, weekday)
+def create_segment_predictions(config, segments=None, directions=None):
+    df = read_road_map_data(month, quarter, hour, two_hour, four_hour, six_hour, twelve_hour, weekday, segments, directions)
     keys = df[['segmentkey', 'direction']]
+    geos = df['segmentgeo']
+    lengths = df['segment_length']
+    df.drop(['segmentgeo'], axis=1, inplace=True)
     if 'speed_prediction' in config['features_used']:
         speed_predictions = do_predictions(load_speed_config(config), df)
         df['speed_prediction'] = speed_predictions
     energy_predictions = do_predictions(config, df)
-    energy_predictions[['segmentkey', 'direction']] = keys
+    energy_predictions[['segmentkey', 'direction']] = keys[['segmentkey', 'direction']]
     res = energy_predictions[['segmentkey', 'direction', config['target_feature'] + '_prediction']]
-    res.to_csv(model_path(config) + "segment_predictions.csv", sep=';', header=True, index=False,
-               encoding='utf8')
+    preds = res[config['target_feature'] + '_prediction']
+    if segments is None:
+        res.to_csv(model_path(config) + "segment_predictions.csv", sep=';', header=True, index=False,
+                   encoding='utf8')
+    return geos, lengths, preds
 
 
 if __name__ == "__main__":
@@ -87,4 +93,4 @@ if __name__ == "__main__":
             config = json.load(f)
     else:
         config = energy_config
-    create_segment_predictions(config)
+    _, _, _ = create_segment_predictions(config)
