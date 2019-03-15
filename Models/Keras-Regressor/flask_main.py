@@ -73,12 +73,16 @@ def predict():
 
 @app.route("/current_models")
 def current_models():
-    models = []
+    response = {
+        'current_model': model.current_model,
+        'available_models': []
+    }
+
     batches = os.listdir("saved_models")
     for batch in batches:
-        models += [batch + "/" + model_name for model_name in os.listdir("saved_models/" + batch) if
+        response['available_models'] += [batch + "/" + model_name for model_name in os.listdir("saved_models/" + batch) if
                    os.path.isdir("saved_models/" + batch + "/" + model_name)]
-    return json.dumps(models)
+    return json.dumps(response)
 
 
 @app.route("/load_model")
@@ -87,4 +91,5 @@ def load_model():
     model_name = str(request.args.get('model_name'))
     path = "saved_models/" + batch + "/" + model_name
     model.load_new_model(path)
+    model.current_model = path
     return json.dumps("Model loaded: " + path)

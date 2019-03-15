@@ -3,8 +3,8 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {geoJSON, latLng, tileLayer} from 'leaflet';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../environments/environment';
-import { DOCUMENT } from '@angular/platform-browser';
-import { map } from "rxjs/operators";
+import {DOCUMENT} from '@angular/platform-browser';
+import {map} from 'rxjs/operators';
 
 @Component({
     selector: 'app-root',
@@ -12,11 +12,12 @@ import { map } from "rxjs/operators";
     styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-    constructor(private http: HttpClient, @Inject(DOCUMENT) private document: any) {}
+    constructor(private http: HttpClient, @Inject(DOCUMENT) private document: any) {
+    }
 
     modelList = [];
 
-    selectedModel = "";
+    selectedModel = '';
 
     options = {};
     layers = {};
@@ -61,13 +62,13 @@ export class AppComponent implements OnInit {
             this.routeLoaded = true;
             this.routeLoading = false;
 
-            const segmentKeys = res.features.map(seg => seg.properties.segmentkey );
-            const segmentKeysString = segmentKeys.join(", ");
-            console.log("Segmentkeys of trip:");
+            const segmentKeys = res.features.map(seg => seg.properties.segmentkey);
+            const segmentKeysString = segmentKeys.join(', ');
+            console.log('Segmentkeys of trip:');
             console.log(segmentKeysString);
-            const directions = res.features.map(seg => seg.properties.direction );
-            const directionsString = directions.join(", ");
-            console.log("Directions of trip:");
+            const directions = res.features.map(seg => seg.properties.direction);
+            const directionsString = directions.join(', ');
+            console.log('Directions of trip:');
             console.log(directionsString);
         });
     }
@@ -99,15 +100,23 @@ export class AppComponent implements OnInit {
     getModels(): any {
         const url = this.hostUrl + '/current_models';
         this.http.get(url).subscribe((res: any) => {
-           this.modelList = res;
-           this.selectedModel = res[0];
+            const currentModel = res.current_model.split("/").slice(1, 3).join("/");
+            this.modelList = res.available_models;
+
+            const index = this.modelList.findIndex(item => item === currentModel);
+            if (index !== -1) {
+                this.selectedModel = res.available_models[index];
+            } else {
+                this.selectedModel = res.available_models[0];
+            }
         });
     }
 
     loadModel() {
-        const strs = this.selectedModel.split("/");
+        const strs = this.selectedModel.split('/');
         const url = this.hostUrl + '/load_model?batch=' + strs[0] + '&model_name=' + strs[1];
         this.http.get<any>(url).subscribe((res: any) => {
+
             console.log(res);
         });
     }
@@ -124,7 +133,10 @@ export class AppComponent implements OnInit {
 
         this.options = {
             layers: [
-                tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 18, attribution: this.attribution})
+                tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 18,
+                    attribution: this.attribution
+                })
             ],
             zoom: 13,
             center: this.aalLatLong
