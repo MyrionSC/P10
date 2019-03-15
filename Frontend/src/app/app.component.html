@@ -37,19 +37,24 @@
             <button type="submit" class="button calculate-button"
                     [ngClass]="{'is-loading': tripLoading}"
                     (click)="getTrip()">
-                Calculate trip</button>
+                Estimate trip</button>
 
-            <!--<div class="divider-container">
-                <div class="is-divider divider-with-text"></div>
-                <span class="divider-text">OR</span>
-                <div class="is-divider divider-with-text"></div>
-            </div>
+            <!--<div class="divider-container">-->
+                <!--<div class="is-divider divider-with-text"></div>-->
+                <!--<span class="divider-text">OR</span>-->
+                <!--<div class="is-divider divider-with-text"></div>-->
+            <!--</div>-->
 
-            <p class="p function-p">Segments</p>
-            <input class="input location-input" placeholder="[1, 2, ...]" [(ngModel)]="estimationSegments"><br>
+            <!--<p class="p function-p">Segments</p>-->
+            <!--<input class="input location-input" placeholder="[1, 2, ...]" [(ngModel)]="estimationSegments"><br>-->
 
-            <p class="p function-p">Directions</p>
-            <input class="input location-input" placeholder="['FORWARDS', ...]" [(ngModel)]="estimationDirections"><br>-->
+            <!--<p class="p function-p">Directions</p>-->
+            <!--<input class="input location-input" placeholder="['FORWARDS', ...]" [(ngModel)]="estimationDirections"><br>-->
+
+            <!--<button type="submit" class="button calculate-button"-->
+                    <!--[ngClass]="{'is-loading': tripLoading}"-->
+                    <!--(click)="estimateRoute()">-->
+                <!--Estimate Segments</button>-->
 
             <div *ngIf="tripLoaded" class="box resultsContainer">
                 <div class="navbar-divider"></div>
@@ -78,17 +83,17 @@
         <!-- Routing -->
         <div *ngIf="!estimateShown" class="content-box">
             <p class="p function-p">Origin</p>
-            <input class="input location-input" [(ngModel)]="origin"><br>
+            <input class="input location-input" placeholder="Origin segment id" [(ngModel)]="origin"><br>
             <p class="p function-p">Destination</p>
-            <input class="input location-input" [(ngModel)]="dest"><br>
+            <input class="input location-input" placeholder="Destination segment id" [(ngModel)]="dest"><br>
             <button type="submit" class="button calculate-button"
                     [ngClass]="{'is-loading': routeLoading}"
                     (click)="getRoute('route')">
-                Calculate route</button>
+                Find Model Route</button>
             <button type="submit" class="button calculate-button"
                     [ngClass]="{'is-loading': routeLoading}"
                     (click)="getRoute('baseline')">
-                Calculate baseline</button>
+                Find Baseline Route</button>
 
             <div *ngIf="routeLoaded" class="box resultsContainer">
                 <div class="navbar-divider"></div>

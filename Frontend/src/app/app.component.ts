@@ -121,12 +121,91 @@ export class AppComponent implements OnInit {
         });
     }
 
+    estimateRoute() {
+        const url = this.hostUrl + '/predict_segs';
+
+        const data = {
+            description: 'Fra Cassiopeia til LIDL over Universitetsboulevarden',
+            from: 232175,
+            to: 193222,
+            segments: [
+                234716,
+                589460,
+                589461,
+                589462,
+                589463,
+                589464,
+                27516,
+                27517,
+                27518,
+                27512,
+                27519,
+                27520,
+                582930,
+                582931,
+                582932,
+                23817,
+                118638,
+                118639,
+                118640,
+                23843,
+                21842,
+                21843,
+                14410,
+                14411,
+                14412,
+                23833,
+                23834,
+                23836,
+                632287,
+                193301
+            ],
+            directions: [
+                "BACKWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "FORWARD",
+                "BACKWARD"
+            ]
+        };
+
+        this.http.post(url, data).subscribe((res) => {
+            console.log(res);
+        });
+    }
+
     mapReady(mp) {
         this.map = mp;
     }
 
     ngOnInit(): void {
         this.hostUrl = 'http://172.25.11.191:5000';
+        // this.hostUrl = 'http://localhost:5000';
         // this.hostUrl = this.document.location.hostname === '172.25.11.191' ?
         //     this.hostUrl = 'http://172.25.11.191:5000' :
         //     this.hostUrl = 'http://localhost:5000';
