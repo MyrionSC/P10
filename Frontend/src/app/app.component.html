@@ -51,31 +51,47 @@
             <!--<p class="p function-p">Directions</p>-->
             <!--<input class="input location-input" placeholder="['FORWARDS', ...]" [(ngModel)]="estimationDirections"><br>-->
 
-            <!--<button type="submit" class="button calculate-button"-->
-                    <!--[ngClass]="{'is-loading': tripLoading}"-->
-                    <!--(click)="estimateRoute()">-->
-                <!--Estimate Segments</button>-->
+            <button type="submit" class="button calculate-button"
+                    [ngClass]="{'is-loading': tripLoading}"
+                    (click)="estimateRoute()">
+                Estimate Segments</button>
 
             <div *ngIf="tripLoaded" class="box resultsContainer">
                 <div class="navbar-divider"></div>
                 <p class="results-p">
                     <i class="mdi mdi-map-marker-distance" aria-hidden="true"></i>
-                    {{routeDistance | number:'0.0-2':'en-DK' }} km
-                </p>
-                <p>Model</p>
-                <p class="results-p">
-                    <i class="mdi mdi-flash" aria-hidden="true"></i>
-                    {{routeEnergyCost | number:'0.0-2':'en-DK'}} kWh
-                </p>
-                <p>Baseline</p>
-                <p class="results-p">
-                    <i class="mdi mdi-flash" aria-hidden="true"></i>
-                    {{routeBaselineCost | number:'0.0-2':'en-DK'}} kWh
+                    {{tripDistance | number:'0.0-5':'en-DK' }} km
                 </p>
                 <p>Actual</p>
                 <p class="results-p">
                     <i class="mdi mdi-flash" aria-hidden="true"></i>
-                    {{routeActualCost | number:'0.0-2':'en-DK'}} kWh
+                    {{tripActualCost | number:'0.0-5':'en-DK'}} kWh
+                </p>
+                <p>Model</p>
+                <p class="results-p">
+                    <i class="mdi mdi-flash" aria-hidden="true"></i>
+                    {{tripModelCost | number:'0.0-5':'en-DK'}} kWh
+                </p>
+                <p class="results-p">
+                    <i class="mdi mdi-block-helper" aria-hidden="true"></i>
+                    {{tripModelAbsError | number:'0.0-5':'en-DK'}} kWh
+                </p>
+                <p class="results-p">
+                    <i class="mdi mdi-block-helper" aria-hidden="true"></i>
+                    {{tripModelPercentageError | number:'0.0-5':'en-DK'}} %
+                </p>
+                <p>Baseline</p>
+                <p class="results-p">
+                    <i class="mdi mdi-flash" aria-hidden="true"></i>
+                    {{tripBaselineCost | number:'0.0-5':'en-DK'}} kWh
+                </p>
+                <p class="results-p">
+                    <i class="mdi mdi-block-helper" aria-hidden="true"></i>
+                    {{tripBaselineAbsError | number:'0.0-5':'en-DK'}} kWh
+                </p>
+                <p class="results-p">
+                    <i class="mdi mdi-block-helper" aria-hidden="true"></i>
+                    {{tripBaselinePercentageError | number:'0.0-5':'en-DK'}} %
                 </p>
             </div>
         </div>

@@ -30,13 +30,21 @@ export class AppComponent implements OnInit {
     origin: bigint;
     dest: bigint;
     routeJson: any;
-    routeEnergyCost: number;
     routeDistance: number;
-    routeBaselineCost: number;
-    routeActualCost: number;
+    routeEnergyCost: number;
 
     // Estimation
     tripId: any;
+
+    tripDistance: number;
+    tripModelCost: number;
+    tripModelAbsError: number;
+    tripModelPercentageError: number;
+    tripBaselineCost: number;
+    tripBaselineAbsError: number;
+    tripBaselinePercentageError: number;
+    tripActualCost: number;
+
     estimationDirections: any;
     estimationSegments: any;
 
@@ -80,10 +88,36 @@ export class AppComponent implements OnInit {
         this.http.get(url).subscribe(
             (res: any) => {
                 this.routeJson = res;
-                this.routeEnergyCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_cost;
-                this.routeDistance = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_length / 1000;
-                this.routeBaselineCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_baseline;
-                this.routeActualCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_actual;
+                this.tripDistance = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_length / 1000;
+                this.tripActualCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_actual;
+                this.tripModelCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_cost;
+                this.tripBaselineCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_baseline;
+
+                this.tripBaselineAbsError = Math.abs(this.tripActualCost - this.tripBaselineCost);
+                this.tripBaselinePercentageError = this.tripBaselineAbsError / this.tripActualCost;
+                this.tripModelAbsError = Math.abs(this.tripActualCost - this.tripModelCost);
+                this.tripModelPercentageError = this.tripModelAbsError / this.tripActualCost;
+
+                // tripDistance: number;
+                // tripModelCost: number;
+                // tripModelAbsError: number;
+                // tripModelPercentageError: number;
+                // tripBaselineCost: number;
+                // tripBaselineAbsError: number;
+                // tripBaselinePercentageError: number;
+                // tripActualCost: number;
+
+
+                // sum(baseline.ev_wh / 1000) as baseline_ev_kwh_trip,
+                // abs(sum(baseline.ev_wh / 1000) - sum(tripsegs.ev_kwh)) as baseline_ev_kwh_trip_abs_error,
+                // abs(sum(baseline.ev_wh / 1000) - sum(tripsegs.ev_kwh)) / sum(tripsegs.ev_kwh) as baseline_ev_kwh_trip_percentage_error,
+                // sum(segmodel.avg_wh / 1000) as model_ev_kwh_trip,
+                // abs(sum(segmodel.avg_wh / 1000) - sum(tripsegs.ev_kwh)) as model_ev_kwh_trip_abs_error,
+                // abs(sum(segmodel.avg_wh / 1000) - sum(tripsegs.ev_kwh)) / sum(tripsegs.ev_kwh) as model_ev_kwh_trip_percentage_error
+
+
+
+
                 this.layers[0] = geoJSON(this.routeJson);
                 this.map.fitBounds(this.layers[0].getBounds());
                 this.tripLoaded = true;
@@ -196,6 +230,9 @@ export class AppComponent implements OnInit {
 
         this.http.post(url, data).subscribe((res) => {
             console.log(res);
+            this.routeJson = res;
+            this.layers[0] = geoJSON(this.routeJson);
+            this.map.fitBounds(this.layers[0].getBounds());
         });
     }
 
@@ -205,7 +242,6 @@ export class AppComponent implements OnInit {
 
     ngOnInit(): void {
         this.hostUrl = 'http://172.25.11.191:5000';
-        // this.hostUrl = 'http://localhost:5000';
         // this.hostUrl = this.document.location.hostname === '172.25.11.191' ?
         //     this.hostUrl = 'http://172.25.11.191:5000' :
         //     this.hostUrl = 'http://localhost:5000';
