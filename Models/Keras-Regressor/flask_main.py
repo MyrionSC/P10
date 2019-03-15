@@ -19,13 +19,6 @@ def map():
 
 
 # api
-@app.route("/estimate")  # serve frontend, which is in map dir
-def estimate():
-    segments = request.args.get('segments')
-    directions = request.args.get('directions')
-    return send_from_directory('Backend/map', 'index.html')
-
-
 @app.route("/baseline")
 def baseline():
     origin = int(request.args.get('origin'))
