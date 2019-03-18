@@ -102,11 +102,14 @@ def get_baseline_and_actual(trip_id):
             vit.id, 
             preds.ev_wh / 1000 as baseline, 
             sum(preds.ev_wh / 1000) OVER (ORDER BY vit.trip_segmentno) as agg_baseline,
-            vit.ev_kwh as actual,
+            CASE WHEN vit.ev_kwh IS NOT NULL
+                 THEN vit.ev_kwh
+                 ELSE 0.0
+            END as actual,
             sum(vit.ev_kwh) OVER (ORDER BY vit.trip_segmentno) as agg_actual
         FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
-        JOIN experiments.rmp10_baseline_trip_segment_predictions preds
-        ON vit.id = preds.mapmatched_id
+        JOIN experiments.rmp10_baseline_segment_predictions preds
+        ON vit.segmentkey = preds.segmentkey
         WHERE vit.trip_id = {0}
         ORDER BY vit.trip_segmentno
     """.format(trip_id)

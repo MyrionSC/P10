@@ -12,7 +12,6 @@ from Utils.Errors import TripNotFoundError
 from DNNSegmentPredictor import create_segment_predictions, create_trip_predictions
 
 known_energy_trips = [116699, 91881, 4537, 76966, 52557, 175355, 103715]
-
 current_model = "saved_models/Default_Energy_Models/DefaultEnergy-epochs_20"
 config = load_config(current_model)
 model = load_model(config)
@@ -25,7 +24,7 @@ def do_segment_predictions(segments, directions):
 
 def do_trip_predictions(trip_id):
     geos, lengths, preds, keys = create_trip_predictions(config, trip_id)
-    return geojsonify(geos, lengths, preds, keys)
+    return geojsonify(geos, lengths, preds, keys, trip_id)
 
 
 def geojsonify(geostrings: pd.Series, segment_lengths: pd.Series, predictions: pd.Series, keys=None, trip=None):
