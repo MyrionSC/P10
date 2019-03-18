@@ -4,13 +4,12 @@ from Utils.Model import model_path, load_model
 from Utils.SQL import copy_latest_preds_transaction
 from Utils.LocalSettings import main_db
 from Utils.Utilities import load_config
-from keras import backend as K
 from Backend.db import get_baseline_and_actual
 import geojson
 import pandas as pd
 import numpy as np
 from Utils.Errors import TripNotFoundError
-from DNNSegmentPredictor import create_segment_predictions
+from DNNSegmentPredictor import create_segment_predictions, create_trip_predictions
 
 known_energy_trips = [116699, 91881, 4537, 76966, 52557, 175355, 103715]
 
@@ -24,9 +23,18 @@ def do_segment_predictions(segments, directions):
     return geojsonify(geos, lengths, preds)
 
 
-def geojsonify(geostrings: pd.Series, segment_lengths: pd.Series, predictions: pd.Series, trip=None):
+def do_trip_predictions(trip_id):
+    geos, lengths, preds, keys = create_trip_predictions(config, trip_id)
+    return geojsonify(geos, lengths, preds, keys)
+
+
+def geojsonify(geostrings: pd.Series, segment_lengths: pd.Series, predictions: pd.Series, keys=None, trip=None):
     geos = geostrings.map(geojson.loads).values
     props = pd.concat([segment_lengths, predictions], axis=1).values.T
+    if keys is not None:
+        seg_keys = keys.values.T
+    else:
+        seg_keys = []
     temp = [0 for _ in range(len(props[0]))]
     for i in range(len(props[0])):
         temp[i] = props[1][i] if i == 0 else temp[i - 1] + props[1][i]
@@ -43,6 +51,11 @@ def geojsonify(geostrings: pd.Series, segment_lengths: pd.Series, predictions: p
                       'agg_cost': props[2][i],
                       'length': props[0][i],
                       'agg_length': props[3][i]}
+        if keys is not None:
+            properties.update({
+                'segmentkey': seg_keys[0][i],
+                'direction': seg_keys[1][i]
+            })
         if trip is not None:
             properties.update({
                 'baseline': other_preds_df['baseline'][i],

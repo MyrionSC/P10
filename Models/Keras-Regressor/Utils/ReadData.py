@@ -1,5 +1,5 @@
 from Utils.LocalSettings import main_db
-from Utils.SQL import read_query, road_map_qry, average_weather_qry, get_existing_trips
+from Utils.SQL import read_query, road_map_qry, average_weather_qry, get_predicting_base_data_qry
 import pandas as pd
 import numpy as np
 from Utils.Configuration import Config
@@ -44,6 +44,15 @@ def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=F
     # Get the base data from the csv
     df = get_base_data(path, config)
     return preprocess_data(df, config, re_scale, retain_id)
+
+
+def read_predicting_data(config: Config, re_scale: bool=False, retain_id: bool=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+    df = get_predicting_base_data()
+    return preprocess_data(df, config, re_scale, retain_id)
+
+
+def get_predicting_base_data():
+    return pd.DataFrame(read_query(get_predicting_base_data_qry(), main_db))
 
 
 def get_candidate_trip_data(trip_ids: List[int], config: Config, re_scale: bool=False, retain_id: bool=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
@@ -101,7 +110,7 @@ def get_base_data_trips(trip_ids, config: Config) -> pd.DataFrame:
     print("Reading trip data")
     start_time = time.time()
 
-    df = pd.DataFrame(read_query(get_existing_trips(trip_ids), main_db))
+    df = pd.DataFrame(read_query(get_predicting_base_data_qry(trip_ids), main_db))
 
     if len(list(df)) == 0:
         raise TripNotFoundError("ERROR: No trips with ids " + str(trip_ids))
@@ -112,7 +121,7 @@ def get_base_data_trips(trip_ids, config: Config) -> pd.DataFrame:
     if len(no_trip) > 0:
         raise TripNotFoundError("ERROR: No trips with ids " + str(no_trip))
 
-    df = df[['segmentkey', 'mapmatched_id', 'trip_id', 'segmentgeo'] + [config['target_feature']] + [x for x in config['features_used'] if
+    df = df[['segmentkey', 'direction', 'mapmatched_id', 'trip_id', 'segmentgeo'] + [config['target_feature']] + [x for x in config['features_used'] if
                                                                                    not x == 'speed_prediction']]
 
     print("Dataframe shape: %s" % str(df.shape))

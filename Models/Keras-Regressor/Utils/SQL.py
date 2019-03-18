@@ -292,7 +292,12 @@ def get_route(segmentkeys, directions):
     return df
 
 
-def get_existing_trips(trip_ids):
+def get_predicting_base_data_qry(trip_ids=None):
+    if trip_ids is not None:
+        string = "trips_table.trip_id = ANY(ARRAY[{0}])\n\t\tAND".format(", ".join([str(x) for x in trip_ids]))
+    else:
+        string = ""
+
     return """
         SELECT
             trips_table.trip_id as trip_id,
@@ -315,6 +320,7 @@ def get_existing_trips(trip_ids):
                       END 
                  ELSE 0
             END AS incline,
+            trips_table.direction,
             trips_table.meters_segment as segment_length,
             trips_table.speed / 3.6 as speed,
             weather_table.air_temperature as temperature,
@@ -345,8 +351,7 @@ def get_existing_trips(trip_ids):
             experiments.mi904e18_wind_vectors as wind_table,
             experiments.mi904e18_speedlimits as speedlimit_table,
             experiments.rmp10_intersections as inter_table
-        WHERE trips_table.trip_id = ANY(ARRAY[{0}])
-        AND trips_table.segmentkey = osm_map.segmentkey 
+        WHERE {0} trips_table.segmentkey = osm_map.segmentkey 
         AND trips_table.datekey = date_table.datekey 
         AND trips_table.timekey = time_table.timekey 
         AND trips_table.segmentkey = incline_table.segmentkey
@@ -354,4 +359,4 @@ def get_existing_trips(trip_ids):
         AND trips_table.id = wind_table.vector_id
         AND trips_table.segmentkey = inter_table.segmentkey
         AND trips_table.segmentkey = speedlimit_table.segmentkey;
-    """.format(", ".join([str(x) for x in trip_ids]))
+    """.format(string)

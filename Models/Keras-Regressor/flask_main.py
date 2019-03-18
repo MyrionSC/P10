@@ -57,11 +57,7 @@ def latest_predictions():
 @app.route("/predict")
 def predict():
     trip = int(request.args.get('trip'))
-    try:
-        res = model.trip_prediction(trip)
-    except TripNotFoundError as e:
-        return Response(str(e), status=404)
-    return res
+    return model.do_trip_predictions(trip)
 
 
 @app.route("/current_models")

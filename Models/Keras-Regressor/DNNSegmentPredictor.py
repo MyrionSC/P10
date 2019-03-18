@@ -2,8 +2,10 @@
 import pandas as pd
 from Utils.Configuration import *
 from Utils.Model import load_model
-from Utils.ReadData import one_hot, get_embeddings, read_road_map_data, scale_df
+from Utils.SQL import get_predicting_base_data_qry
+from Utils.ReadData import one_hot, get_embeddings, read_road_map_data, scale_df, read_query
 from Utils.Utilities import model_path, load_speed_config
+from Utils.LocalSettings import main_db
 import sys
 import json
 import os
@@ -57,8 +59,7 @@ def do_predictions(config, df):
     return res
 
 
-def create_segment_predictions(config, segments=None, directions=None):
-    df = read_road_map_data(month, quarter, hour, two_hour, four_hour, six_hour, twelve_hour, weekday, segments, directions)
+def do_predicting(config, df):
     keys = df[['segmentkey', 'direction']]
     geos = df['segmentgeo']
     lengths = df['segment_length']
@@ -70,6 +71,18 @@ def create_segment_predictions(config, segments=None, directions=None):
     energy_predictions[['segmentkey', 'direction']] = keys[['segmentkey', 'direction']]
     res = energy_predictions[['segmentkey', 'direction', config['target_feature'] + '_prediction']]
     preds = res[config['target_feature'] + '_prediction']
+    return res, geos, lengths, preds, keys
+
+
+def create_trip_predictions(config, trip_id: int):
+    df = pd.DataFrame(read_query(get_predicting_base_data_qry([trip_id]), main_db))
+    _, geos, lengths, preds, keys = do_predicting(config, df)
+    return geos, lengths, preds, keys
+
+
+def create_segment_predictions(config, segments=None, directions=None):
+    df = read_road_map_data(month, quarter, hour, two_hour, four_hour, six_hour, twelve_hour, weekday, segments, directions)
+    res, geos, lengths, preds, _ = do_predicting(config, df)
     if segments is None:
         res.to_csv(model_path(config) + "segment_predictions.csv", sep=';', header=True, index=False,
                    encoding='utf8')
