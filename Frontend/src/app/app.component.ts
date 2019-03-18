@@ -70,14 +70,7 @@ export class AppComponent implements OnInit {
             this.routeLoaded = true;
             this.routeLoading = false;
 
-            const segmentKeys = res.features.map(seg => seg.properties.segmentkey);
-            const segmentKeysString = segmentKeys.join(', ');
-            console.log('Segmentkeys of trip:');
-            console.log(segmentKeysString);
-            const directions = res.features.map(seg => seg.properties.direction);
-            const directionsString = directions.join(', ');
-            console.log('Directions of trip:');
-            console.log(directionsString);
+            this.printSegsDirection(res);
         });
     }
 
@@ -98,30 +91,12 @@ export class AppComponent implements OnInit {
                 this.tripModelAbsError = Math.abs(this.tripActualCost - this.tripModelCost);
                 this.tripModelPercentageError = this.tripModelAbsError / this.tripActualCost;
 
-                // tripDistance: number;
-                // tripModelCost: number;
-                // tripModelAbsError: number;
-                // tripModelPercentageError: number;
-                // tripBaselineCost: number;
-                // tripBaselineAbsError: number;
-                // tripBaselinePercentageError: number;
-                // tripActualCost: number;
-
-
-                // sum(baseline.ev_wh / 1000) as baseline_ev_kwh_trip,
-                // abs(sum(baseline.ev_wh / 1000) - sum(tripsegs.ev_kwh)) as baseline_ev_kwh_trip_abs_error,
-                // abs(sum(baseline.ev_wh / 1000) - sum(tripsegs.ev_kwh)) / sum(tripsegs.ev_kwh) as baseline_ev_kwh_trip_percentage_error,
-                // sum(segmodel.avg_wh / 1000) as model_ev_kwh_trip,
-                // abs(sum(segmodel.avg_wh / 1000) - sum(tripsegs.ev_kwh)) as model_ev_kwh_trip_abs_error,
-                // abs(sum(segmodel.avg_wh / 1000) - sum(tripsegs.ev_kwh)) / sum(tripsegs.ev_kwh) as model_ev_kwh_trip_percentage_error
-
-
-
-
                 this.layers[0] = geoJSON(this.routeJson);
                 this.map.fitBounds(this.layers[0].getBounds());
                 this.tripLoaded = true;
                 this.tripLoading = false;
+
+                this.printSegsDirection(res);
             },
             error1 => {
                 this.tripLoaded = false;
@@ -129,6 +104,17 @@ export class AppComponent implements OnInit {
                 console.log(error1.error);
             }
         );
+    }
+
+    private printSegsDirection(res: any) {
+        const segmentKeys = res.features.map(seg => seg.properties.segmentkey);
+        const segmentKeysString = segmentKeys.join(', ');
+        console.log('Segmentkeys of trip:');
+        console.log(segmentKeysString);
+        const directions = res.features.map(seg => seg.properties.direction);
+        const directionsString = directions.join(', ');
+        console.log('Directions of trip:');
+        console.log(directionsString);
     }
 
     getModels(): any {
