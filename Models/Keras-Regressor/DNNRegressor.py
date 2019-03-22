@@ -172,6 +172,6 @@ if __name__ == "__main__":
     default_config = energy_config
 
     if len(args) > 0 and args[0] == "predict":
-        predict(default_config)
+        predict(default_config, True)
     else:
         train(default_config)
