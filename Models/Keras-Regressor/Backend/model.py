@@ -1,3 +1,4 @@
+
 from Utils.ReadData import get_candidate_trip_data
 from DNNRegressor import calculate_results
 from Utils.Model import model_path, load_model
@@ -5,6 +6,7 @@ from Utils.SQL import copy_latest_preds_transaction
 from Utils.LocalSettings import main_db
 from Utils.Utilities import load_config
 from Backend.db import get_baseline_and_actual
+import math
 import geojson
 import pandas as pd
 import numpy as np
@@ -25,10 +27,10 @@ def do_segment_predictions(segments, directions):
 
 def do_trip_predictions(trip_id):
     geos, lengths, preds, keys = create_trip_predictions(config, trip_id)
-    return geojsonify(geos, lengths, preds, keys)
+    return geojsonify(geos, lengths, preds, keys, trip_id)
 
 
-def geojsonify(geostrings: pd.Series, segment_lengths: pd.Series, predictions: pd.Series, keys=None, trip=None):
+def geojsonify(geostrings: pd.Series, segment_lengths: pd.Series, predictions: pd.Series, keys=None, trip_id=None):
     geos = geostrings.map(geojson.loads).values
     props = pd.concat([segment_lengths, predictions], axis=1).values.T
     if keys is not None:
@@ -43,8 +45,8 @@ def geojsonify(geostrings: pd.Series, segment_lengths: pd.Series, predictions: p
         temp[i] = props[0][i] if i == 0 else temp[i - 1] + props[0][i]
     props = np.vstack([props, temp])
     other_preds_df = None
-    if trip is not None:
-        other_preds_df = get_baseline_and_actual(trip)
+    if trip_id is not None:
+        other_preds_df = get_baseline_and_actual(trip_id)
     geostrings = [geojson.Feature() for _ in range(len(geos))]
     for i in range(len(geos)):
         properties = {'cost': props[1][i],
@@ -56,17 +58,17 @@ def geojsonify(geostrings: pd.Series, segment_lengths: pd.Series, predictions: p
                 'segmentkey': seg_keys[0][i],
                 'direction': seg_keys[1][i]
             })
-        if trip is not None:
+        if trip_id is not None:
             properties.update({
                 'baseline': other_preds_df['baseline'][i],
                 'agg_baseline': other_preds_df['agg_baseline'][i],
-                'actual': other_preds_df['actual'][i],
+                'actual': other_preds_df['actual'][i] if math.isnan(other_preds_df['actual'][i]) is not True else 0,
                 'agg_actual': other_preds_df['agg_actual'][i]
             })
         geostrings[i] = geojson.Feature(geometry=geos[i],
                                         properties=properties)
-    return str(geojson.dumps(geojson.FeatureCollection(geostrings)))
 
+    return str(geojson.dumps(geojson.FeatureCollection(geostrings)))
 
 def trip_prediction(trip):
     try:
@@ -115,7 +117,7 @@ def existing_trips_prediction():
 
     predictions.rename(columns={'0': 'prediction'})
     predictions['id'] = keys['mapmatched_id']
-    path = model_path(config) + "/latest_predictions.csv"
+    path = model_path(config) + "/candidate_predictions.csv"
     predictions[['id', 'prediction']].to_csv(path, index=False, header=False)
     print("Predictions saved to file:" + path)
 

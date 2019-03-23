@@ -2,12 +2,10 @@
 import json
 from datetime import datetime
 import sys
-from pprint import pprint
-
-import DNNRegressor as DNN
 import os
 import errno
 
+import DNNRegressor as DNN
 
 def main():
     if len(sys.argv) != 2:

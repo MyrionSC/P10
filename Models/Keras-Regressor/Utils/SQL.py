@@ -39,7 +39,7 @@ def copy_latest_preds_transaction(path, db):
     cur = conn.cursor()
     cur.execute(delete_latest_predictions_qry())
     with open(path, "r") as file:
-        cur.copy_from(file, "experiments.rmp10_latest_prediction", sep=",", columns=('id', 'prediction'))
+        cur.copy_from(file, "experiments.rmp10_latest_candidate_prediction", sep=",", columns=('id', 'prediction'))
     conn.commit()
     cur.close()
     conn.close()

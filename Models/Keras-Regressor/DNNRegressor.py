@@ -122,8 +122,6 @@ def save_history(history, config: Config):
 
 
 def train(config: Config):
-    # If using speed model, before doing anything else, check if speed model exists and predictions are generated
-
     X_train, Y_train, X_validation, Y_validation, trip_ids = read_training_data_sets(config)
     model, history = train_model(X_train, Y_train, X_validation, Y_validation, config)
 

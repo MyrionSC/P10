@@ -105,7 +105,7 @@ def get_baseline_and_actual(trip_id):
             vit.ev_kwh as actual,
             sum(vit.ev_kwh) OVER (ORDER BY vit.trip_segmentno) as agg_actual
         FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
-        JOIN experiments.rmp10_baseline_trip_segment_predictions preds
+        JOIN experiments.rmp10_baseline_training_trip_segments preds
         ON vit.id = preds.mapmatched_id
         WHERE vit.trip_id = {0}
         ORDER BY vit.trip_segmentno
