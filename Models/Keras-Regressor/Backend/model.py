@@ -14,7 +14,6 @@ from Utils.Errors import TripNotFoundError
 from DNNSegmentPredictor import create_segment_predictions, create_trip_predictions
 
 known_energy_trips = [116699, 91881, 4537, 76966, 52557, 175355, 103715]
-
 current_model = "saved_models/Default_Energy_Models/DefaultEnergy-epochs_20"
 config = load_config(current_model)
 model = load_model(config)
