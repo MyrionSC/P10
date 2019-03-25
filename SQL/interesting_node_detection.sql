@@ -1,12 +1,12 @@
 -- Identify all nodes and node-degrees
 CREATE VIEW experiments.rmp10_all_points AS
-SELECT point, geom, count(*) as degree
+SELECT point, geom, count(*) as degree, array_agg(segmentkey) as segments
 FROM (
-	SELECT point, geom
-	FROM (SELECT startpoint as point, ST_Startpoint(segmentgeo::geometry)::geography as geom FROM maps.osm_dk_20140101) sp 
+	SELECT point, geom, segmentkey
+	FROM (SELECT startpoint as point, ST_Startpoint(segmentgeo::geometry)::geography as geom, segmentkey FROM maps.osm_dk_20140101) sp 
 	UNION ALL
-	SELECT point, geom
-	FROM (SELECT endpoint as point, ST_Endpoint(segmentgeo::geometry)::geography as geom FROM maps.osm_dk_20140101) ep
+	SELECT point, geom, segmentkey
+	FROM (SELECT endpoint as point, ST_Endpoint(segmentgeo::geometry)::geography as geom, segmentkey FROM maps.osm_dk_20140101) ep
 ) points
 GROUP BY point, geom;
 
@@ -17,8 +17,8 @@ FROM experiments.rmp10_all_points
 WHERE degree >= 3;
 
 -- Identify all points where the road category switches
-INSERT INTO experiments.rmp10_interesting_nodes (point, geom, degree)
-SELECT point, geom, degree
+INSERT INTO experiments.rmp10_interesting_nodes (point, geom, degree, segments)
+SELECT point, geom, degree, segments
 FROM experiments.rmp10_all_points
 JOIN (
 	SELECT DISTINCT shared 
