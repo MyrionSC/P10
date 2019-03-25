@@ -46,3 +46,18 @@ def load_config(path: str) -> Config:
     with open(path + "/config.json") as file:
         config = json.load(file)
     return config
+
+def generate_upload_predictions(path: str) -> str:
+    name = path.strip().split("/")[-1]
+    if name == "":
+        name = path.strip().split("/")[-2]
+    name = name.replace("-", "_")
+
+    filestr = """#!/usr/bin/env bash
+CREATE="DROP TABLE IF EXISTS experiments.rmp10_predictions_{0}; CREATE TABLE experiments.rmp10_predictions_{0} ( mapmatched_id bigint NOT NULL, ev_kwh real);"
+COPY="COPY experiments.rmp10_predictions_{0} FROM STDIN DELIMITER ',' CSV HEADER;"
+        
+psql -h 172.19.1.104 -p 4102 -U smartmi -d ev_smartmi -c "$CREATE"
+cat predictions.csv | psql -h 172.19.1.104 -p 4102 -U smartmi -d ev_smartmi -c "$COPY"
+    """.format(name)
+    return filestr

@@ -3,7 +3,7 @@ from Utils.ReadData import read_data
 from Utils.Model import DNNRegressor, save_model, load_model
 from Utils.Plot import plot_history
 from Utils.Configuration import paths, Config, energy_config
-from Utils.Utilities import model_path, printparams
+from Utils.Utilities import model_path, printparams, generate_upload_predictions
 from tensorflow import set_random_seed
 from numpy.random import seed
 from sklearn.metrics import r2_score
@@ -122,8 +122,6 @@ def save_history(history, config: Config):
 
 
 def train(config: Config):
-    # If using speed model, before doing anything else, check if speed model exists and predictions are generated
-
     X_train, Y_train, X_validation, Y_validation, trip_ids = read_training_data_sets(config)
     model, history = train_model(X_train, Y_train, X_validation, Y_validation, config)
 
@@ -165,6 +163,10 @@ def predict(config: Config, save_predictions: bool=False):
         predictions['mapmatched_id'] = keys
         predictions[['mapmatched_id', 'prediction']].to_csv(model_path(config) + "/predictions.csv", index=False)
         print("Predictions saved to file:" + model_path(config) + "/predictions.csv")
+        with open(model_path(config) + "/upload_predictions.sh", "w+") as file: # create script for uploading predictions
+            file.write(generate_upload_predictions(model_path(config)))
+        print("Created upload_predictions script in model dir, which can be run to upload new predictions to main db")
+
 
 
 if __name__ == "__main__":
@@ -172,6 +174,6 @@ if __name__ == "__main__":
     default_config = energy_config
 
     if len(args) > 0 and args[0] == "predict":
-        predict(default_config)
+        predict(default_config, True)
     else:
         train(default_config)

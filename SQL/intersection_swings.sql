@@ -133,6 +133,7 @@ GROUP BY segmentkey1, segmentkey2, avg_kwh_right;
 
 SELECT
 	*,
-	avg_kwh_right / avg_kwh_all as percentage,
-	avg_kwh_right - avg_kwh_all as difference
+	abs(avg_kwh_right - avg_kwh_all) as mean_abs_error,
+	abs(avg_kwh_right - avg_kwh_all) / avg_kwh_all as mean_percentage_error
 FROM experiments.rmp10_intersection1_averages;
+
