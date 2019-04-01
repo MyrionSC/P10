@@ -99,7 +99,7 @@ WITH RECURSIVE search(startp, startgeo, endp, endgeo, path) AS (
 	FROM rmp10_test_roundabout_shortest_start nxt
 	JOIN search prv 
 	ON nxt.startpoint = prv.endp -- Next segment must be in sequence with previous
-	AND nxt.endpoint != prv.endp -- Disregard self loops
+	AND nxt.endpoint != prv.endp -- Disregard self loops (Not working!)
 	AND prv.startp != nxt.endpoint -- Disregard cycles of length 2
 	AND NOT nxt.startpoint = ANY(path) -- Terminate when encountering a cycle
 )
