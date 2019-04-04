@@ -6,8 +6,7 @@ select
 	s2.segtype as out_segtype,
 	array[s1.segmentkey] ||
 		  experiments.rmp10_intersection_supersegment_internal_path(s1.segmentkey, s2.segmentkey, s1.cid) ||
-		  array[s2.segmentkey] as supersegment,
-	st_union(s1.segmentgeo::geometry, s2.segmentgeo::geometry) as geo
+		  array[s2.segmentkey] as supersegment
 into experiments.rmp10_intersection_supersegments
 from experiments.rmp10_intersection_segment_types s1
 join experiments.rmp10_intersection_segment_types s2
