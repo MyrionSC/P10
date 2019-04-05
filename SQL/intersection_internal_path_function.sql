@@ -39,20 +39,24 @@ AS $$
 			internalseg_entrypoint entrypoint,
 			internalseg_exitpoint exitpoint
 		UNION ALL
-		select 
-			nxt.endpoint as curr_point,
+		select
+			CASE
+				WHEN prv.curr_point = nxt.startpoint THEN nxt.endpoint
+				WHEN nxt.Direction = 'BOTH' and prv.curr_point = nxt.endpoint THEN nxt.startpoint
+			END as curr_point,
 			prv.internalseg_entrypoint,
 			prv.internalseg_exitpoint,
 			prv.path || nxt.segmentkey,
 			nxt.endpoint=prv.internalseg_exitpoint or 
-				nxt.startpoint=prv.internalseg_exitpoint as is_done,
+				(nxt.Direction = 'BOTH' and nxt.startpoint=prv.internalseg_exitpoint) as is_done,
 			prv.i+1
 		from internal_segs nxt
 		join internal_path prv
 		on 
-			(prv.curr_point = nxt.startpoint OR
-			 nxt.segtype = 'Both' and prv.curr_point = nxt.endpoint) AND
-			prv.i<=5 
+			(prv.curr_point = nxt.startpoint or
+			(nxt.Direction = 'BOTH' and prv.curr_point = nxt.endpoint)) AND
+			not prv.is_done and
+			prv.i<=4
 	)
 	select path
 	from internal_path
@@ -60,3 +64,4 @@ AS $$
 	order by i
 	limit 1
 $$;
+
