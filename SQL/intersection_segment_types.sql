@@ -3,13 +3,13 @@ create OR REPLACE view experiments.rmp10_intersection_segment_types as (
 	select distinct(unnest(segments)) as segmentkey
 	from experiments.rmp10_intersections
 	), inter_points as (
-		select cid, array_agg(distinct(point)) as points
+		select cid_w_single, array_agg(distinct(point)) as points
 		from experiments.rmp10_intersections
-		group by cid
+		group by cid_w_single
 	)
 	select 
 		m.*,
-		p.cid,
+		p.cid_w_single,
 		CASE 
 			when m.startpoint=any(p.points) and m.endpoint=any(p.points) Then 'Internal'
 			when m.direction='BOTH' Then 'Both'
@@ -22,4 +22,5 @@ create OR REPLACE view experiments.rmp10_intersection_segment_types as (
 	join inter_points p
 	on m.startpoint=any(p.points) or m.endpoint=any(p.points)
 );
+
 
