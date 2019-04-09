@@ -24,6 +24,7 @@ WITH clusters AS (
 	ON osm1.segmentkey = segs.in_segkey
 	JOIN maps.osm_dk_20140101 osm2
 	ON osm2.segmentkey = segs.out_segkey
+	WHERE clusters.cid=21979
 ), geoms AS (
 SELECT
 	cid_w_single, 
@@ -40,18 +41,27 @@ SELECT
 		 ])
 	END AS out_geom
 FROM supersegs
+), superseg_angles as (
+	SELECT cid_w_single, in_segkey, out_segkey, in_geom, out_geom, experiments.circ(in_angle - out_angle) as angle
+	FROM (
+		SELECT 
+			*, 
+			degrees(ST_Azimuth(
+				ST_Startpoint(in_geom), 
+				ST_Endpoint(in_geom)
+			)) as in_angle, 
+			degrees(ST_Azimuth(
+				ST_Startpoint(out_geom),
+				ST_Endpoint(out_geom)
+			)) as out_angle
+		FROM geoms
+	) sub
 )
-SELECT cid_w_single, in_segkey, out_segkey, in_geom, out_geom, experiments.circ(in_angle - out_angle) as angle
-FROM (
-	SELECT 
-		*, 
-		degrees(ST_Azimuth(
-			ST_Startpoint(in_geom), 
-			ST_Endpoint(in_geom)
-		)) as in_angle, 
-		degrees(ST_Azimuth(
-			ST_Startpoint(out_geom),
-			ST_Endpoint(out_geom)
-		)) as out_angle
-	FROM geoms
-) sub
+SELECT 
+	cid_w_single, in_segkey, out_segkey,
+	CASE WHEN angle < 45 OR angle >= 315 THEN 'STRAIGHT'
+		 WHEN angle >= 45 AND angle < 135 THEN 'LEFT'
+		 WHEN angle >= 135 AND angle < 225 THEN 'U-TURN'
+		 WHEN angle >= 225 AND angle < 315 THEN 'RIGHT'
+	END as direction
+FROM superseg_angles
