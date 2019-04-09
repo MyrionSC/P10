@@ -24,7 +24,7 @@ WITH clusters AS (
 	ON osm1.segmentkey = segs.in_segkey
 	JOIN maps.osm_dk_20140101 osm2
 	ON osm2.segmentkey = segs.out_segkey
-	WHERE clusters.cid=21979
+	WHERE clusters.cid = 9581
 ), geoms AS (
 SELECT
 	cid_w_single, 
@@ -58,10 +58,10 @@ FROM supersegs
 	) sub
 )
 SELECT 
-	cid_w_single, in_segkey, out_segkey,
-	CASE WHEN angle < 45 OR angle >= 315 THEN 'STRAIGHT'
-		 WHEN angle >= 45 AND angle < 135 THEN 'LEFT'
-		 WHEN angle >= 135 AND angle < 225 THEN 'U-TURN'
-		 WHEN angle >= 225 AND angle < 315 THEN 'RIGHT'
+	*,
+	CASE WHEN angle < 30 OR angle >= 330 THEN 'STRAIGHT'
+		 WHEN angle >= 30 AND angle < 150 THEN 'LEFT'
+		 WHEN angle >= 150 AND angle < 210 THEN 'U-TURN'
+		 WHEN angle >= 210 AND angle < 330 THEN 'RIGHT'
 	END as direction
 FROM superseg_angles
