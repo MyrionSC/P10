@@ -1,6 +1,6 @@
 select *
-from experiments.rmp10_interesting_nodes n
 into experiments.rmp10_t_sections
+from experiments.rmp10_interesting_nodes n
 where 
 	not EXISTS (
 		select 
