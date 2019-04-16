@@ -1,0 +1,11 @@
+CREATE OR REPLACE FUNCTION rmp10_get_geo(
+	segs integer[]
+)
+	RETURNS geometry
+	LANGUAGE 'sql'
+AS $$
+	select st_union(segmentgeo::geometry)
+	from maps.osm_dk_20140101
+	where segmentkey=any(segs)
+$$;
+
