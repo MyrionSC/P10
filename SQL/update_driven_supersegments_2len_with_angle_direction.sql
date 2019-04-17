@@ -25,7 +25,6 @@ FROM (
 		ON osm1.segmentkey = segs.segments[1]
 		JOIN maps.osm_dk_20140101 osm2
 		ON osm2.segmentkey = segs.segments[2]
-		limit 100
 	), geoms AS (
 	SELECT
 		point, 
