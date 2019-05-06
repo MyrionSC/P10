@@ -5,9 +5,9 @@ select
 	s2.segmentkey as out_segkey,
 	s2.segtype as out_segtype,
 	array[s1.segmentkey, s2.segmentkey] as supersegment
-into experiments.experiments.rmp10_t_junction_w_roundabouts_supersegments
-from experiments.experiments.rmp10_t_junction_w_roundabouts_segment_types s1
-join experiments.experiments.rmp10_t_junction_w_roundabouts_segment_types s2
+into experiments.rmp10_t_junction_w_roundabouts_supersegments
+from experiments.rmp10_t_junction_w_roundabouts_segment_types s1
+join experiments.rmp10_t_junction_w_roundabouts_segment_types s2
 on
 	s1.point=s2.point and
 	(s1.segtype='In' or s1.segtype='Both')  and 
