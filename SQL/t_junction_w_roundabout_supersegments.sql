@@ -4,7 +4,7 @@ select
 	s1.segtype as in_segtype,
 	s2.segmentkey as out_segkey,
 	s2.segtype as out_segtype,
-	array[s1.segmentkey, s2.segmentkey] as supersegment
+	array[s1.segmentkey, s2.segmentkey] as segments
 into experiments.rmp10_t_junction_w_roundabouts_supersegments
 from experiments.rmp10_t_junction_w_roundabouts_segment_types s1
 join experiments.rmp10_t_junction_w_roundabouts_segment_types s2
