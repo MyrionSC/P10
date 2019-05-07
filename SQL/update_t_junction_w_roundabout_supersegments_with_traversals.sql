@@ -1,13 +1,13 @@
-alter table experiments.rmp10_t_junction_w_roundabout_supersegments
+alter table experiments.rmp10_intersection_supersegments_t_junction_w_roundabout
 add column num_traversals bigint;
 
-update experiments.rmp10_t_junction_w_roundabout_supersegments as outer_ds
+update experiments.rmp10_intersection_supersegments_t_junction_w_roundabout as outer_ds
 set num_traversals=sq.num_traversals
 from (
 	select
 		segments,
 		count(*) as num_traversals
-	from experiments.rmp10_t_junction_w_roundabout_supersegments ds
+	from experiments.rmp10_intersection_supersegments_t_junction_w_roundabout ds
 	join mapmatched_data.viterbi_match_osm_dk_20140101 s1
 	on ds.segments[1]=s1.segmentkey
 	join mapmatched_data.viterbi_match_osm_dk_20140101 s2

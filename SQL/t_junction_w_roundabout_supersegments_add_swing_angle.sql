@@ -1,8 +1,8 @@
-ALTER TABLE experiments.rmp10_t_junction_w_roundabout_supersegments
+ALTER TABLE experiments.rmp10_intersection_supersegments_t_junction_w_roundabout
 ADD COLUMN angle double precision,
 ADD COLUMN direction text;
 
-UPDATE experiments.rmp10_t_junction_w_roundabout_supersegments ss
+UPDATE experiments.rmp10_intersection_supersegments_t_junction_w_roundabout ss
 SET angle=sq.angle, direction=sq.direction
 FROM (
 	WITH supersegs AS (
@@ -20,7 +20,7 @@ FROM (
 			END AS outdir,
 			subgeoms(rmp10_get_geo(array[segments[1]])) as ingeoms,
 			subgeoms(rmp10_get_geo(array[segments[2]])) as outgeoms
-		FROM experiments.rmp10_t_junction_w_roundabout_supersegments segs
+		FROM experiments.rmp10_intersection_supersegments_t_junction_w_roundabout segs
 		JOIN maps.osm_dk_20140101 osm1
 		ON osm1.segmentkey = segs.in_segkey
 		JOIN maps.osm_dk_20140101 osm2
