@@ -14,5 +14,4 @@ on
 	sups.segments[array_length(segments, 1)]=s2.segmentkey and
 	s1.trip_id=s2.trip_id and
 	s1.trip_segmentno=s2.trip_segmentno - array_length(segments, 1) + 1
-where segments=array[268359,268360,60235,60241]
 
