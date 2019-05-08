@@ -15,3 +15,11 @@ on
 	s1.trip_id=s2.trip_id and
 	s1.trip_segmentno=s2.trip_segmentno - array_length(segments, 1) + 1
 
+CREATE INDEX rmp10_all_trip_supersegments_trip_idx
+    ON experiments.rmp10_all_trip_supersegments USING btree
+    (trip_id ASC NULLS LAST)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_trip_supersegments_segments_idx
+    ON experiments.rmp10_all_trip_supersegments USING btree
+    (segments ASC NULLS LAST)
+    TABLESPACE pg_default;

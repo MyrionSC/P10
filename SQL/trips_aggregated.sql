@@ -10,7 +10,11 @@ select
 	array_agg(datekey) as datekey_arr,
 	array_agg(timekey) as timekey_arr
 into experiments.rmp10_trips_aggregated
-from mapmatched_data.viterbi_match_osm_dk_20140101
+from (
+	select *
+	from mapmatched_data.viterbi_match_osm_dk_20140101
+	order by trip_segmentno
+) sq
 group by trip_id;
 
 CREATE INDEX rmp10_trips_aggregated_trip_idx
