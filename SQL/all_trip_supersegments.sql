@@ -23,3 +23,38 @@ CREATE INDEX rmp10_all_trip_supersegments_segments_idx
     ON experiments.rmp10_all_trip_supersegments USING btree
     (segments ASC NULLS LAST)
     TABLESPACE pg_default;
+
+-- delete fake positives
+DELETE
+FROM experiments.rmp10_all_trip_supersegments ats
+WHERE EXISTS (
+	SELECT
+	FROM experiments.rmp10_trips_aggregated
+	WHERE
+		ats.trip_id = trip_id and 
+		ats.segments != segmentkeys_arr[ats.start_segmentno: ats.end_segmentno]
+);
+
+-- join with trips_aggregated to get attributes. Do left join to see if anything goes wrong.
+ALTER TABLE experiments.rmp10_all_trip_supersegments
+ADD COLUMN trip_segments_count integer,
+ADD COLUMN meters_driven real,
+ADD COLUMN seconds real,
+ADD COLUMN ev_wh double precision,
+ADD COLUMN datekey integer,
+ADD COLUMN timekey smallint;
+
+select 
+	ats.*, 
+	ta.trip_segments_count, 
+	(SELECT SUM(s) FROM UNNEST(ta.meters_driven_arr[ats.start_segmentno:ats.end_segmentno]) s) as meters_driven,
+	(SELECT SUM(s) FROM UNNEST(ta.seconds_arr[ats.start_segmentno:ats.end_segmentno]) s) as seconds,
+	(SELECT SUM(s) FROM UNNEST(ta.ev_kwh_arr[ats.start_segmentno:ats.end_segmentno]) s) * 1000 as ev_wh,
+	(SELECT MIN(s) FROM UNNEST(ta.datekey_arr[ats.start_segmentno:ats.end_segmentno]) s) as datekey,
+	(SELECT MIN(s) FROM UNNEST(ta.timekey_arr[ats.start_segmentno:ats.end_segmentno]) s) as timekey
+from experiments.rmp10_all_trip_supersegments ats
+left join experiments.rmp10_trips_aggregated ta
+on
+	ats.trip_id = ta.trip_id and
+	ats.segments = ta.segmentkeys_arr[ats.start_segmentno:ats.end_segmentno];
+
