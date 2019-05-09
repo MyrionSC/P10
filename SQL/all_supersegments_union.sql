@@ -46,4 +46,29 @@ from (
 		traffic_lights,
 		'Complex' as type
 	from experiments.rmp10_intersection_supersegments_complex
-) sq
+) sq;
+
+CREATE INDEX rmp10_all_supersegments_segments_idx
+    ON experiments.rmp10_all_supersegments USING btree
+    (segments)
+    TABLESPACE pg_default;
+	
+CREATE INDEX rmp10_all_supersegments_startpoint_idx
+    ON experiments.rmp10_all_supersegments USING btree
+    (startpoint)
+    TABLESPACE pg_default;
+	
+CREATE INDEX rmp10_all_supersegments_endpoint_idx
+    ON experiments.rmp10_all_supersegments USING btree
+    (endpoint)
+    TABLESPACE pg_default;
+	
+CREATE INDEX rmp10_all_supersegments_startseg_idx
+    ON experiments.rmp10_all_supersegments USING btree
+    (startseg)
+    TABLESPACE pg_default;
+	
+CREATE INDEX rmp10_all_supersegments_endseg_idx
+    ON experiments.rmp10_all_supersegments USING btree
+    (endseg)
+    TABLESPACE pg_default;
