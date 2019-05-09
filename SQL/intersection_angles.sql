@@ -65,3 +65,24 @@ SELECT
 		 WHEN angle >= 210 AND angle < 330 THEN 'RIGHT'
 	END as direction
 FROM superseg_angles
+
+CREATE FUNCTION dir_classifier(
+	angle double precision,
+	straight_tolerance integer,
+	u_turn_tolerance integer
+)
+RETURNS text
+LANGUAGE 'sql'
+AS $$
+SELECT 
+	CASE WHEN angle >= 360 - st OR  angle < st 		 THEN 'STRAIGHT'
+		 WHEN angle >= st 		AND angle < 180 - ut THEN 'LEFT'
+		 WHEN angle >= 180 - ut AND angle < 180 + ut THEN 'U-TURN'
+		 WHEN angle >= 180 + ut AND angle < 360 - st THEN 'RIGHT'
+	END as direction
+FROM (
+	SELECT
+		straight_tolerance / 2 as st,
+		u_turn_tolerance / 2 as ut
+) ts
+$$

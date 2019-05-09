@@ -136,3 +136,50 @@ ON osm.startpoint = ANY(cycles)
 AND osm.endpoint = ANY(cycles)
 AND array_length(cycles, 1) > 2 -- Disregard self-loops
 GROUP BY cid
+
+INSERT INTO experiments.rmp10_roundabout_supersegments (roundabout_id, segments)
+WITH ids AS (
+	SELECT DISTINCT roundabout_id
+	FROM experiments.rmp10_roundabouts
+	ORDER BY roundabout_id
+), entex AS (
+	SELECT 
+		roundabout_id, 
+		entry, 
+		exit,
+		CASE WHEN in_dir = ANY(ARRAY['BOTH_IN', 'IN'])
+			 THEN osm1.endpoint
+			 ELSE osm1.startpoint
+		END AS entry_point,
+		CASE WHEN out_dir = ANY(ARRAY['BOTH_IN', 'IN'])
+			 THEN osm2.endpoint
+			 ELSE osm2.startpoint
+		END AS exit_point
+	FROM experiments.rmp10_roundabouts_entry_exit
+	JOIN maps.osm_dk_20140101 osm1
+	ON osm1.segmentkey = entry
+	JOIN maps.osm_dk_20140101 osm2
+	ON osm2.segmentkey = exit
+)
+SELECT 
+	roundabout_id,
+	CASE WHEN indices[1] <= indices[2]
+		 THEN entry || internals[indices[1]:indices[2]] || exit
+		 ELSE entry || internals[indices[1]:] || internals[:indices[2]] || exit
+	END AS superseg
+FROM (
+	SELECT 
+		int_order.roundabout_id,
+		entry,
+		exit,
+		internals,
+		experiments.rmp10_roundabout_indexer(entry_point, exit_point, internals) as indices
+	FROM (
+		SELECT 
+			roundabout_id, 
+			experiments.roundabout_orderer(roundabout_id) as internals
+		FROM ids
+	) int_order
+	JOIN entex
+	ON entex.roundabout_id = int_order.roundabout_id
+) sub2
