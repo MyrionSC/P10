@@ -69,6 +69,23 @@ FROM (
 ) sssq
 WHERE sups.segments=sssq.segments and sups.type=sssq.type
 
+-- add categories to everything
+UPDATE experiments.rmp10_all_supersegments AS sups
+SET categories=ssq.categories
+FROM (
+	SELECT sq.segments, sq.type, array_agg(m.category) as categories
+	FROM (
+		SELECT unnest(segments) as segmentkey, segments, type
+		FROM experiments.rmp10_all_supersegments
+		WHERE categories is null
+	) sq
+	JOIN maps.osm_dk_20140101 m
+	ON sq.segmentkey=m.segmentkey
+	GROUP BY sq.segments, sq.type
+) ssq
+WHERE ssq.segments=sups.segments AND ssq.type=sups.type
+
+
 -- indexes
 CREATE INDEX rmp10_all_supersegments_segments_idx
     ON experiments.rmp10_all_supersegments USING btree
