@@ -109,6 +109,11 @@ FROM (
 ) sq
 WHERE s.segments=sq.segments AND s.type=sq.type
 
+-- add lights to type Category
+UPDATE experiments.rmp10_all_supersegments s
+SET lights=array[l.point], traffic_lights=true
+from experiments.rmp10_trafic_light_nodes_within_30m l
+where l.point=s.points[1] and s.type='Cat'
 
 -- indexes
 CREATE INDEX rmp10_all_supersegments_segments_idx
