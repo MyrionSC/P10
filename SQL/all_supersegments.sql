@@ -85,6 +85,30 @@ FROM (
 ) ssq
 WHERE ssq.segments=sups.segments AND ssq.type=sups.type
 
+-- add cat speed difference
+ALTER TABLE experiments.rmp10_all_supersegments
+ADD COLUMN cat_speed_difference double precision;
+
+UPDATE experiments.rmp10_all_supersegments as s
+SET cat_speed_difference=sq.cat_speed_difference
+FROM (
+	select 
+		segments, 
+		type, 
+		categories, 
+		categories[1] as firstcat, 
+		s1.speed_avg,
+		categories[array_length(categories, 1)] as lastcat,
+		s2.speed_avg,
+		s2.speed_avg - s1.speed_avg as cat_speed_difference
+	from experiments.rmp10_all_supersegments sups
+	JOIN experiments.rmp10_category_avg_speed s1
+	ON sups.categories[1]=s1.category
+	JOIN experiments.rmp10_category_avg_speed s2
+	ON sups.categories[array_length(categories, 1)]=s2.category
+) sq
+WHERE s.segments=sq.segments AND s.type=sq.type
+
 
 -- indexes
 CREATE INDEX rmp10_all_supersegments_segments_idx
