@@ -48,6 +48,15 @@ from (
 	from experiments.rmp10_intersection_supersegments_complex
 ) sq;
 
+-- remove cat changes that is subset of others
+DELETE
+from experiments.rmp10_all_supersegments s1
+where exists (
+	select 
+	from experiments.rmp10_all_supersegments
+	where s1.type='Cat' AND s1.segments <@ segments AND type!='Cat'
+)
+
 -- add height difference from other group
 ALTER TABLE experiments.rmp10_all_supersegments
 ADD COLUMN height_difference double precision;
