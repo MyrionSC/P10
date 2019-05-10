@@ -1,12 +1,16 @@
 ALTER TABLE experiments.rmp10_all_supersegments
-ADD COLUMN segments_old integer[],
-ADD COLUMN startpoint_old integer,
-ADD COLUMN endpoint_old integer;
+ADD COLUMN IF NOT EXISTS segments_old integer[],
+ADD COLUMN IF NOT EXISTS startpoint_old integer,
+ADD COLUMN IF NOT EXISTS endpoint_old integer,
+ADD COLUMN IF NOT EXISTS startdir text,
+ADD COLUMN IT NOT EXISTS endir text;
 
 UPDATE experiments.rmp10_all_supersegments
 SET segments_old = segments,
 	startpoint_old = startpoint,
-	endpoint_old = endpoint;
+	endpoint_old = endpoint,
+    startdir = CASE WHEN rmp10_startpoint(startseg) = startpoint THEN 'SAME' ELSE 'OTHER' END,
+    endir    = CASE WHEN rmp10_endpoint  (endseg  ) = endpoint   THEN 'SAME' ELSE 'OTHER' END;
 
 UPDATE experiments.rmp10_all_supersegments os
 SET
@@ -69,3 +73,7 @@ FROM (
         FROM alls
 ) sub
 WHERE os.segments = sub.oldsegs;
+
+ALTER TABLE experiments.rmp10_all_supersegments
+DROP COLUMN startdir,
+DROP COLUMN endir;
