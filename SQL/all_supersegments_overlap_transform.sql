@@ -1,8 +1,13 @@
 ALTER TABLE experiments.rmp10_all_supersegments
-ADD COLUMN IF NOT EXISTS segments_old integer[],
-ADD COLUMN IF NOT EXISTS startpoint_old integer,
-ADD COLUMN IF NOT EXISTS endpoint_old integer,
-ADD COLUMN IF NOT EXISTS startdir text,
+DROP COLUMN segments_old,
+DROP COLUMN startpoint_old,
+DROP COLUMN endpoint_old;
+
+ALTER TABLE experiments.rmp10_all_supersegments
+ADD COLUMN segments_old integer[],
+ADD COLUMN startpoint_old integer,
+ADD COLUMN endpoint_old integer,
+ADD COLUMN startdir text,
 ADD COLUMN IT NOT EXISTS endir text;
 
 UPDATE experiments.rmp10_all_supersegments
