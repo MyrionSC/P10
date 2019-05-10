@@ -1,14 +1,14 @@
-ALTER TABLE experiments.rmp10_all_supersegments_temp_overlap
+ALTER TABLE experiments.rmp10_all_supersegments
 ADD COLUMN segments_old integer[],
 ADD COLUMN startpoint_old integer,
 ADD COLUMN endpoint_old integer;
 
-UPDATE experiments.rmp10_all_supersegments_temp_overlap
+UPDATE experiments.rmp10_all_supersegments
 SET segments_old = segments,
 	startpoint_old = startpoint,
 	endpoint_old = endpoint;
 
-UPDATE experiments.rmp10_all_supersegments_temp_overlap os
+UPDATE experiments.rmp10_all_supersegments os
 SET
         segments = sub.newsegs,
         startpoint = sub.startpoint,
@@ -17,7 +17,7 @@ SET
         endseg = sub.endseg
 FROM (
         WITH ss as (
-                SELECT * FROM experiments.rmp10_all_supersegments_temp_overlap
+                SELECT * FROM experiments.rmp10_all_supersegments
         ), alls as (
                 SELECT ss.segments, ss.startpoint as ss_sp, ss.endpoint as ss_ep, ss.startseg, ss.endseg, ss.startdir,
                            os.segmentkey, os.startpoint as os_sp, os.endpoint as os_ep, os.origin
@@ -39,7 +39,7 @@ FROM (
 ) sub
 WHERE os.segments = sub.oldsegs;
 
-UPDATE experiments.rmp10_all_supersegments_temp_overlap os
+UPDATE experiments.rmp10_all_supersegments os
 SET
         segments = sub.newsegs,
         startpoint = sub.startpoint,
@@ -48,7 +48,7 @@ SET
         endseg = sub.endseg
 FROM (
         WITH ss as (
-                SELECT * FROM experiments.rmp10_all_supersegments_temp_overlap
+                SELECT * FROM experiments.rmp10_all_supersegments
         ), alls as (
                 SELECT ss.segments, ss.startpoint as ss_sp, ss.endpoint as ss_ep, ss.startseg, ss.endseg, ss.endir,
                            os.segmentkey, os.startpoint as os_sp, os.endpoint as os_ep, os.origin
