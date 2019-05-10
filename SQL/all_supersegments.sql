@@ -48,7 +48,7 @@ from (
 	from experiments.rmp10_intersection_supersegments_complex
 ) sq;
 
--- remove cat changes that is subset of others
+-- remove cat changes that is subset of others. WARNING: This took 10 hours last we ran it
 DELETE
 from experiments.rmp10_all_supersegments s1
 where exists (
