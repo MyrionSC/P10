@@ -1,4 +1,4 @@
---DROP VIEW IF EXISTS experiments.supersegments_temp_view;
+DROP VIEW IF EXISTS experiments.supersegments_temp_view;
 CREATE VIEW experiments.supersegments_temp_view AS
 	SELECT
 		ats.trip_id,
@@ -42,6 +42,6 @@ CREATE VIEW experiments.supersegments_temp_view AS
 	JOIN maps.osm_dk_20140101 s 
 	ON t.segmentkey=s.segmentkey
 	JOIN experiments.bcj_incline inc
-	ON t.segmentkey=inc.segmentkey
+	ON t.segmentkey=inc.segmentkey;
 
 \copy (SELECT * FROM experiments.supersegments_temp_view limit 100) TO '../Models/data/supersegment-data.csv' HEADER CSV;  
