@@ -1,7 +1,7 @@
 DROP VIEW IF EXISTS experiments.supersegments_temp_view;
 CREATE VIEW experiments.supersegments_temp_view AS
 -- supersegments
-SELECT *
+SELECT
 	ats.trip_id,
 	sups.segments, -- maybe not this
 	sups.type, -- maybe not this
@@ -9,7 +9,7 @@ SELECT *
 	sups.traffic_lights,
 	sups.height_difference,
 	sups.categories[1] as cat_start,
-	sups.categories[array_length(sups.categogories, 1)] as cat_end,
+	sups.categories[array_length(sups.categories, 1)] as cat_end,
 	sups.cat_speed_difference,
 	ats.meters_driven,
 	ats.meters_segment,
@@ -23,12 +23,12 @@ JOIN experiments.rmp10_all_trip_supersegments ats
 ON sups.segments=ats.segments AND sups.type=ats.type
 UNION
 -- segments
-SELECT *
+SELECT
 	t.trip_id,
-	segments as array[t.segmentkey],
-	type as 'Segment',
-	direction as null,
-	traffic_lights as null,
+	array[t.segmentkey] as segments,
+	'Segment' as type,
+	null as direction,
+	null as traffic_lights,
 	inc.height_difference,
 	s.category as cat_start,
 	s.category as cat_end,
@@ -37,7 +37,7 @@ SELECT *
 	t.meters_segment,
 	t.weathermeasurekey,
 	t.seconds,
-	t.ev_wh,
+	t.ev_kwh * 1000 as ev_wh,
 	t.datekey,
 	t.timekey
 FROM experiments.rmp10_training t
