@@ -8,9 +8,9 @@ select
 	sups.type
 into experiments.rmp10_all_trip_supersegments
 from experiments.rmp10_all_supersegments sups
-join mapmatched_data.viterbi_match_osm_dk_20140101 s1
+join experiments.rmp10_viterbi_match_osm_dk_20140101_overlap s1
 on sups.segments[1]=s1.segmentkey
-join mapmatched_data.viterbi_match_osm_dk_20140101 s2
+join experiments.rmp10_viterbi_match_osm_dk_20140101_overlap s2
 on 
 	sups.segments[array_length(segments, 1)]=s2.segmentkey and
 	s1.trip_id=s2.trip_id and
@@ -61,5 +61,36 @@ FROM experiments.rmp10_trips_aggregated ta
 WHERE
 	ats.trip_id = ta.trip_id and
 	ats.segments = ta.segmentkeys_arr[ats.start_segmentno:ats.end_segmentno];
+
+CREATE INDEX rmp10_all_trip_supersegments_ixd_datekey_viterbi
+    ON experiments.rmp10_all_trip_supersegments USING btree
+    (datekey)
+    TABLESPACE pg_default;
+
+/*CREATE INDEX rmp10_all_trip_supersegments_trip_with_segments_multi_index
+    ON experiments.rmp10_all_trip_supersegments USING btree
+    (trip_id, trip_segmentno)
+    TABLESPACE pg_default;*/
+
+CREATE INDEX rmp10_all_trip_supersegments_supersegs_segments_index_desc
+    ON experiments.rmp10_training_supersegs USING btree
+    (segments DESC NULLS LAST)
+    TABLESPACE pg_default;
+
+CREATE INDEX rmp10_all_trip_supersegments_supersegs_segments_index_asc
+    ON experiments.rmp10_training_supersegs USING btree
+    (segments ASC NULLS LAST)
+    TABLESPACE pg_default;
+
+CREATE INDEX rmp10_training_supersegs_trip_id_index
+    ON experiments.rmp10_training_supersegs USING btree
+    (trip_id)
+    TABLESPACE pg_default;
+
+
+
+
+
+
 
 
