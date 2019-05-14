@@ -45,7 +45,8 @@ ADD COLUMN seconds real,
 ADD COLUMN ev_wh double precision,
 ADD COLUMN weathermeasurekey integer,
 ADD COLUMN datekey integer,
-ADD COLUMN timekey smallint;
+ADD COLUMN timekey smallint,
+ADD COLUMN id bigint;
 
 UPDATE experiments.rmp10_all_trip_supersegments AS ats
 SET 
@@ -62,15 +63,15 @@ WHERE
 	ats.trip_id = ta.trip_id and
 	ats.segments = ta.segmentkeys_arr[ats.start_segmentno:ats.end_segmentno];
 
-CREATE INDEX rmp10_all_trip_supersegments_ixd_datekey_viterbi
+/*CREATE INDEX rmp10_all_trip_supersegments_ixd_datekey_viterbi
     ON experiments.rmp10_all_trip_supersegments USING btree
     (datekey)
     TABLESPACE pg_default;
 
-/*CREATE INDEX rmp10_all_trip_supersegments_trip_with_segments_multi_index
+CREATE INDEX rmp10_all_trip_supersegments_trip_with_segments_multi_index
     ON experiments.rmp10_all_trip_supersegments USING btree
     (trip_id, trip_segmentno)
-    TABLESPACE pg_default;*/
+    TABLESPACE pg_default;
 
 CREATE INDEX rmp10_all_trip_supersegments_supersegs_segments_index_desc
     ON experiments.rmp10_training_supersegs USING btree
@@ -85,7 +86,7 @@ CREATE INDEX rmp10_all_trip_supersegments_supersegs_segments_index_asc
 CREATE INDEX rmp10_training_supersegs_trip_id_index
     ON experiments.rmp10_training_supersegs USING btree
     (trip_id)
-    TABLESPACE pg_default;
+    TABLESPACE pg_default;*/
 
 ALTER TABLE experiments.rmp10_all_trip_supersegments
 DROP COLUMN id,
@@ -124,8 +125,6 @@ FROM (
 	GROUP BY t1.id_arr
 ) ss
 WHERE ss.id_arr = tss.id_arr;
-
-
 
 
 

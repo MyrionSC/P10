@@ -5,7 +5,7 @@ into experiments.rmp10_all_supersegments
 from (
 	select 
 		segments,
-		rmp10_internal_points(segments) as points,
+		array[point] as points,
 		num_traversals,
 		direction,
 		categories,
@@ -16,7 +16,7 @@ from (
 	UNION
 	select 
 		segments,
-		rmp10_internal_points(segments) as points,
+		array[point] as points,
 		num_traversals,
 		direction,
 		null as categories,
@@ -27,7 +27,7 @@ from (
 	UNION
 	select 
 		segments,
-		rmp10_internal_points(segments) as points,
+		array[point] as points,
 		num_traversals,
 		direction,
 		null as categories,
