@@ -87,6 +87,43 @@ CREATE INDEX rmp10_training_supersegs_trip_id_index
     (trip_id)
     TABLESPACE pg_default;
 
+ALTER TABLE experiments.rmp10_all_trip_supersegments
+DROP COLUMN id,
+ADD COLUMN id_arr bigint[];
+
+UPDATE experiments.rmp10_all_trip_supersegments ss
+SET id_arr = sub2.id_arr
+FROM (
+	SELECT trip_id, start_segmentno, end_segmentno, array_agg(id) as id_arr
+	FROM (
+		SELECT ss.trip_id, ss.start_segmentno, ss.end_segmentno, os.trip_segmentno, os.id
+		FROM experiments.rmp10_all_trip_supersegments ss
+		JOIN experiments.rmp10_viterbi_match_osm_dk_20140101_overlap os
+		ON ss.trip_id = os.trip_id 
+		AND os.trip_segmentno >= ss.start_segmentno 
+		AND os.trip_segmentno <= ss.end_segmentno
+		ORDER BY os.trip_id, os.trip_segmentno
+	) sub
+	GROUP BY trip_id, start_segmentno, end_segmentno
+	ORDER BY trip_id, start_segmentno
+) sub2
+WHERE ss.trip_id = sub2.trip_id
+AND ss.start_segmentno = sub2.start_segmentno 
+AND ss.end_segmentno = sub2.end_segmentno;
+
+UPDATE experiments.rmp10_all_trip_supersegments tss
+SET ev_wh = ss.ev_kwh * 1000
+FROM (
+	SELECT id_arr, sum(ev_kwh) as ev_kwh
+	FROM (
+		SELECT id_arr, unnest(id_arr) as id
+		FROM experiments.rmp10_all_trip_supersegments
+	) t1
+	JOIN experiments.rmp10_viterbi_match_osm_dk_20140101_overlap t2
+	ON t1.id = t2.id
+	GROUP BY t1.id_arr
+) ss
+WHERE ss.id_arr = tss.id_arr;
 
 
 

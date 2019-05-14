@@ -8,7 +8,7 @@ ADD COLUMN segments_old integer[],
 ADD COLUMN startpoint_old integer,
 ADD COLUMN endpoint_old integer,
 ADD COLUMN startdir text,
-ADD COLUMN IT NOT EXISTS endir text;
+ADD COLUMN endir text;
 
 UPDATE experiments.rmp10_all_supersegments
 SET segments_old = segments,
@@ -32,10 +32,9 @@ FROM (
                            os.segmentkey, os.startpoint as os_sp, os.endpoint as os_ep, os.origin
                 FROM ss
                 JOIN experiments.rmp10_osm_dk_20140101_overlaps os
-                ON ss.endseg = os.origin
+                ON ss.startseg = os.origin
                 AND CASE WHEN ss.startdir = 'SAME' THEN ss.startpoint != os.startpoint
                                  ELSE ss.startpoint != os.endpoint END
-                ORDER BY origin, os.startpoint
         )
         SELECT
                 segments as oldsegs,
@@ -66,7 +65,6 @@ FROM (
                 ON ss.endseg = os.origin
                 AND CASE WHEN ss.endir = 'SAME' THEN ss.endpoint != os.endpoint
                                  ELSE ss.endpoint != os.startpoint END
-                ORDER BY origin, os.endpoint
         )
         SELECT
                 segments as oldsegs,
@@ -82,3 +80,28 @@ WHERE os.segments = sub.oldsegs;
 ALTER TABLE experiments.rmp10_all_supersegments
 DROP COLUMN startdir,
 DROP COLUMN endir;
+
+CREATE INDEX rmp10_all_supersegments_temp_overlap_segments_idx
+    ON experiments.rmp10_all_supersegments_temp_overlap USING btree
+    (segments)
+    TABLESPACE pg_default;
+    
+CREATE INDEX rmp10_all_supersegments_temp_overlap_startpoint_idx
+    ON experiments.rmp10_all_supersegments_temp_overlap USING btree
+    (startpoint)
+    TABLESPACE pg_default;
+    
+CREATE INDEX rmp10_all_supersegments_temp_overlap_endpoint_idx
+    ON experiments.rmp10_all_supersegments_temp_overlap USING btree
+    (endpoint)
+    TABLESPACE pg_default;
+    
+CREATE INDEX rmp10_all_supersegments_temp_overlap_startseg_idx
+    ON experiments.rmp10_all_supersegments_temp_overlap USING btree
+    (startseg)
+    TABLESPACE pg_default;
+    
+CREATE INDEX rmp10_all_supersegments_temp_overlap_endseg_idx
+    ON experiments.rmp10_all_supersegments_temp_overlap USING btree
+    (endseg)
+    TABLESPACE pg_default;
