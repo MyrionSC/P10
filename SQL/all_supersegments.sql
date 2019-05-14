@@ -38,7 +38,7 @@ from (
 	UNION 
 	select
 		segments,
-		rmp10_internal_points(segments) as points,
+		array_remove(array_remove(points, rmp10_startpoint(segments)), rmp10_endpoint(segments)) as points,
 		num_traversals,
 		direction,
 		null as categories,
