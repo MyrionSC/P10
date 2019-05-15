@@ -7,8 +7,8 @@ FROM (
 			 THEN ss1.startseg
 			 ELSE ss1.endseg
 		END AS segment
-	FROM experiments.rmp10_intersection_supersegments ss1
-	JOIN experiments.rmp10_intersection_supersegments ss2
+	FROM experiments.rmp10_all_supersegments ss1
+	JOIN experiments.rmp10_all_supersegments ss2
 	ON (ss1.startseg = ss2.startseg AND ss1.startpoint <> ss2.startpoint)
 	OR (ss1.startseg = ss2.endseg   AND ss1.startpoint <> ss2.endpoint)
 	OR (ss1.endseg 	 = ss2.startseg AND ss1.endpoint   <> ss2.startpoint)

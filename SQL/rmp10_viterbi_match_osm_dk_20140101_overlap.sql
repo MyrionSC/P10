@@ -1,12 +1,14 @@
 DROP TABLE IF EXISTS experiments.rmp10_viterbi_match_osm_dk_20140101_overlap;
 
-CREATE TABLE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap
-AS TABLE mapmatched_data.viterbi_match_osm_dk_20140101
-WITH NO DATA;
+--CREATE TABLE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap
+--AS TABLE mapmatched_data.viterbi_match_osm_dk_20140101
+--WITH NO DATA;
 
 ALTER TABLE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap
 ADD COLUMN origin bigint,
 ADD COLUMN interseg_no integer;
+
+DROP SEQUENCE IF EXISTS experiments.rmp10_overlap_vit_id;
 
 CREATE SEQUENCE experiments.rmp10_overlap_vit_id
 START 14473007;
@@ -25,18 +27,15 @@ FROM (
 	FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
 	JOIN experiments.rmp10_osm_dk_20140101_overlaps os
 	ON vit.segmentkey = os.origin
+	AND os.origin != os.segmentkey
 	ORDER BY trip_id, trip_segmentno, interseg_no
 ) ss;
 
-INSERT INTO experiments.rmp10_viterbi_match_osm_dk_20140101_overlap (id, trip_id, trip_segmentno, segmentkey, direction, interseg_no, origin)
+INSERT INTO experiments.rmp10_viterbi_match_osm_dk_20140101_overlap
 SELECT
+	*,
 	id,
-	trip_id,
-	trip_segmentno,
-	segmentkey,
-	direction,
-	1,
-	id
+	1
 FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
 WHERE NOT EXISTS (
 	SELECT
@@ -65,6 +64,22 @@ FROM (
 WHERE t1.id = t2.id;
 
 UPDATE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap os
+SET vehiclekey = vit.vehiclekey,
+	userkey = vit.userkey,
+	datekey = vit.datekey,
+	batchkey = vit.batchkey,
+	weathermeasurekey = vit.weathermeasurekey,
+	sourcekey = vit.sourcekey,
+	timekey = vit.timekey,
+	speed = vit.speed,
+	meters_driven = vit.meters_driven / 2,
+	meters_segment = vit.meters_segment / 2,
+	seconds = vit.seconds / 2
+FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
+WHERE os.origin != os.id
+AND vit.id = os.origin;
+
+UPDATE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap os
 SET ev_soc = CASE WHEN interseg_no = 1 THEN floor(vit.ev_soc::real / 2)::smallint ELSE ceil(vit.ev_soc::real / 2)::smallint END
 FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
 WHERE os.id != os.origin
@@ -74,16 +89,25 @@ UPDATE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap
 SET ev_soc = NULL
 WHERE ev_soc = 0;
 
-WITH new_ev AS (
-	SELECT vit.id, vit.trip_id, vit.trip_segmentno, vit.segmentkey, CASE WHEN up.ev_kwh IS NULL THEN vit.ev_kwh ELSE up.ev_kwh END AS ev_kwh
-	FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
-	LEFT JOIN experiments.ev_kwh_update up
-	on up.trip_id = vit.trip_id AND up.trip_segmentno = vit.trip_segmentno
-)
+UPDATE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap os
+SET ev_kwh = vit.ev_kwh / 2
+FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
+WHERE vit.id = os.origin
+AND os.origin != os.id;
+
+UPDATE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap os
+SET ev_kwh = vit.ev_kwh
+FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
+WHERE vit.id = os.origin
+AND os.origin = os.id;
+
 UPDATE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap os
 SET ev_kwh = CASE WHEN os.origin = os.id THEN upd.ev_kwh ELSE upd.ev_kwh / 2 END
-FROM new_ev upd
-WHERE os.origin = upd.id;
+FROM mapmatched_data.viterbi_match_osm_dk_20140101 vit
+JOIN experiments.ev_kwh_update upd
+ON vit.trip_id = upd.trip_id
+AND vit.trip_segmentno = upd.trip_segmentno
+WHERE os.origin = vit.id;
 
 UPDATE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap os
 SET ev_soc_trip = ev_soc_agg,

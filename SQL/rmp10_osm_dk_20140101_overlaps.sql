@@ -1,31 +1,31 @@
-DROP TABLE experiments.rmp10_osm_dk_20140101_overlaps_new;
+DROP TABLE experiments.rmp10_osm_dk_20140101_overlaps;
 
-CREATE TABLE experiments.rmp10_osm_dk_20140101_overlaps_new
+CREATE TABLE experiments.rmp10_osm_dk_20140101_overlaps
 AS 
 (
 	SELECT * 
 	FROM experiments.rmp10_osm_dk_20140101_overlaps os
 	WHERE EXISTS (
 		SELECT
-		FROM experiments.rmp10_overlapping_segments_new osn
+		FROM experiments.rmp10_overlapping_segments osn
 		WHERE os.origin = osn.segment
 		AND os.origin != os.segmentkey
 	)
 );
 
-INSERT INTO experiments.rmp10_osm_dk_20140101_overlaps_new
+INSERT INTO experiments.rmp10_osm_dk_20140101_overlaps
 SELECT *, segmentkey as origin
 FROM maps.osm_dk_20140101 osm
 WHERE NOT EXISTS (
 	SELECT
-	FROM experiments.rmp10_overlapping_segments_new os
+	FROM experiments.rmp10_overlapping_segments os
 	WHERE os.segment = osm.segmentkey
 );
 
 ALTER SEQUENCE experiments.rmp10_segmentkey_seq RESTART WITH 1658717;
 ALTER SEQUENCE experiments.rmp10_point_seq RESTART WITH 1104438;
 
-INSERT INTO experiments.rmp10_osm_dk_20140101_overlaps_new (
+INSERT INTO experiments.rmp10_osm_dk_20140101_overlaps (
 	segmentkey, segmentgeo, startpoint, endpoint, origin
 )
 WITH seg AS (
@@ -33,10 +33,10 @@ WITH seg AS (
 	FROM maps.osm_dk_20140101 osm
 	JOIN (
 		SELECT * 
-		FROM experiments.rmp10_overlapping_segments_new osn
+		FROM experiments.rmp10_overlapping_segments osn
 		WHERE NOT EXISTS (
 			SELECT
-			FROM experiments.rmp10_osm_dk_20140101_overlaps_new os
+			FROM experiments.rmp10_osm_dk_20140101_overlaps os
 			WHERE osn.segment = os.origin
 		)
 	) ss
@@ -70,17 +70,17 @@ FROM (
 	FROM seg
 ) sub2;
 
-UPDATE experiments.rmp10_osm_dk_20140101_overlaps_new os1
+UPDATE experiments.rmp10_osm_dk_20140101_overlaps os1
 SET startpoint = sub.endpoint, segmentkey = sub.segmentkey + 1
 FROM (
 	SELECT *
-	FROM experiments.rmp10_osm_dk_20140101_overlaps_new os
+	FROM experiments.rmp10_osm_dk_20140101_overlaps os
 	WHERE os.startpoint IS NOT NULL
 ) sub
 WHERE os1.startpoint IS NULL
 AND os1.origin = sub.origin;
 
-UPDATE experiments.rmp10_osm_dk_20140101_overlaps_new os
+UPDATE experiments.rmp10_osm_dk_20140101_overlaps os
 SET meters = osm.meters / 2,
 	category = osm.category,
 	categoryid = osm.categoryid,
@@ -94,7 +94,7 @@ WHERE os.origin != os.segmentkey
 AND osm.segmentkey = os.origin
 AND os.category IS NULL;
 
-UPDATE experiments.rmp10_osm_dk_20140101_overlaps_new os1
+UPDATE experiments.rmp10_osm_dk_20140101_overlaps os1
 SET segangle = degrees
 FROM (
 	SELECT 
@@ -106,108 +106,108 @@ FROM (
 				ST_Azimuth(
 					ST_Startpoint(ST_Transform(segmentgeo::geometry, 3857)), 
 					ST_Endpoint(ST_Transform(segmentgeo::geometry, 3857))))
-		FROM experiments.rmp10_osm_dk_20140101_overlaps_new os2
+		FROM experiments.rmp10_osm_dk_20140101_overlaps os2
 	) sub
 ) sub2
 WHERE os1.segangle IS NULL
 AND os1.segmentkey = sub2.segmentkey;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_category_idx
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_category_idx
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (category)
     WITH (FILLFACTOR=100)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_categoryid_idx
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_categoryid_idx
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (categoryid)
     WITH (FILLFACTOR=100)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_categoryid_idx1
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_categoryid_idx1
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (categoryid)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_direction_idx
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_direction_idx
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (direction)
     WITH (FILLFACTOR=100)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_endpoint_idx
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_endpoint_idx
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (endpoint)
     WITH (FILLFACTOR=100)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_segangle_idx
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_segangle_idx
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (segangle)
     WITH (FILLFACTOR=100)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_segmentgeo_25832_index
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_segmentgeo_25832_index
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (st_transform(segmentgeo::geometry, 25832))
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_segmentgeo_end_index
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_segmentgeo_end_index
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (st_endpoint(st_transform(segmentgeo::geometry, 25832)))
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_segmentgeo_idx
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING gist
+CREATE INDEX rmp10_osm_dk_20140101_segmentgeo_idx
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING gist
     (segmentgeo)
     WITH (FILLFACTOR=100)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_segmentkey_categoryid_category_direction_me_idx
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_segmentkey_categoryid_category_direction_me_idx
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (segmentkey, categoryid, category, direction, meters)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_segmentkey_idx
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_segmentkey_idx
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (segmentkey)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_speedlimit_backward_idx
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_speedlimit_backward_idx
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (speedlimit_backward)
     WITH (FILLFACTOR=100)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_speedlimit_backward_idx1
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_speedlimit_backward_idx1
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (speedlimit_backward)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_speedlimit_forward_idx
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_speedlimit_forward_idx
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (speedlimit_forward)
     WITH (FILLFACTOR=100)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_speedlimit_forward_idx1
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_speedlimit_forward_idx1
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (speedlimit_forward)
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_start_index
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_start_index
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (st_startpoint(st_transform(segmentgeo::geometry, 25832)))
     TABLESPACE pg_default;
 
-CREATE INDEX rmp10_osm_dk_20140101_new_startpoint_idx
-    ON experiments.rmp10_osm_dk_20140101_overlaps_new USING btree
+CREATE INDEX rmp10_osm_dk_20140101_startpoint_idx
+    ON experiments.rmp10_osm_dk_20140101_overlaps USING btree
     (startpoint)
     WITH (FILLFACTOR=100)
     TABLESPACE pg_default;
 
-ALTER TABLE experiments.rmp10_osm_dk_20140101_overlaps_new
+ALTER TABLE experiments.rmp10_osm_dk_20140101_overlaps
 ADD COLUMN interseg_no integer;
 
-UPDATE experiments.rmp10_osm_dk_20140101_overlaps_new
+UPDATE experiments.rmp10_osm_dk_20140101_overlaps
 SET interseg_no = CASE WHEN startpoint < endpoint THEN 1 ELSE 2 END;
