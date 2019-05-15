@@ -187,3 +187,9 @@ CREATE INDEX rmp10_osm_dk_20140101_startpoint_idx
     (startpoint)
     WITH (FILLFACTOR=100)
     TABLESPACE pg_default;
+
+ALTER TABLE experiments.rmp10_osm_dk_20140101_overlaps
+ADD COLUMN interseg_no integer;
+
+UPDATE experiments.rmp10_osm_dk_20140101_overlaps
+SET interseg_no = CASE WHEN startpoint < endpoint THEN 1 ELSE 2 END;

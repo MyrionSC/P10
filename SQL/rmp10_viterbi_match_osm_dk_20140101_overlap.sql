@@ -1,9 +1,12 @@
+DROP TABLE IF EXISTS experiments.rmp10_viterbi_match_osm_dk_20140101_overlap;
+
 CREATE TABLE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap
 AS TABLE mapmatched_data.viterbi_match_osm_dk_20140101
 WITH NO DATA;
 
 ALTER TABLE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap
-ADD COLUMN origin bigint;
+ADD COLUMN origin bigint,
+ADD COLUMN interseg_no integer;
 
 CREATE SEQUENCE experiments.rmp10_overlap_vit_id
 START 14473007;
@@ -40,12 +43,6 @@ WHERE NOT EXISTS (
 	FROM experiments.rmp10_viterbi_match_osm_dk_20140101_overlap os
 	WHERE os.origin = vit.id
 );
-
-ALTER TABLE experiments.rmp10_osm_dk_20140101_overlaps
-ADD COLUMN interseg_no integer;
-
-UPDATE experiments.rmp10_osm_dk_20140101_overlaps
-SET interseg_no = CASE WHEN startpoint < endpoint THEN 1 ELSE 2 END;
 
 UPDATE experiments.rmp10_viterbi_match_osm_dk_20140101_overlap
 SET interseg_no = CASE WHEN direction = 'FORWARD' 
