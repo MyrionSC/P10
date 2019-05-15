@@ -11,11 +11,14 @@ select
 	array_agg(seconds) as seconds_arr,
 	array_agg(ev_kwh) as ev_kwh_arr,
 	array_agg(datekey) as datekey_arr,
-	array_agg(timekey) as timekey_arr
+	array_agg(timekey) as timekey_arr,
+	array_agg(id) as id_arr,
+	array_agg(origin) as origin_arr,
+	array_agg(interseg_no) as interseg_no_arr
 into experiments.rmp10_trips_aggregated
 from (
 	SELECT * 
-	FROM experiments.rmp10_viterbi_match_osm_dk_20140101_overlap_new 
+	FROM experiments.rmp10_viterbi_match_osm_dk_20140101_overlap 
 	ORDER BY trip_id, trip_segmentno
 ) sub
 group by trip_id;
