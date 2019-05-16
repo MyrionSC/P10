@@ -11,13 +11,19 @@ select
 	array_agg(seconds) as seconds_arr,
 	array_agg(updated_ev_kwh) as ev_kwh_arr,
 	array_agg(datekey) as datekey_arr,
-	array_agg(timekey) as timekey_arr
+	array_agg(timekey) as timekey_arr,
+	array_agg(id) as id_arr
 into experiments.rmp10_trips_aggregated_original
 from (
-	select v.*, e.ev_kwh as updated_ev_kwh
+	select 
+		v.*,
+		CASE 
+			WHEN e.ev_kwh IS null THEN v.ev_kwh
+			ELSE e.ev_kwh
+		END AS updated_ev_kwh
 	from mapmatched_data.viterbi_match_osm_dk_20140101 v
-	join experiments.ev_kwh_update e
-	on v.trip_id=e.trip_id
+	left outer join experiments.ev_kwh_update e
+	on v.trip_id=e.trip_id and v.trip_segmentno=e.trip_segmentno
 	order by trip_id, trip_segmentno
 ) sq
 group by trip_id;
@@ -30,4 +36,5 @@ CREATE INDEX rmp10_trips_aggregated_trip_original_segmentkeys_arr_idx
     ON experiments.rmp10_trips_aggregated_original USING gin
     (segmentkeys_arr)
     TABLESPACE pg_default;
+
 
