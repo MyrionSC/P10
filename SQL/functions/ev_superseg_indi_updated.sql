@@ -1,9 +1,9 @@
 
--- FUNCTION: public.ev_indi_superseg_updated(text)
+-- FUNCTION: public.ev_superseg_indi_updated(text)
 
--- DROP FUNCTION public.ev_indi_superseg_updated(text);
+-- DROP FUNCTION public.ev_superseg_indi_updated(text);
 
-CREATE OR REPLACE FUNCTION public.ev_indi_superseg_updated(
+CREATE OR REPLACE FUNCTION public.ev_superseg_indi_updated(
 	query text)
     RETURNS TABLE(segments integer[], ev double precision) 
     LANGUAGE 'plpgsql'
@@ -52,6 +52,6 @@ WHERE segments = array_agg
 ';
 END $BODY$;
 
-ALTER FUNCTION public.ev_indi_superseg_updated(text)
+ALTER FUNCTION public.ev_superseg_indi_updated(text)
     OWNER TO smartmi;
 
