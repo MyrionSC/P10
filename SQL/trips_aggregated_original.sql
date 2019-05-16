@@ -22,8 +22,8 @@ from (
 			ELSE e.ev_kwh
 		END AS updated_ev_kwh
 	from mapmatched_data.viterbi_match_osm_dk_20140101 v
-	left outer join experiments.ev_kwh_update e
-	on v.trip_id=e.trip_id and v.trip_segmentno=e.trip_segmentno
+	left outer join experiments.bcj_ev_watt_data e
+	on v.id=e.id
 	order by trip_id, trip_segmentno
 ) sq
 group by trip_id;
