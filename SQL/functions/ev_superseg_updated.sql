@@ -1,8 +1,3 @@
-
--- FUNCTION: public.ev_superseg_updated(text)
-
--- DROP FUNCTION public.ev_superseg_updated(text);
-
 CREATE OR REPLACE FUNCTION public.ev_superseg_updated(
 	superseg_query text)
     RETURNS TABLE(segments integer[], ev double precision) 
@@ -59,3 +54,4 @@ $BODY$;
 
 ALTER FUNCTION public.ev_superseg_updated(text)
     OWNER TO smartmi;
+
