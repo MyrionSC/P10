@@ -5,6 +5,8 @@ into experiments.rmp10_all_supersegments_original
 from (
 	select 
 		segments,
+		startpoint,
+		endpoint,
 		array[point] as points,
 		num_traversals,
 		direction,
@@ -16,6 +18,8 @@ from (
 	UNION
 	select 
 		segments,
+		startpoint,
+		endpoint,
 		array[point] as points,
 		num_traversals,
 		direction,
@@ -27,6 +31,8 @@ from (
 	UNION
 	select 
 		segments,
+		startpoint,
+		endpoint,
 		array[point] as points,
 		num_traversals,
 		direction,
@@ -38,7 +44,9 @@ from (
 	UNION 
 	select
 		segments,
-		array_remove(array_remove(points, rmp10_startpoint(segments)), rmp10_endpoint(segments)) as points,
+		startpoint,
+		endpoint,
+		array_remove(array_remove(rmp10_get_points(segments), startpoint), endpoint) as points,
 		num_traversals,
 		direction,
 		null as categories,
@@ -48,14 +56,19 @@ from (
 	from experiments.rmp10_intersection_supersegments_complex
 ) sq;
 
--- remove cat changes that is subset of others. WARNING: This took 10 hours last we ran it
+CREATE INDEX rmp10_all_supersegments_original_segments_array_idx
+ON experiments.rmp10_all_supersegments_original
+USING GIN(segments);
+
+-- remove cat changes that is subset of others. WARNING: This took 9 seconds last we ran it
 DELETE
 from experiments.rmp10_all_supersegments_original s1
-where exists (
+where s1.type='Cat'
+and exists (
 	select 
 	from experiments.rmp10_all_supersegments_original
-	where s1.type='Cat' AND s1.segments <@ segments AND type!='Cat'
-)
+	where s1.segments <@ segments AND type!='Cat'
+);
 
 -- add height difference from other group
 ALTER TABLE experiments.rmp10_all_supersegments_original
@@ -76,7 +89,7 @@ FROM (
 	) ssq
 	group by segments, type
 ) sssq
-WHERE sups.segments=sssq.segments and sups.type=sssq.type
+WHERE sups.segments=sssq.segments and sups.type=sssq.type;
 
 -- add categories to everything
 UPDATE experiments.rmp10_all_supersegments_original AS sups
@@ -92,7 +105,7 @@ FROM (
 	ON sq.segmentkey=m.segmentkey
 	GROUP BY sq.segments, sq.type
 ) ssq
-WHERE ssq.segments=sups.segments AND ssq.type=sups.type
+WHERE ssq.segments=sups.segments AND ssq.type=sups.type;
 
 -- add cat speed difference
 ALTER TABLE experiments.rmp10_all_supersegments_original
@@ -116,13 +129,13 @@ FROM (
 	JOIN experiments.rmp10_category_avg_speed s2
 	ON sups.categories[array_length(categories, 1)]=s2.category
 ) sq
-WHERE s.segments=sq.segments AND s.type=sq.type
+WHERE s.segments=sq.segments AND s.type=sq.type;
 
 -- add lights to type Category
 UPDATE experiments.rmp10_all_supersegments_original s
 SET lights=array[l.point], traffic_lights=true
 from experiments.rmp10_trafic_light_nodes_within_30m l
-where l.point=s.points[1] and s.type='Cat'
+where l.point=s.points[1] and s.type='Cat';
 
 -- indexes
 CREATE INDEX rmp10_all_supersegments_original_segments_idx

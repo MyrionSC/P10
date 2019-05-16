@@ -56,6 +56,10 @@ from (
 	from experiments.rmp10_intersection_supersegments_complex
 ) sq;
 
+CREATE INDEX rmp10_all_supersegments_segments_array_idx
+ON experiments.rmp10_all_supersegments
+USING GIN(segments);
+
 -- remove cat changes that is subset of others. WARNING: This took 9 seconds last we ran it
 DELETE
 from experiments.rmp10_all_supersegments s1
@@ -64,7 +68,7 @@ and exists (
 	select 
 	from experiments.rmp10_all_supersegments
 	where s1.segments <@ segments AND type!='Cat'
-)
+);
 
 -- add height difference from other group
 ALTER TABLE experiments.rmp10_all_supersegments
@@ -85,7 +89,7 @@ FROM (
 	) ssq
 	group by segments, type
 ) sssq
-WHERE sups.segments=sssq.segments and sups.type=sssq.type
+WHERE sups.segments=sssq.segments and sups.type=sssq.type;
 
 -- add categories to everything
 UPDATE experiments.rmp10_all_supersegments AS sups
@@ -125,13 +129,13 @@ FROM (
 	JOIN experiments.rmp10_category_avg_speed s2
 	ON sups.categories[array_length(categories, 1)]=s2.category
 ) sq
-WHERE s.segments=sq.segments AND s.type=sq.type
+WHERE s.segments=sq.segments AND s.type=sq.type;
 
 -- add lights to type Category
 UPDATE experiments.rmp10_all_supersegments s
 SET lights=array[l.point], traffic_lights=true
 from experiments.rmp10_trafic_light_nodes_within_30m l
-where l.point=s.points[1] and s.type='Cat'
+where l.point=s.points[1] and s.type='Cat';
 
 -- indexes
 CREATE INDEX rmp10_all_supersegments_segments_idx
