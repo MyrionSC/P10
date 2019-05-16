@@ -5,6 +5,8 @@ into experiments.rmp10_all_supersegments
 from (
 	select 
 		segments,
+		startpoint,
+		endpoint,
 		array[point] as points,
 		num_traversals,
 		direction,
@@ -16,6 +18,8 @@ from (
 	UNION
 	select 
 		segments,
+		startpoint,
+		endpoint,
 		array[point] as points,
 		num_traversals,
 		direction,
@@ -27,6 +31,8 @@ from (
 	UNION
 	select 
 		segments,
+		startpoint,
+		endpoint,
 		array[point] as points,
 		num_traversals,
 		direction,
@@ -38,7 +44,9 @@ from (
 	UNION 
 	select
 		segments,
-		array_remove(array_remove(points, rmp10_startpoint(segments)), rmp10_endpoint(segments)) as points,
+		startpoint,
+		endpoint,
+		array_remove(array_remove(rmp10_get_points(segments), startpoint), endpoint) as points,
 		num_traversals,
 		direction,
 		null as categories,
@@ -48,14 +56,19 @@ from (
 	from experiments.rmp10_intersection_supersegments_complex
 ) sq;
 
--- remove cat changes that is subset of others. WARNING: This took 10 hours last we ran it
+CREATE INDEX rmp10_all_supersegments_segments_array_idx
+ON experiments.rmp10_all_supersegments
+USING GIN(segments);
+
+-- remove cat changes that is subset of others. WARNING: This took 9 seconds last we ran it
 DELETE
 from experiments.rmp10_all_supersegments s1
-where exists (
+where s1.type='Cat'
+and exists (
 	select 
 	from experiments.rmp10_all_supersegments
-	where s1.type='Cat' AND s1.segments <@ segments AND type!='Cat'
-)
+	where s1.segments <@ segments AND type!='Cat'
+);
 
 -- add height difference from other group
 ALTER TABLE experiments.rmp10_all_supersegments
@@ -76,7 +89,7 @@ FROM (
 	) ssq
 	group by segments, type
 ) sssq
-WHERE sups.segments=sssq.segments and sups.type=sssq.type
+WHERE sups.segments=sssq.segments and sups.type=sssq.type;
 
 -- add categories to everything
 UPDATE experiments.rmp10_all_supersegments AS sups
@@ -116,13 +129,13 @@ FROM (
 	JOIN experiments.rmp10_category_avg_speed s2
 	ON sups.categories[array_length(categories, 1)]=s2.category
 ) sq
-WHERE s.segments=sq.segments AND s.type=sq.type
+WHERE s.segments=sq.segments AND s.type=sq.type;
 
 -- add lights to type Category
 UPDATE experiments.rmp10_all_supersegments s
 SET lights=array[l.point], traffic_lights=true
 from experiments.rmp10_trafic_light_nodes_within_30m l
-where l.point=s.points[1] and s.type='Cat'
+where l.point=s.points[1] and s.type='Cat';
 
 -- indexes
 CREATE INDEX rmp10_all_supersegments_segments_idx
@@ -149,3 +162,81 @@ CREATE INDEX rmp10_all_supersegments_endseg_idx
     ON experiments.rmp10_all_supersegments USING btree
     (endseg)
     TABLESPACE pg_default;
+
+ALTER TABLE experiments.rmp10_all_supersegments
+ADD COLUMN origin bigint,
+ADD COLUMN startdir text,
+ADD COLUMN endir text;
+
+UPDATE experiments.rmp10_all_supersegments
+SET origin = superseg_id,
+    startdir = CASE WHEN rmp10_startpoint(startseg) = startpoint THEN 'SAME' ELSE 'OTHER' END,
+    endir    = CASE WHEN rmp10_endpoint  (endseg  ) = endpoint   THEN 'SAME' ELSE 'OTHER' END;
+
+UPDATE experiments.rmp10_all_supersegments os
+SET
+        segments = sub.newsegs,
+        startpoint = sub.startpoint,
+        endpoint = sub.endpoint,
+        startseg = sub.startseg,
+        endseg = sub.endseg,
+		superseg_id = nextval(pg_get_serial_sequence('experiments.rmp10_all_supersegments', 'superseg_id'))
+FROM (
+        WITH ss as (
+                SELECT * FROM experiments.rmp10_all_supersegments
+        ), alls as (
+                SELECT ss.segments, ss.startpoint as ss_sp, ss.endpoint as ss_ep, ss.startseg, ss.endseg, ss.startdir,
+                           os.segmentkey, os.startpoint as os_sp, os.endpoint as os_ep, os.origin
+                FROM ss
+                JOIN experiments.rmp10_osm_dk_20140101_overlaps os
+                ON ss.startseg = os.origin
+                AND CASE WHEN ss.startdir = 'SAME' THEN ss.startpoint != os.startpoint
+                                 ELSE ss.startpoint != os.endpoint END
+				AND os.origin != os.segmentkey
+        )
+        SELECT
+                segments as oldsegs,
+                segmentkey || segments[2:array_length(segments, 1)] as newsegs,
+                CASE WHEN startdir = 'SAME' THEN os_sp ELSE os_ep END as startpoint,
+                ss_ep as endpoint,
+                segmentkey as startseg,
+                endseg
+        FROM alls
+) sub
+WHERE os.segments = sub.oldsegs;
+
+UPDATE experiments.rmp10_all_supersegments os
+SET
+        segments = sub.newsegs,
+        startpoint = sub.startpoint,
+        endpoint = sub.endpoint,
+        startseg = sub.startseg,
+        endseg = sub.endseg,
+		superseg_id = nextval(pg_get_serial_sequence('experiments.rmp10_all_supersegments', 'superseg_id'))
+FROM (
+        WITH ss as (
+                SELECT * FROM experiments.rmp10_all_supersegments
+        ), alls as (
+                SELECT ss.segments, ss.startpoint as ss_sp, ss.endpoint as ss_ep, ss.startseg, ss.endseg, ss.endir,
+                           os.segmentkey, os.startpoint as os_sp, os.endpoint as os_ep, os.origin
+                FROM ss
+                JOIN experiments.rmp10_osm_dk_20140101_overlaps os
+                ON ss.endseg = os.origin
+                AND CASE WHEN ss.endir = 'SAME' THEN ss.endpoint != os.endpoint
+                                 ELSE ss.endpoint != os.startpoint END
+				AND os.origin != os.segmentkey
+        )
+        SELECT
+                segments as oldsegs,
+                segments[1:array_length(segments, 1) - 1] || segmentkey as newsegs,
+                CASE WHEN endir = 'SAME' THEN os_ep ELSE os_sp END as endpoint,
+                ss_sp as startpoint,
+                startseg,
+                segmentkey as endseg
+        FROM alls
+) sub
+WHERE os.segments = sub.oldsegs;
+
+/*ALTER TABLE experiments.rmp10_all_supersegments
+DROP COLUMN startdir,
+DROP COLUMN endir;*/
