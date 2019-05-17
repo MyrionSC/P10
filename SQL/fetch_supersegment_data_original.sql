@@ -1,9 +1,10 @@
 DROP VIEW IF EXISTS experiments.supersegments_temp_view_original;
 CREATE VIEW experiments.supersegments_temp_view_original AS
 	SELECT
+		sups.superseg_id,
 		ats.trip_id,
-		sups.segments, -- maybe not this
-		sups.type, -- maybe not this
+		ats.id_arr,
+		sups.type,
 		sups.direction,
 		sups.traffic_lights,
 		sups.height_difference,
@@ -22,10 +23,11 @@ CREATE VIEW experiments.supersegments_temp_view_original AS
 	ON sups.superseg_id=ats.superseg_id
 	UNION
 	SELECT
+		null as superseg_id,
 		t.trip_id,
-		array[t.segmentkey] as segments,
+		array[t.id] as id_arr,
 		'Segment'::text as type,
-		'Straight'::text as direction,
+		'STRAIGHT'::text as direction,
 		False as traffic_lights,
 		inc.height_difference,
 		s.category as cat_start,
@@ -50,4 +52,4 @@ CREATE VIEW experiments.supersegments_temp_view_original AS
 	ON t.segmentkey=inc.segmentkey;
 
 
-\copy (SELECT * FROM experiments.supersegments_temp_view_original limit 100) TO '../Models/data/supersegment-data-original.csv' HEADER CSV;  
+\copy (SELECT * FROM experiments.supersegments_temp_view_original) TO '../Models/data/supersegment-data-original.csv' HEADER CSV;  
