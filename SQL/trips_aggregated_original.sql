@@ -15,6 +15,7 @@ select
 	array_agg(datekey) as datekey_arr,
 	array_agg(timekey) as timekey_arr,
 	array_agg(id) as id_arr
+into experiments.rmp10_trips_aggregated_original
 from (
 	select 
 		v.*,
