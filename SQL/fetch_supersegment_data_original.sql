@@ -24,9 +24,9 @@ CREATE VIEW experiments.supersegments_temp_view_original AS
 	SELECT
 		t.trip_id,
 		array[t.segmentkey] as segments,
-		'Segment' as type,
-		'Straight' as direction,
-		'False' as traffic_lights,
+		'Segment'::text as type,
+		'Straight'::text as direction,
+		False as traffic_lights,
 		inc.height_difference,
 		s.category as cat_start,
 		s.category as cat_end,
