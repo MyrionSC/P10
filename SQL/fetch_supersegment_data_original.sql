@@ -3,7 +3,7 @@ CREATE VIEW experiments.supersegments_temp_view_original AS
 	SELECT
 		sups.superseg_id,
 		ats.trip_id,
-		ats.id_arr,
+		ats.id_arr::integer[], -- for some reason this is seen as a string when downloaded
 		sups.type,
 		sups.direction,
 		sups.traffic_lights,
