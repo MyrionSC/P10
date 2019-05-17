@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS experiments.rmp10_all_trip_supersegments_original;
+DROP TABLE IF EXISTS experiments.rmp10_all_trip_supersegments_original CASCADE;
 
 with superseg_trips as (
 	select
