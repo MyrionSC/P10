@@ -23,7 +23,7 @@ CREATE VIEW experiments.supersegments_temp_view_original AS
 	ON sups.superseg_id=ats.superseg_id
 	UNION
 	SELECT
-		null as superseg_id,
+		-1 as superseg_id,
 		t.trip_id,
 		array[t.id] as id_arr,
 		'Segment'::text as type,
