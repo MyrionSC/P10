@@ -1,4 +1,3 @@
-
 DROP TABLE IF EXISTS experiments.rmp10_all_trip_supersegments_original;
 
 with superseg_trips as (
@@ -35,7 +34,7 @@ from superseg_trips sst
 join experiments.rmp10_trips_aggregated_original ta
 on 
 	sst.trip_id=ta.trip_id and
-	sst.segments=ta.segmentkeys_arr[sst.start_segmentno:sst.end_segmentno]
+	sst.segments=ta.segmentkeys_arr[sst.start_segmentno:sst.end_segmentno];
 
 
 -- indexes
@@ -55,3 +54,4 @@ CREATE INDEX rmp10_all_trip_supersegments_original_id_arr_gin_idx
     ON experiments.rmp10_all_trip_supersegments_original USING gin
     (id_arr)
     TABLESPACE pg_default;
+
