@@ -26,9 +26,9 @@ select
 	(SELECT SUM(s) FROM UNNEST(ta.meters_driven_arr[sst.start_segmentno:sst.end_segmentno]) s) AS meters_driven,
 	(SELECT SUM(s) FROM UNNEST(ta.seconds_arr[sst.start_segmentno:sst.end_segmentno]) s) AS seconds,
 	(SELECT SUM(s) FROM UNNEST(ta.ev_kwh_arr[sst.start_segmentno:sst.end_segmentno]) s) * 1000 AS ev_wh,
-	(SELECT MIN(s) FROM UNNEST(ta.datekey_arr[sst.start_segmentno:sst.end_segmentno]) s) AS weathermeasurekey,
-	(SELECT MIN(s) FROM UNNEST(ta.timekey_arr[sst.start_segmentno:sst.end_segmentno]) s) AS datekey,
-	(SELECT MIN(s) FROM UNNEST(ta.weathermeasurekey_arr[sst.start_segmentno:sst.end_segmentno]) s) AS timekey,
+	(SELECT MIN(s) FROM UNNEST(ta.datekey_arr[sst.start_segmentno:sst.end_segmentno]) s) AS datekey,
+	(SELECT MIN(s) FROM UNNEST(ta.timekey_arr[sst.start_segmentno:sst.end_segmentno]) s) AS timekey,
+	(SELECT MIN(s) FROM UNNEST(ta.weathermeasurekey_arr[sst.start_segmentno:sst.end_segmentno]) s) AS weathermeasurekey,
 	ta.id_arr[sst.start_segmentno:sst.end_segmentno] as id_arr
 into experiments.rmp10_all_trip_supersegments_original
 from superseg_trips sst
