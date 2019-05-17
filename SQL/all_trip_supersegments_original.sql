@@ -39,4 +39,19 @@ on
 
 
 -- indexes
-
+CREATE INDEX rmp10_all_trip_supersegments_original_superseg_id_idx
+    ON experiments.rmp10_all_trip_supersegments_original USING btree
+    (superseg_id)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_trip_supersegments_original_trip_id_idx
+    ON experiments.rmp10_all_trip_supersegments_original USING btree
+    (trip_id)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_trip_supersegments_original_id_arr_btree_idx
+    ON experiments.rmp10_all_trip_supersegments_original USING btree
+    (id_arr)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_trip_supersegments_original_id_arr_gin_idx
+    ON experiments.rmp10_all_trip_supersegments_original USING gin
+    (id_arr)
+    TABLESPACE pg_default;
