@@ -11,7 +11,7 @@ FROM (
 	SELECT 
 		alls.superseg_id,
 		ep.height - sp.height as rise,
-		alls.meters as run,
+		NULLIF(alls.meters, 0) as run,
 		sp.height as sp_height,
 		ep.height as ep_height
 	FROM experiments.rmp10_all_supersegments alls
