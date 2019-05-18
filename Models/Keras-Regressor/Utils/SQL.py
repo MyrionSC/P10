@@ -112,15 +112,12 @@ def road_map_qry(segmentkeys=None, directions=None):
                 'FORWARD' as direction,
                 osm.meters as segment_length, 
                 sl.speedlimit, 
-                osm.categoryid,
-                CASE WHEN inter.intersection THEN 1 ELSE 0 END as intersection
+                osm.categoryid
             FROM maps.osm_dk_20140101 osm
             FULL OUTER JOIN experiments.mi904e18_speedlimits sl
             ON sl.segmentkey = osm.segmentkey
             FULL OUTER JOIN experiments.mi904e18_segment_incline inc
             ON inc.segmentkey = osm.segmentkey
-            FULL OUTER JOIN experiments.rmp10_intersections inter
-            ON inter.segmentkey = osm.segmentkey
             WHERE osm.category != 'ferry' {0}
             UNION
             SELECT 
@@ -137,15 +134,12 @@ def road_map_qry(segmentkeys=None, directions=None):
                 'BACKWARD' as direction,
                 osm.meters as segment_length, 
                 sl.speedlimit, 
-                osm.categoryid,
-                CASE WHEN inter.intersection THEN 1 ELSE 0 END as intersection
+                osm.categoryid
             FROM maps.osm_dk_20140101 osm
             FULL OUTER JOIN experiments.mi904e18_speedlimits sl
             ON sl.segmentkey = osm.segmentkey
             FULL OUTER JOIN experiments.mi904e18_segment_incline inc
             ON inc.segmentkey = osm.segmentkey
-            FULL OUTER JOIN experiments.rmp10_intersections inter
-            ON inter.segmentkey = osm.segmentkey
             WHERE osm.category != 'ferry' AND osm.direction = 'BOTH' {1}
         ) as x
         {2}
