@@ -112,15 +112,12 @@ def road_map_qry(segmentkeys=None, directions=None):
                 'FORWARD' as direction,
                 osm.meters as segment_length, 
                 sl.speedlimit, 
-                osm.categoryid,
-                CASE WHEN inter.intersection THEN 1 ELSE 0 END as intersection
+                osm.categoryid
             FROM maps.osm_dk_20140101 osm
             FULL OUTER JOIN experiments.mi904e18_speedlimits sl
             ON sl.segmentkey = osm.segmentkey
             FULL OUTER JOIN experiments.mi904e18_segment_incline inc
             ON inc.segmentkey = osm.segmentkey
-            FULL OUTER JOIN experiments.rmp10_intersections inter
-            ON inter.segmentkey = osm.segmentkey
             WHERE osm.category != 'ferry' {0}
             UNION
             SELECT 
@@ -137,15 +134,12 @@ def road_map_qry(segmentkeys=None, directions=None):
                 'BACKWARD' as direction,
                 osm.meters as segment_length, 
                 sl.speedlimit, 
-                osm.categoryid,
-                CASE WHEN inter.intersection THEN 1 ELSE 0 END as intersection
+                osm.categoryid
             FROM maps.osm_dk_20140101 osm
             FULL OUTER JOIN experiments.mi904e18_speedlimits sl
             ON sl.segmentkey = osm.segmentkey
             FULL OUTER JOIN experiments.mi904e18_segment_incline inc
             ON inc.segmentkey = osm.segmentkey
-            FULL OUTER JOIN experiments.rmp10_intersections inter
-            ON inter.segmentkey = osm.segmentkey
             WHERE osm.category != 'ferry' AND osm.direction = 'BOTH' {1}
         ) as x
         {2}
@@ -259,18 +253,12 @@ def get_route(segmentkeys, directions):
             {5}::smallint as twelve_hour,
             {6}::smallint as weekday,
             {7}::smallint as month,
-            speedlimit_table.speedlimit,
-            CASE WHEN inter_table.intersection 
-                 THEN 1 
-                 ELSE 0 
-            END as intersection
+            speedlimit_table.speedlimit
         FROM maps.osm_dk_20140101 as osm_map,
             experiments.mi904e18_segment_incline as incline_table,
-            experiments.rmp10_intersections as inter_table,
             experiments.mi904e18_speedlimits as speedlimit_table
         WHERE osm_map.segmentkey = ANY(ARRAY[{8}])
         AND osm_map.segmentkey = incline_table.segmentkey
-        AND osm_map.segmentkey = inter_table.segmentkey
         AND osm_map.segmentkey = speedlimit_table.segmentkey;
     """.format(
         quarter,
@@ -340,8 +328,7 @@ def get_predicting_base_data_qry(trip_ids=None):
                  THEN trips_table.ev_kwh
                  ELSE 0.0
             END AS ev_kwh,
-            speedlimit_table.speedlimit,
-            CASE WHEN inter_table.intersection THEN 1 ELSE 0 END as intersection
+            speedlimit_table.speedlimit
         FROM experiments.mi904e18_training as trips_table, 
             maps.osm_dk_20140101 as osm_map,
             dims.dimdate as date_table, 
@@ -349,14 +336,12 @@ def get_predicting_base_data_qry(trip_ids=None):
             experiments.mi904e18_segment_incline as incline_table,
             dims.dimweathermeasure as weather_table, 
             experiments.mi904e18_wind_vectors as wind_table,
-            experiments.mi904e18_speedlimits as speedlimit_table,
-            experiments.rmp10_intersections as inter_table
+            experiments.mi904e18_speedlimits as speedlimit_table
         WHERE {0} trips_table.segmentkey = osm_map.segmentkey 
         AND trips_table.datekey = date_table.datekey 
         AND trips_table.timekey = time_table.timekey 
         AND trips_table.segmentkey = incline_table.segmentkey
         AND trips_table.weathermeasurekey = weather_table.weathermeasurekey
         AND trips_table.id = wind_table.vector_id
-        AND trips_table.segmentkey = inter_table.segmentkey
         AND trips_table.segmentkey = speedlimit_table.segmentkey;
     """.format(string)
