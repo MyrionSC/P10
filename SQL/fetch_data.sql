@@ -35,9 +35,7 @@ SELECT
     (time_table.hour / 12)::smallint as twelve_hour,
     date_table.weekday,
     date_table.month,
-    trips_table.ev_kwh,
-    speedlimit_table.speedlimit,
-    CASE WHEN inter_table.intersection THEN 1 ELSE 0 END as intersection
+    updated_ev_table.ev_kwh_from_ev_watt as ev_kwh
 FROM experiments.mi904e18_training as trips_table, 
     maps.osm_dk_20140101 as osm_map,
     dims.dimdate as date_table, 
@@ -46,16 +44,14 @@ FROM experiments.mi904e18_training as trips_table,
     dims.dimweathermeasure as weather_table, 
     experiments.mi904e18_wind_vectors as wind_table,
     experiments.mi904e18_speedlimits as speedlimit_table,
-    experiments.rmp10_intersections as inter_table
+    experiments.bcj_ev_watt_data as updated_ev_table
 WHERE trips_table.segmentkey = osm_map.segmentkey 
     AND trips_table.datekey = date_table.datekey 
     AND trips_table.timekey = time_table.timekey 
     AND trips_table.segmentkey = incline_table.segmentkey
     AND trips_table.weathermeasurekey = weather_table.weathermeasurekey
     AND trips_table.id = wind_table.vector_id
-    AND trips_table.segmentkey = inter_table.segmentkey
-    AND trips_table.ev_kwh IS NOT NULL
-    AND trips_table.segmentkey = speedlimit_table.segmentkey;
+    AND updated_ev_table.ev_kwh_from_ev_watt IS NOT NULL;
 
 \copy (SELECT * FROM experiments.segments_temp_view) TO '../Models/data/Data.csv' HEADER CSV;  
 
