@@ -12,6 +12,12 @@ def get_cats(key: str) -> List[str]:
         return ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
     elif key == 'weekday':
         return ['1', '2', '3', '4', '5', '6', '7']
+    elif key == 'cat_start' or key == 'cat_end':
+        return ["ferry", "motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link", "secondary",
+                "secondary_link", "tertiary", "tertiary_link", "unclassified", "residential", "living_street",
+                "service", "road", "track", "unpaved"]
+    elif key == 'type':
+        return ["Complex", "Simple", "T", "Segment", "Cat"]
 
 
 def model_dir_name(config: Config) -> str:

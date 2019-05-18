@@ -67,7 +67,8 @@ def preprocess_data(df: pd.DataFrame, config: Config, re_scale: bool=False, reta
 
     # One hot encode categorical features
     if 'month' in config['features_used'] or 'weekday' in config['features_used'] \
-            or 'categoryid' in config['features_used']:
+            or 'categoryid' in config['features_used'] or 'type' in config['features_used'] \
+            or 'cat_start' in config['features_used'] or 'cat_end' in config['features_used']:
         df = one_hot(df)
 
     # Read and merge embeddings into dataframe
@@ -76,12 +77,17 @@ def preprocess_data(df: pd.DataFrame, config: Config, re_scale: bool=False, reta
 
     trip_ids = df[['trip_id']]
     trip_ids['segment_length'] = df['segment_length']
-    if 'segmentgeo' in list(df):
-        trip_ids['segmentgeo'] = df['segmentgeo']
-        df.drop(['segmentgeo'], axis=1, inplace=True)
+    # if 'segmentgeo' in list(df):
+    #    trip_ids['segmentgeo'] = df['segmentgeo']
+    #    df.drop(['segmentgeo'], axis=1, inplace=True)
 
-    df.drop(['segmentkey', 'trip_id'], axis=1, inplace=True)
-    if not retain_id:
+    if 'segmentkey' in list(df):
+        df.drop(['segmentkey'], axis=1, inplace=True)
+    if 'trip_id' in list(df):
+        df.drop(['trip_id'], axis=1, inplace=True)
+    if 'superseg_id' in list(df):
+        df.drop(['superseg_id'], axis=1, inplace=True)
+    if not retain_id and 'mapmatched_id' in list(df):
         df.drop(['mapmatched_id'], axis=1, inplace=True)
 
     # Convert quarter column to a sinusoidal representation if specified
@@ -184,6 +190,15 @@ def one_hot(df: pd.DataFrame) -> pd.DataFrame:
     if 'weekday' in list(df):
         df['weekday'] = df['weekday'].map(str)
         df = one_hot_encode_column(df, 'weekday')
+    if 'cat_start' in list(df):
+        df['cat_start'] = df['cat_start'].map(str)
+        df = one_hot_encode_column(df, 'cat_start')
+    if 'cat_end' in list(df):
+        df['cat_end'] = df['cat_end'].map(str)
+        df = one_hot_encode_column(df, 'cat_end')
+    if 'type' in list(df):
+        df['type'] = df['type'].map(str)
+        df = one_hot_encode_column(df, 'type')
 
     pd.options.mode.chained_assignment = 'warn'
 
