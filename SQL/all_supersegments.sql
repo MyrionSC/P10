@@ -78,27 +78,6 @@ and exists (
 	where s1.segments <@ segments AND type!='Cat'
 );
 
--- add height difference from other group
-ALTER TABLE experiments.rmp10_all_supersegments
-ADD COLUMN height_difference double precision;
-
-UPDATE experiments.rmp10_all_supersegments as sups
-SET height_difference=sssq.hd
-FROM (
-	select segments, type, sum(height_difference) as hd
-	from (
-		select sq.*, inc.height_difference
-		from (
-			select unnest(segments) as segment, segments, type
-			from experiments.rmp10_all_supersegments
-		) sq
-		join experiments.bcj_incline inc
-		on sq.segment = inc.segmentkey
-	) ssq
-	group by segments, type
-) sssq
-WHERE sups.segments=sssq.segments and sups.type=sssq.type;
-
 -- add categories to everything
 UPDATE experiments.rmp10_all_supersegments AS sups
 SET categories=ssq.categories
@@ -230,13 +209,23 @@ FROM (
         WITH ss as (
                 SELECT * FROM experiments.rmp10_all_supersegments
         ), alls as (
-                SELECT ss.segments, ss.startpoint as ss_sp, ss.endpoint as ss_ep, ss.startseg, ss.endseg, ss.startdir,
-                           os.segmentkey, os.startpoint as os_sp, os.endpoint as os_ep, os.origin
+                SELECT 
+                	ss.segments, 
+                	ss.startpoint as ss_sp, 
+                	ss.endpoint as ss_ep, 
+                	ss.startseg, 
+                	ss.endseg, 
+                	ss.startdir,
+                    os.segmentkey, 
+                    os.startpoint as os_sp, 
+                    os.endpoint as os_ep, 
+                    os.origin
                 FROM ss
                 JOIN experiments.rmp10_osm_dk_20140101_overlaps os
                 ON ss.startseg = os.origin
-                AND CASE WHEN ss.startdir = 'SAME' THEN ss.startpoint != os.startpoint
-                                 ELSE ss.startpoint != os.endpoint END
+                AND CASE WHEN ss.startdir = 'SAME' 
+                		 THEN ss.startpoint != os.startpoint
+                         ELSE ss.startpoint != os.endpoint END
 				AND os.origin != os.segmentkey
         )
         SELECT
@@ -262,13 +251,23 @@ FROM (
         WITH ss as (
                 SELECT * FROM experiments.rmp10_all_supersegments
         ), alls as (
-                SELECT ss.segments, ss.startpoint as ss_sp, ss.endpoint as ss_ep, ss.startseg, ss.endseg, ss.endir,
-                           os.segmentkey, os.startpoint as os_sp, os.endpoint as os_ep, os.origin
+                SELECT 
+                	ss.segments, 
+                	ss.startpoint as ss_sp, 
+                	ss.endpoint as ss_ep, 
+                	ss.startseg, 
+                	ss.endseg, 
+                	ss.endir,
+                    os.segmentkey, 
+                    os.startpoint as os_sp, 
+                    os.endpoint as os_ep, 
+                    os.origin
                 FROM ss
                 JOIN experiments.rmp10_osm_dk_20140101_overlaps os
                 ON ss.endseg = os.origin
-                AND CASE WHEN ss.endir = 'SAME' THEN ss.endpoint != os.endpoint
-                                 ELSE ss.endpoint != os.startpoint END
+                AND CASE WHEN ss.endir = 'SAME' 
+                		 THEN ss.endpoint != os.endpoint
+                         ELSE ss.endpoint != os.startpoint END
 				AND os.origin != os.segmentkey
         )
         SELECT
@@ -285,3 +284,20 @@ WHERE os.segments = sub.oldsegs;
 /*ALTER TABLE experiments.rmp10_all_supersegments
 DROP COLUMN startdir,
 DROP COLUMN endir;*/
+
+ALTER TABLE experiments.rmp10_all_supersegments
+ADD COLUMN meters double precision;
+
+UPDATE experiments.rmp10_all_supersegments alls
+SET meters = ss.meters
+FROM (
+	SELECT superseg_id, sum(meters) as meters
+	FROM experiments.rmp10_osm_dk_20140101_overlaps os
+	JOIN (
+		SELECT superseg_id, unnest(segments) as segmentkey
+		FROM experiments.rmp10_all_supersegments
+	) sub
+	ON sub.segmentkey = os.segmentkey
+	GROUP BY superseg_id
+) ss
+WHERE ss.superseg_id = alls.superseg_id;
