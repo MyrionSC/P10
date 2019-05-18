@@ -5,8 +5,8 @@ SELECT
 	(rise / run) * 100 as incline,
 	degrees(atan(rise / run)) as incline_angle,
 	rise as height_difference,
-	sp_height = startpoint_height,
-	ep_height = endpoint_height
+	sp_height as startpoint_height,
+	ep_height as endpoint_height
 FROM (
 	SELECT 
 		alls.superseg_id,
