@@ -5,6 +5,8 @@ into experiments.rmp10_all_supersegments_original
 from (
 	select 
 		segments,
+		segments[1] as startseg,
+		segments[array_length(segments, 1)] as endseg,
 		startpoint,
 		endpoint,
 		array[point] as points,
@@ -18,6 +20,8 @@ from (
 	UNION
 	select 
 		segments,
+		segments[1] as startseg,
+		segments[array_length(segments, 1)] as endseg,
 		startpoint,
 		endpoint,
 		array[point] as points,
@@ -31,6 +35,8 @@ from (
 	UNION
 	select 
 		segments,
+		segments[1] as startseg,
+		segments[array_length(segments, 1)] as endseg,
 		startpoint,
 		endpoint,
 		array[point] as points,
@@ -44,6 +50,8 @@ from (
 	UNION 
 	select
 		segments,
+		segments[1] as startseg,
+		segments[array_length(segments, 1)] as endseg,
 		startpoint,
 		endpoint,
 		array_remove(array_remove(rmp10_get_points(segments), startpoint), endpoint) as points,
@@ -162,3 +170,6 @@ CREATE INDEX rmp10_all_supersegments_original_endseg_idx
     ON experiments.rmp10_all_supersegments_original USING btree
     (endseg)
     TABLESPACE pg_default;
+
+ALTER TABLE experiments.rmp10_all_supersegments_original
+ADD COLUMN superseg_id BIGSERIAL;

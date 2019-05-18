@@ -10,7 +10,8 @@ with inter_segs as (
 			when m.direction='BOTH' Then 'Both'
 			When m.startpoint=i.point and not m.endpoint=i.point Then 'Out'
 			When not m.startpoint=i.point and m.endpoint=i.point Then 'In'
-		END as segtype
+		END as segtype,
+		CASE When m.startpoint=i.point and not m.endpoint=i.point THEN m.endpoint ELSE m.startpoint END AS external_point
 	--into experiments.rmp10_intersection_simple_segment_types_v2
 	from inter_segs i
 	join maps.osm_dk_20140101 m

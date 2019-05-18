@@ -5,6 +5,8 @@ into experiments.rmp10_all_supersegments
 from (
 	select 
 		segments,
+		segments[1] as startseg,
+		segments[array_length(segments, 1)] as endseg,
 		startpoint,
 		endpoint,
 		array[point] as points,
@@ -18,6 +20,8 @@ from (
 	UNION
 	select 
 		segments,
+		segments[1] as startseg,
+		segments[array_length(segments, 1)] as endseg,
 		startpoint,
 		endpoint,
 		array[point] as points,
@@ -31,6 +35,8 @@ from (
 	UNION
 	select 
 		segments,
+		segments[1] as startseg,
+		segments[array_length(segments, 1)] as endseg,
 		startpoint,
 		endpoint,
 		array[point] as points,
@@ -44,6 +50,8 @@ from (
 	UNION 
 	select
 		segments,
+		segments[1] as startseg,
+		segments[array_length(segments, 1)] as endseg,
 		startpoint,
 		endpoint,
 		array_remove(array_remove(rmp10_get_points(segments), startpoint), endpoint) as points,
@@ -56,7 +64,7 @@ from (
 	from experiments.rmp10_intersection_supersegments_complex
 ) sq;
 
-CREATE INDEX rmp10_all_supersegments_segments_array_idx
+CREATE INDEX rmp10_all_supersegments_segments_array_idx1
 ON experiments.rmp10_all_supersegments
 USING GIN(segments);
 
@@ -105,7 +113,7 @@ FROM (
 	ON sq.segmentkey=m.segmentkey
 	GROUP BY sq.segments, sq.type
 ) ssq
-WHERE ssq.segments=sups.segments AND ssq.type=sups.type
+WHERE ssq.segments=sups.segments AND ssq.type=sups.type;
 
 -- add cat speed difference
 ALTER TABLE experiments.rmp10_all_supersegments
@@ -138,30 +146,67 @@ from experiments.rmp10_trafic_light_nodes_within_30m l
 where l.point=s.points[1] and s.type='Cat';
 
 -- indexes
-CREATE INDEX rmp10_all_supersegments_segments_idx
+CREATE INDEX rmp10_all_supersegments_segments_idx1
     ON experiments.rmp10_all_supersegments USING btree
     (segments)
     TABLESPACE pg_default;
 	
-CREATE INDEX rmp10_all_supersegments_startpoint_idx
+CREATE INDEX rmp10_all_supersegments_startpoint_idx1
     ON experiments.rmp10_all_supersegments USING btree
     (startpoint)
     TABLESPACE pg_default;
 	
-CREATE INDEX rmp10_all_supersegments_endpoint_idx
+CREATE INDEX rmp10_all_supersegments_endpoint_idx1
     ON experiments.rmp10_all_supersegments USING btree
     (endpoint)
     TABLESPACE pg_default;
 	
-CREATE INDEX rmp10_all_supersegments_startseg_idx
+CREATE INDEX rmp10_all_supersegments_startseg_idx1
     ON experiments.rmp10_all_supersegments USING btree
     (startseg)
     TABLESPACE pg_default;
 	
-CREATE INDEX rmp10_all_supersegments_endseg_idx
+CREATE INDEX rmp10_all_supersegments_endseg_idx1
     ON experiments.rmp10_all_supersegments USING btree
     (endseg)
     TABLESPACE pg_default;
+
+ALTER TABLE experiments.rmp10_all_supersegments
+ADD COLUMN superseg_id BIGSERIAL;
+
+CREATE TABLE experiments.rmp10_all_supersegments_original
+AS TABLE experiments.rmp10_all_supersegments;
+
+-- indexes
+CREATE INDEX rmp10_all_supersegments_original_segments_idx1
+    ON experiments.rmp10_all_supersegments_original USING btree
+    (segments)
+    TABLESPACE pg_default;
+	
+CREATE INDEX rmp10_all_supersegments_original_startpoint_idx1
+    ON experiments.rmp10_all_supersegments_original USING btree
+    (startpoint)
+    TABLESPACE pg_default;
+	
+CREATE INDEX rmp10_all_supersegments_original_endpoint_idx1
+    ON experiments.rmp10_all_supersegments_original USING btree
+    (endpoint)
+    TABLESPACE pg_default;
+	
+CREATE INDEX rmp10_all_supersegments_original_startseg_idx1
+    ON experiments.rmp10_all_supersegments_original USING btree
+    (startseg)
+    TABLESPACE pg_default;
+	
+CREATE INDEX rmp10_all_supersegments_original_endseg_idx1
+    ON experiments.rmp10_all_supersegments_original USING btree
+    (endseg)
+    TABLESPACE pg_default;
+
+CREATE INDEX rmp10_all_supersegments_segments_original_array_idx1
+	ON experiments.rmp10_all_supersegments_original USING GIN
+	(segments)
+	TABLESPACE pg_default;
 
 ALTER TABLE experiments.rmp10_all_supersegments
 ADD COLUMN origin bigint,
