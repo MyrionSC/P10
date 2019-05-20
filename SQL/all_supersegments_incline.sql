@@ -18,5 +18,11 @@ FROM (
 	JOIN experiments.rmp10_osm_dk_20140101_overlaps_points sp
 	ON sp.point = alls.startpoint
 	JOIN experiments.rmp10_osm_dk_20140101_overlaps_points ep
-	ON sp.point = alls.endpoint
+	ON ep.point = alls.endpoint
 ) sub;
+
+ALTER TABLE experiments.rmp10_all_supersegments_incline
+ADD COLUMN incline_clamped double precision;
+
+UPDATE experiments.rmp10_all_supersegments_incline
+SET incline_clamped = rmp10_clamp(incline, -10, 10);
