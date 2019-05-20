@@ -26,3 +26,7 @@ ADD COLUMN incline_clamped double precision;
 
 UPDATE experiments.rmp10_all_supersegments_incline
 SET incline_clamped = rmp10_clamp(incline, -10, 10);
+
+CREATE INDEX rmp10_all_supersegments_incline_superseg_id_idx 
+ON experiments.rmp10_all_supersegments_incline
+USING btree(superseg_id);
