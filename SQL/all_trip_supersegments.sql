@@ -37,3 +37,21 @@ on
 	sst.trip_id=ta.trip_id and
 	sst.segments=ta.segmentkeys_arr[sst.start_segmentno:sst.end_segmentno];
 
+-- indexes (takes about 4 minutes)
+CREATE INDEX rmp10_all_trip_supersegments_id_arr_btree_idx
+    ON experiments.rmp10_all_trip_supersegments USING btree
+    (id_arr)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_trip_supersegments_id_arr_gin_idx
+    ON experiments.rmp10_all_trip_supersegments USING gin
+    (id_arr)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_trip_supersegments_superseg_id_idx
+    ON experiments.rmp10_all_trip_supersegments USING btree
+    (superseg_id)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_trip_supersegments_trip_id_idx
+    ON experiments.rmp10_all_trip_supersegments USING btree
+    (trip_id)
+    TABLESPACE pg_default;
+
