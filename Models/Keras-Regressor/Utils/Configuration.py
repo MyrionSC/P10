@@ -84,4 +84,50 @@ energy_config.update({
     'speed_model_path': 'saved_models/Default_Speed_Models/DefaultSpeed-epochs_20' # should be relative path from Keras, eg: saved_models/Speed_Models/Some_Model
 })
 
+#speed_config_superseg = Config()
+#speed_config_superseg.update({
+#    'embedding': "node2vec-64d",
+#    'batch_size': 8192,
+#    'epochs': 20,  # When training the BESTEST model possible, use 20 or more epochs
+#    'hidden_layers': 6,
+#    'cells_per_layer': 1000,
+#    'initial_dropout': 0,  # Dropout value for the first layer
+#    'dropout': 0,  # Dropout value for all layers after the first layer
+#    'activation': 'tanh',
+#    'kernel_initializer': 'normal',
+#    'optimizer': 'adamax',
+#    'target_feature': 'speed',
+#    'features_used': ['categoryid', 'segment_length', 'speedlimit', 'incline', 'temperature',
+#                      'quarter', 'weekday', 'month'],
+#    'model_name_base': 'DefaultSpeed-epochs_20',
+#    'batch_dir': "Default_Speed_Models/",
+#    'scale': True,
+#    'cyclic_time': False,
+#    'loss': 'mse',
+#    'speed_model_path': None
+#})
+
+energy_config_superseg = Config()
+energy_config_superseg.update({
+    'embedding': None,
+    'batch_size': 8192,
+    'epochs': 10,  # When training the BESTEST model possible, use 20 or more epochs
+    'hidden_layers': 6,
+    'cells_per_layer': 1000,
+    'initial_dropout': 0,  # Dropout value for the first layer
+    'dropout': 0,  # Dropout value for all layers after the first layer
+    'activation': 'relu',
+    'kernel_initializer': 'normal',
+    'optimizer': 'adamax',
+    'target_feature': 'ev_wh',
+    'features_used': ['cat_start', 'cat_end', 'cat_speed_difference', 'type', 'segment_length', 'incline',
+                      'traffic_lights', 'direction', 'temperature', 'quarter', 'weekday', 'month'],
+    'model_name_base': 'DefaultEnergy-epochs_20',
+    'batch_dir': "Default_Energy_Models_Superseg/",
+    'scale': True,
+    'cyclic_time': False,
+    'loss': 'mae'
+    #'speed_model_path': 'saved_models/Default_Speed_Models/DefaultSpeed-epochs_20' # should be relative path from Keras, eg: saved_models/Speed_Models/Some_Model
+})
+
 # Possible features: ['categoryid', 'incline', 'segment_length', 'speed_prediction', 'height_change', 'speed', 'temperature', 'headwind_speed', 'quarter', 'weekday', 'month', 'speedlimit', 'intersection']
