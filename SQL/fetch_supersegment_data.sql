@@ -38,6 +38,7 @@ SELECT
 	atd.seconds,
 	atd.incline,
 	atd.ev_wh,
+	-- dunno if speed makes sense
 	-- wind vector is possible, then we just need a join to origin id
 	time_table.quarter,
 	weather_table.air_temperature as temperature,
