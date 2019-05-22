@@ -7,6 +7,7 @@ WITH osm AS (
 		segments,
 		categories[1] as cat_start,
 		categories[array_length(categories, 1)] as cat_end,
+		direction,
 		cat_speed_difference,
 		traffic_lights,
 		type
@@ -18,6 +19,7 @@ WITH osm AS (
 		array[segmentkey] as segments,
 		category as cat_start,
 		category as cat_end,
+		'STRAIGHT' as direction,
 		0 as cat_speed_difference,
 		false as traffic_lights,
 		'Segment' as type
@@ -32,6 +34,7 @@ SELECT
 	osm.cat_start,
 	osm.cat_end,
 	osm.cat_speed_difference,
+	osm.direction,
 	osm.traffic_lights,
 	atd.meters_segment as segment_length,
 	atd.meters_driven,
