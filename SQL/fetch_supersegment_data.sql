@@ -22,7 +22,7 @@ SELECT
 	weather_table.air_temperature as temperature,
 	date_table.weekday,
 	date_table.month
-FROM experiments.rmp10_all_trip_data atd
+FROM experiments.rmp10_supersegments_training_data atd
 JOIN experiments.rmp10_all_osm_data osm
 ON atd.superseg_id=osm.superseg_id OR atd.segmentkey=osm.segmentkey
 JOIN dims.dimdate date_table
@@ -30,17 +30,6 @@ ON atd.datekey = date_table.datekey
 JOIN dims.dimtime time_table
 ON atd.timekey = time_table.timekey
 JOIN dims.dimweathermeasure weather_table
-ON atd.weathermeasurekey = weather_table.weathermeasurekey
-WHERE EXISTS (
-	SELECT
-	FROM (
-		SELECT v.id
-		FROM experiments.rmp10_training t
-		JOIN experiments.rmp10_viterbi_match_osm_dk_20140101_overlap v
-		ON t.id=v.origin
-	) sq
-	WHERE sq.id=any(atd.id_arr)
-);
+ON atd.weathermeasurekey = weather_table.weathermeasurekey;
 
 \copy (SELECT * FROM experiments.supersegments_training_data_temp_view) TO '../Models/data/supersegment-data.csv' HEADER CSV;
-
