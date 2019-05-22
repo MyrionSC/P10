@@ -1,38 +1,13 @@
 DROP VIEW IF EXISTS experiments.supersegments_training_data_temp_view;
 CREATE VIEW experiments.supersegments_training_data_temp_view AS
-WITH osm AS (
-	SELECT 
-		superseg_id,
-		null as segmentkey,
-		segments,
-		categories[1] as cat_start,
-		categories[array_length(categories, 1)] as cat_end,
-		direction,
-		cat_speed_difference,
-		traffic_lights,
-		type
-	FROM experiments.rmp10_all_supersegments
-	UNION
-	SELECT 
-		null as superseg_id,
-		segmentkey,
-		array[segmentkey] as segments,
-		category as cat_start,
-		category as cat_end,
-		'STRAIGHT' as direction,
-		0 as cat_speed_difference,
-		false as traffic_lights,
-		'Segment' as type
-	FROM experiments.rmp10_osm_dk_20140101_overlaps
-)
 SELECT 
 	atd.superseg_id,
 	atd.segmentkey,
 	atd.trip_id,
 	osm.segments,
 	osm.type,
-	osm.cat_start,
-	osm.cat_end,
+	osm.categories[1] as cat_start,
+	osm.categories[array_length(osm.categories, 1)] as cat_end,
 	osm.cat_speed_difference,
 	osm.direction,
 	osm.traffic_lights,
@@ -48,7 +23,7 @@ SELECT
 	date_table.weekday,
 	date_table.month
 FROM experiments.rmp10_all_trip_data atd
-JOIN osm osm
+JOIN experiments.rmp10_all_osm_data osm
 ON atd.superseg_id=osm.superseg_id OR atd.segmentkey=osm.segmentkey
 JOIN dims.dimdate date_table
 ON atd.datekey = date_table.datekey
