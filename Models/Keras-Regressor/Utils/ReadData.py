@@ -95,6 +95,9 @@ def preprocess_data(df: pd.DataFrame, config: Config, re_scale: bool=False, reta
     if config['cyclic_time']:
         df = convert_time(df)
 
+    if 'traffic_lights' in list(df):
+        df['traffic_lights'] = df['traffic_lights'].map(lambda x: 1 if x else 0)
+
     # Split data into features and label
     features, label = extract_label(df, config)
 
