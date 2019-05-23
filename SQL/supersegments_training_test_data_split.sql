@@ -1,3 +1,4 @@
+----- TRAINING SPLIT
 SELECT 
 	atd.*
 INTO experiments.rmp10_supersegments_training_data
@@ -13,6 +14,39 @@ WHERE EXISTS (
 	WHERE sq.id=any(atd.id_arr)
 );
 
+--ON atd.superseg_id=osm.superseg_id OR atd.segmentkey=osm.segmentkey
+--JOIN dims.dimdate date_table
+--ON atd.datekey = date_table.datekey
+--JOIN dims.dimtime time_table
+--ON atd.timekey = time_table.timekey
+--JOIN dims.dimweathermeasure weather_table
+--ON atd.weathermeasurekey = weather_table.weathermeasurekey;
+
+-- training indexes
+CREATE INDEX rmp10_all_supersegments_training_data_superseg_id_idx
+    ON experiments.rmp10_supersegments_training_data USING btree
+    (superseg_id)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_supersegments_training_data_segmentkey_idx
+    ON experiments.rmp10_supersegments_training_data USING btree
+    (segmentkey)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_supersegments_training_data_datekey_idx
+    ON experiments.rmp10_supersegments_training_data USING btree
+    (datekey)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_supersegments_training_data_timekey_idx
+    ON experiments.rmp10_supersegments_training_data USING btree
+    (timekey)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_supersegments_training_data_weathermeasurekey_idx
+    ON experiments.rmp10_supersegments_training_data USING btree
+    (weathermeasurekey)
+    TABLESPACE pg_default;
+
+
+
+----- TEST SPLIT
 SELECT 
 	atd.*
 INTO experiments.rmp10_supersegments_test_data
@@ -27,4 +61,26 @@ WHERE EXISTS (
 	) sq
 	WHERE sq.id=any(atd.id_arr)
 );
+
+-- test indexes
+CREATE INDEX rmp10_all_supersegments_test_data_superseg_id_idx
+    ON experiments.rmp10_supersegments_test_data USING btree
+    (superseg_id)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_supersegments_test_data_segmentkey_idx
+    ON experiments.rmp10_supersegments_test_data USING btree
+    (segmentkey)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_supersegments_test_data_datekey_idx
+    ON experiments.rmp10_supersegments_test_data USING btree
+    (datekey)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_supersegments_test_data_timekey_idx
+    ON experiments.rmp10_supersegments_test_data USING btree
+    (timekey)
+    TABLESPACE pg_default;
+CREATE INDEX rmp10_all_supersegments_test_data_weathermeasurekey_idx
+    ON experiments.rmp10_supersegments_test_data USING btree
+    (weathermeasurekey)
+    TABLESPACE pg_default;
 
