@@ -4,7 +4,7 @@ import os
 
 source_path = "data/supersegment-data.csv"
 training_path = "data/supersegment-training.csv"
-test_path = "data/supersegment-test.csv"
+test_path = "data/supersegment-validation.csv"
 
 training_part = 0.7
 random.seed(20180901)
