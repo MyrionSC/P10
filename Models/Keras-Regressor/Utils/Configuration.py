@@ -119,7 +119,7 @@ energy_config_superseg.update({
     'iterations': 3,
     'embedding': None,
     'batch_size': 8192,
-    'epochs': 10,  # When training the BESTEST model possible, use 20 or more epochs
+    'epochs': 20,  # When training the BESTEST model possible, use 20 or more epochs
     'hidden_layers': 6,
     'cells_per_layer': 1000,
     'initial_dropout': 0,  # Dropout value for the first layer
