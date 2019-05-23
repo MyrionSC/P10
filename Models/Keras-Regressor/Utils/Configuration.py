@@ -43,6 +43,7 @@ class Config(dict):
 
 speed_config = Config()
 speed_config.update({
+    'iterations': 3,
     'embedding': "node2vec-64d",
     'batch_size': 8192,
     'epochs': 20,  # When training the BESTEST model possible, use 20 or more epochs
@@ -67,6 +68,7 @@ speed_config.update({
 
 energy_config = Config()
 energy_config.update({
+    'iterations': 3,
     'embedding': "node2vec-64d",
     'batch_size': 8192,
     'epochs': 20,  # When training the BESTEST model possible, use 20 or more epochs
@@ -114,6 +116,7 @@ energy_config.update({
 
 energy_config_superseg = Config()
 energy_config_superseg.update({
+    'iterations': 3,
     'embedding': None,
     'batch_size': 8192,
     'epochs': 10,  # When training the BESTEST model possible, use 20 or more epochs

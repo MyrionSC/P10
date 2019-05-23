@@ -7,8 +7,10 @@ configs = []
 
 loss_functions = ['mae', 'mse', 'mape']
 
-for f in loss_functions:
-    conf = energy_config.copy()
-    conf['loss'] = f
-    conf['model_name_base'] = "SS_Energy_" + f.upper()
-    configs.append(conf)
+for i in range(energy_config['iterations']):
+    for f in loss_functions:
+        conf = energy_config.copy()
+        conf['loss'] = f
+        conf['model_name_base'] = "SS_Energy_" + f.upper() + "_Iter" + str(i+1)
+        configs.append(conf)
+
