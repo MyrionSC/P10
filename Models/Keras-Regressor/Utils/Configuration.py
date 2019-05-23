@@ -2,6 +2,9 @@ paths = {
     'dataPath': "../data/Data.csv",
     'trainPath': "../data/Training.csv",
     'validationPath': "../data/Test.csv",
+    'supersegDataPath': "../data/supersegment-data.csv",
+    'supersegTrainPath': "../data/supersegment-training.csv",
+    'supersegValidationPath': "../data/supersegment-validation.csv",
     'modelDir': "./saved_models/",
     'scalerDir': "./saved_scaler/",
     'historyDir': "./saved_history/",
@@ -58,7 +61,8 @@ speed_config.update({
     'scale': True,
     'cyclic_time': False,
     'loss': 'mse',
-    'speed_model_path': None
+    'speed_model_path': None,
+    'supersegment': False
 })
 
 energy_config = Config()
@@ -81,7 +85,8 @@ energy_config.update({
     'scale': True,
     'cyclic_time': False,
     'loss': 'mae',
-    'speed_model_path': 'saved_models/Default_Speed_Models/DefaultSpeed-epochs_20' # should be relative path from Keras, eg: saved_models/Speed_Models/Some_Model
+    'speed_model_path': 'saved_models/Default_Speed_Models/DefaultSpeed-epochs_20', # should be relative path from Keras, eg: saved_models/Speed_Models/Some_Model
+    'supersegment': False
 })
 
 #speed_config_superseg = Config()
@@ -126,7 +131,8 @@ energy_config_superseg.update({
     'batch_dir': "Default_Energy_Models_Superseg/",
     'scale': True,
     'cyclic_time': False,
-    'loss': 'mae'
+    'loss': 'mae',
+    'supersegment': True
     #'speed_model_path': 'saved_models/Default_Speed_Models/DefaultSpeed-epochs_20' # should be relative path from Keras, eg: saved_models/Speed_Models/Some_Model
 })
 

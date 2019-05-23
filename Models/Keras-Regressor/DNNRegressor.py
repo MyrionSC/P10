@@ -39,7 +39,11 @@ def read_predicting_data_sets(config: Config, retain_id: bool) -> (pd.DataFrame,
     print("")
     print("------ Reading data ------")
     start_time = time.time()
-    X, Y, trip_ids = read_data(paths['dataPath'], config, retain_id=retain_id)
+    if config['supersegment']:
+        path = paths['supersegDataPath']
+    else:
+        path = paths['dataPath']
+    X, Y, trip_ids = read_data(path, config, retain_id=retain_id)
     print("Data read")
     print("Time elapsed: %s" % (time.time() - start_time))
 
@@ -52,17 +56,24 @@ def read_training_data_sets(config: Config) -> (pd.DataFrame, pd.DataFrame, pd.D
 
     do_speed_predictions_if_not_there(config)
 
+    if config['supersegment']:
+        train_path = paths['supersegTrainPath']
+        valid_path = paths['supersegValidationPath']
+    else:
+        train_path = paths['trainPath']
+        valid_path = paths['validationPath']
+
     print("")
     print("------ Reading training data ------")
     start_time = time.time()
-    X_train, Y_train, trip_ids = read_data(paths['trainPath'], config, re_scale=True)
+    X_train, Y_train, trip_ids = read_data(train_path, config, re_scale=True)
     print("Training data read")
     print("Time elapsed: %s" % (time.time() - start_time))
 
     print("")
     print("------ Reading validation data ------")
     start_time = time.time()
-    X_validation, Y_validation, _ = read_data(paths['validationPath'], config)
+    X_validation, Y_validation, _ = read_data(valid_path, config)
     print("Validation data read")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
 
