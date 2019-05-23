@@ -1,8 +1,10 @@
 DROP VIEW IF EXISTS experiments.supersegments_training_data_temp_view;
 CREATE VIEW experiments.supersegments_training_data_temp_view AS
 SELECT 
-	atd.superseg_id,
-	atd.segmentkey,
+	atd.atd_id as mapmatched_id,
+	osm.aod_id as segmentkey,
+	atd.superseg_id as superseg_id,
+	atd.segmentkey as seg_id,
 	atd.trip_id,
 	osm.segments,
 	osm.type,
