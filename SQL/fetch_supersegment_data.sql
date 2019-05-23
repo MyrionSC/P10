@@ -32,6 +32,7 @@ ON atd.datekey = date_table.datekey
 JOIN dims.dimtime time_table
 ON atd.timekey = time_table.timekey
 JOIN dims.dimweathermeasure weather_table
-ON atd.weathermeasurekey = weather_table.weathermeasurekey;
+ON atd.weathermeasurekey = weather_table.weathermeasurekey
+WHERE atd.ev_wh IS NOT NULL;
 
 \copy (SELECT * FROM experiments.supersegments_training_data_temp_view) TO '../Models/data/supersegment-data.csv' HEADER CSV;
