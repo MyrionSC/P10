@@ -68,7 +68,8 @@ def preprocess_data(df: pd.DataFrame, config: Config, re_scale: bool=False, reta
     # One hot encode categorical features
     if 'month' in config['features_used'] or 'weekday' in config['features_used'] \
             or 'categoryid' in config['features_used'] or 'type' in config['features_used'] \
-            or 'cat_start' in config['features_used'] or 'cat_end' in config['features_used']:
+            or 'cat_start' in config['features_used'] or 'cat_end' in config['features_used'] \
+            or 'direction' in config['features_used']:
         df = one_hot(df)
 
     # Read and merge embeddings into dataframe
@@ -199,6 +200,9 @@ def one_hot(df: pd.DataFrame) -> pd.DataFrame:
     if 'type' in list(df):
         df['type'] = df['type'].map(str)
         df = one_hot_encode_column(df, 'type')
+    if 'direction' in list(df):
+        df['direction'] = df['direction'].map(str)
+        df = one_hot_encode_column(df, 'direction')
 
     pd.options.mode.chained_assignment = 'warn'
 

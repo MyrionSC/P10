@@ -18,6 +18,8 @@ def get_cats(key: str) -> List[str]:
                 "service", "road", "track", "unpaved"]
     elif key == 'type':
         return ["Complex", "Simple", "T", "Segment", "Cat"]
+    elif key == 'direction':
+        return ["STRAIGT", "LEFT", "RIGHT", "U-TURN"]
 
 
 def model_dir_name(config: Config) -> str:
