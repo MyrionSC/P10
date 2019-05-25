@@ -61,8 +61,9 @@ def compileBatchMetrics(batch_path: str):
     model_dirs = [os.path.join(batch_path, o) for o in os.listdir(batch_path) if os.path.isdir(os.path.join(batch_path, o))]
     for model_dir in model_dirs:
         model_name = model_dir.split('/')[-1]
-        with open(model_dir + "/history.json", "r") as hist_file:
-            batch_metrics[model_name] = json.load(hist_file)
+        if os.path.isfile(model_dir + "/history.json"):
+            with open(model_dir + "/history.json", "r") as hist_file:
+                batch_metrics[model_name] = json.load(hist_file)
 
     with open(batch_path + "/batch_metrics.csv", "w+") as file:  # creates / overwrites file
         # create header line
