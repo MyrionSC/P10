@@ -45,7 +45,7 @@ def reverse_colormap(cmap, name = 'my_cmap_r'):
     my_cmap_r = plt_colors.LinearSegmentedColormap(name, LinearL) 
     return my_cmap_r
 
-def plot(name, dct, layers, units, pdf=None):
+def plot(name, dct, layers, units, pdf=None, path=None):
     fig, ax1 = plt.subplots()
     plt.imshow(dct, cmap=reverse_colormap(cm.get_cmap('coolwarm'), 'warmcool'), interpolation='nearest', aspect='auto')
     plt.yticks(range(len(layers)), layers)
@@ -63,6 +63,8 @@ def plot(name, dct, layers, units, pdf=None):
     #plt.colorbar()
     if pdf is not None:
         pdf.savefig()
+    if path is not None:
+        plt.savefig(os.path.dirname(path) + '/LU_' + name.replace(" ", "_").replace("^", "") + '.pdf')
     plt.clf()
     plt.close()
 
@@ -90,11 +92,11 @@ def main(args):
     plt.rcParams.update({'font.family': 'STIXGeneral'})
     plt.rcParams.update({'font.size' : 15})
 
-    with PdfPages(os.path.dirname(args[0]) + '/layers_units_metrics.pdf') as pdf:
-        plot("Training R^2", dct_train, layers, units, pdf)
-        plot("Validation R^2", dct_val, layers, units, pdf)
-        plot("Training Trip R^2", dct_train_trip, layers, units, pdf)
-        plot("Validation Trip R^2", dct_val_trip, layers, units, pdf)
+    with PdfPages(os.path.dirname(args[0]) + '/LU_All.pdf') as pdf:
+        plot("Training R^2", dct_train, layers, units, pdf, args[0])
+        plot("Validation R^2", dct_val, layers, units, pdf, args[0])
+        plot("Training Trip R^2", dct_train_trip, layers, units, pdf, args[0])
+        plot("Validation Trip R^2", dct_val_trip, layers, units, pdf, args[0])
 
 if __name__ == "__main__":
     main(sys.argv[1:])
