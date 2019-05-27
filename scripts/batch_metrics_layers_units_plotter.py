@@ -82,7 +82,6 @@ def main(args):
     df['units'] = df.model_name.map(lambda x: int(re.findall("[0-9]*Units", x)[0][:-5]))
     layers = sorted(df.layers.unique())
     units = sorted(df.units.unique())
-    print(list(df))
     dct_val = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_r2'].values[0] for unit in units] for layer in layers])
     dct_train = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['train_r2'].values[0] for unit in units] for layer in layers])
     dct_val_trip = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_trip_r2'].values[0] for unit in units] for layer in layers])
