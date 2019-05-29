@@ -21,5 +21,5 @@ for i in range(energy_config['iterations']):
     for f in configurations:
         conf = energy_config.copy()
         conf['features_used'] = conf['features_used'][:] + f
-        conf['model_name_base'] = "SS_Energy_" + "-".join(f) if len(f) > 0 else "None" + "_Iter" + str(i+1)
+        conf['model_name_base'] = "SS_Energy_" + ("-".join(f) if len(f) > 0 else "None") + "_Iter" + str(i+1)
         configs.append(conf)
