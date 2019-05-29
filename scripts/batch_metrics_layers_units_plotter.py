@@ -47,7 +47,10 @@ def reverse_colormap(cmap, name = 'my_cmap_r'):
 
 def plot(name, dct, layers, units, pdf=None, path=None):
     fig, ax1 = plt.subplots()
-    plt.imshow(dct, cmap=reverse_colormap(cm.get_cmap('coolwarm'), 'warmcool'), interpolation='nearest', aspect='auto')
+    cmap = cm.get_cmap('coolwarm')
+    if "r2" in name:
+        cmap = reverse_colormap(cmap, 'warmcool')
+    plt.imshow(dct, cmap=cmap, interpolation='nearest', aspect='auto')
     plt.yticks(range(len(layers)), layers)
     plt.xticks(range(len(units)), units)
     for i in range(len(layers)):
@@ -69,33 +72,49 @@ def plot(name, dct, layers, units, pdf=None, path=None):
     plt.close()
 
 def main(args):
-    if not len(args) == 1:
-        print("Invalid number of arguments: got " + str(len(args)) + " expected 1.")
+    if not len(args) == 2:
+        print("Invalid number of arguments: got " + str(len(args)) + " expected 2.")
         quit(-1) 
-    if not os.path.isfile(args[0]):
-        print("File not found: " + os.path.abspath(args[0]))
+    if not os.path.isfile(args[1]):
+        print("File not found: " + os.path.abspath(args[1]))
+        quit(-1)
+    if not args[0] in ["mean_absolute_error", "mean_squared_error", "rmse", "mean_absolute_percentage_error", "r2", "loss", "all"]:
+        print("Invalid evaluation metric " + args[0] + " expected 1 of " + str(["mean_absolute_error", "mean_squared_error", "rmse", "mean_absolute_percentage_error", "r2", "loss", "all"]))
         quit(-1)
 
-    df = pd.read_csv(args[0], delimiter=",", decimal=".", header=0)
+    df = pd.read_csv(args[1], delimiter=",", decimal=".", header=0)
     df.columns = df.columns.str.strip()
     df['layers'] = df.model_name.map(lambda x: int(re.findall("[0-9]*Layers", x)[0][:-6]))
     df['units'] = df.model_name.map(lambda x: int(re.findall("[0-9]*Units", x)[0][:-5]))
     layers = sorted(df.layers.unique())
     units = sorted(df.units.unique())
-    dct_val = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_r2'].values[0] for unit in units] for layer in layers])
-    dct_train = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['train_r2'].values[0] for unit in units] for layer in layers])
-    dct_val_trip = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_trip_r2'].values[0] for unit in units] for layer in layers])
-    dct_train_trip = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['train_trip_r2'].values[0] for unit in units] for layer in layers])
 
     plt.rcParams.update({'mathtext.fontset': 'stix'})
     plt.rcParams.update({'font.family': 'STIXGeneral'})
     plt.rcParams.update({'font.size' : 15})
 
-    with PdfPages(os.path.dirname(args[0]) + '/LU_All.pdf') as pdf:
-        plot("Training R^2", dct_train, layers, units, pdf, args[0])
-        plot("Validation R^2", dct_val, layers, units, pdf, args[0])
-        plot("Training Trip R^2", dct_train_trip, layers, units, pdf, args[0])
-        plot("Validation Trip R^2", dct_val_trip, layers, units, pdf, args[0])
+    if args[0] != "all":
+        do_plots(df, layers, units, args[0], args[1])
+    else:
+        for metric in ["mean_absolute_error", "mean_squared_error", "rmse", "mean_absolute_percentage_error", "r2", "loss"]:
+            do_plots(df, layers, units, metric, args[1])
+
+def do_plots(df, layers, units, metric, path):
+    if metric == "r2":
+        dct_val = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_' + metric].values[0] for unit in units] for layer in layers])
+        dct_train = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['train_' + metric].values[0] for unit in units] for layer in layers])
+        dct_val_trip = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_trip_' + metric].values[0] for unit in units] for layer in layers])
+        dct_train_trip = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['train_trip_' + metric].values[0] for unit in units] for layer in layers])
+    else:
+        dct_val = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_' + metric].values[0] for unit in units] for layer in layers])
+        dct_train = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit][metric].values[0] for unit in units] for layer in layers])
+
+    with PdfPages(os.path.dirname(path) + '/LU_All_' + metric + '.pdf') as pdf:
+        plot("Training " + metric, dct_train, layers, units, pdf, path)
+        plot("Validation " + metric, dct_val, layers, units, pdf, path)
+        if metric == "r2":
+            plot("Training Trip " + metric, dct_train_trip, layers, units, pdf, path)
+            plot("Validation Trip " + metric, dct_val_trip, layers, units, pdf, path)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
