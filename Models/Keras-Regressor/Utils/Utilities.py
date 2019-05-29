@@ -2,6 +2,12 @@ from typing import List
 from Utils.Configuration import Config
 from Utils.Configuration import paths
 import json
+from itertools import chain, combinations
+
+
+def powerset(iterable):
+    s = list(iterable)
+    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
 
 
 # Get the possible categories of a feature based on the column key
