@@ -10,7 +10,7 @@ configs = []
 
 for i in range(energy_config['iterations']):
     conf = energy_config.copy()
-    conf['features_used'] = conf['features_used'][:] + "incline"
+    conf['features_used'] = conf['features_used'][:] + ["incline"]
     conf['model_name_base'] = "SS_Energy_Incline_Iter" + str(i + 1)
     configs.append(conf)
     conf = energy_config.copy()
