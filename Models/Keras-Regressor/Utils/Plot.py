@@ -43,7 +43,7 @@ def plot_history(history, config):
     if not os.path.isdir(modelpath + "plots/"):
         os.makedirs(modelpath + "plots/")
     with PdfPages(modelpath + '/plots/' + config['model_name_base'] + '_combined.pdf') as pdf:
-        for key in [x for x in sorted(history) if not x.startswith('val') and "r2" not in x]:
+        for key in [x for x in sorted(history) if not x.startswith('val') and "r2" not in x and 'trip' not in x]:
             midvalue = history[key][int(len(history[key]) / 2)]
             lastvalue = history[key][-1]
             delta = abs(midvalue - lastvalue)

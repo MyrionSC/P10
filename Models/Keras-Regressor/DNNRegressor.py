@@ -6,7 +6,8 @@ from Utils.Configuration import paths, Config, energy_config
 from Utils.Utilities import model_path, printparams, generate_upload_predictions
 from tensorflow import set_random_seed
 from numpy.random import seed
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+from Utils.Metrics import mean_absolute_percentage_error, root_mean_squared_error
 import pandas as pd
 import time
 import json
@@ -111,11 +112,19 @@ def calculate_results(estimator, X: pd.DataFrame, Y: pd.DataFrame, trip_ids: pd.
     trip_Y = pd.concat([Y[[config['target_feature']]], trip_ids[['trip_id']]], axis=1)\
         .groupby(['trip_id']).sum().sort_values(by=['trip_id'])
 
-    trip_r2 = r2_score(trip_Y[config['target_feature']], trip_prediction['prediction'])
+    trip_pred = trip_prediction['prediction']
+    trip_act = trip_Y[config['target_feature']]
+
+    preds = {'r2': r2,
+             'trip_r2': r2_score(trip_act, trip_pred),
+             'trip_mae': mean_absolute_error(trip_act, trip_pred),
+             'trip_rmse': root_mean_squared_error(trip_act, trip_pred),
+             'trip_mse': mean_squared_error(trip_act, trip_pred),
+             'trip_mape': mean_absolute_percentage_error(trip_act, trip_pred)}
 
     print("")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
-    return pd.DataFrame(prediction, columns=['prediction']), r2, trip_r2
+    return pd.DataFrame(prediction, columns=['prediction']), preds
 
 
 def save_history(history, config: Config):
@@ -136,18 +145,21 @@ def train(config: Config):
     X_train, Y_train, X_validation, Y_validation, trip_ids = read_training_data_sets(config)
     model, history = train_model(X_train, Y_train, X_validation, Y_validation, config)
 
-    train_predictions, train_r2, train_trip_r2 = calculate_results(model, X_train, Y_train, trip_ids, config)
-    val_predictions, val_r2, train_val_r2 = calculate_results(model, X_validation, Y_validation, trip_ids, config)
+    train_predictions, preds = calculate_results(model, X_train, Y_train, trip_ids, config)
+    val_predictions, val_preds = calculate_results(model, X_validation, Y_validation, trip_ids, config)
+    for k in val_preds.keys():
+        preds['val_' + k] = val_preds[k]
+    for k in [x for x in preds.keys() if 'val' not in x]:
+        preds['train_' + k] = preds.pop(k)
+    print(preds)
 
     print()
     print("Segments:")
-    print("Train R2: {:f}".format(train_r2) + "  -  Validation R2: {:f}".format(val_r2))
+    print("Train R2: {:f}".format(preds['train_r2']) + "  -  Validation R2: {:f}".format(preds['val_r2']))
     print("Trips:")
-    print("Train R2: {:f}".format(train_trip_r2) + "  -  Validation R2: {:f}".format(train_val_r2))
-    history.history['train_r2'] = train_r2
-    history.history['val_r2'] = val_r2
-    history.history['train_trip_r2'] = train_trip_r2
-    history.history['val_trip_r2'] = train_val_r2
+    print("Train R2: {:f}".format(preds['train_trip_r2']) + "  -  Validation R2: {:f}".format(preds['val_trip_r2']))
+    for k, v in preds.items():
+        history.history[k] = v
     save_history(history, config)
     plot_history(history.history, config)
     return history
@@ -162,12 +174,12 @@ def predict(config: Config, save_predictions: bool=False):
         X.drop(['mapmatched_id'], axis=1, inplace=True)
 
     model = load_model(config)
-    predictions, r2, trip_r2 = calculate_results(model, X, Y, trip_ids, config)
+    predictions, preds = calculate_results(model, X, Y, trip_ids, config)
     print()
     print("Segments:")
-    print("R2-score: {:f}".format(r2))
+    print("R2-score: {:f}".format(preds['r2']))
     print("Trips:")
-    print("R2-score: {:f}".format(trip_r2))
+    print("R2-score: {:f}".format(preds['trip_r2']))
 
     if save_predictions:
         predictions.rename(columns={'0': 'prediction'})
