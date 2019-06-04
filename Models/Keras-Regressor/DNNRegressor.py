@@ -127,6 +127,15 @@ def calculate_results(estimator, X: pd.DataFrame, Y: pd.DataFrame, trip_ids: pd.
     return pd.DataFrame(prediction, columns=['prediction']), preds
 
 
+def load_history(config: Config):
+    modelpath = model_path(config)
+    if not os.path.isfile(modelpath + 'history.json'):
+        return None
+    with open(modelpath + 'history.json', "r") as f:
+        hist = json.loads(f.read())
+    return hist
+
+
 def save_history(history, config: Config):
     modelpath = model_path(config)
     print("")

@@ -48,7 +48,7 @@ def reverse_colormap(cmap, name = 'my_cmap_r'):
 def plot(name, dct, layers, units, pdf=None, path=None):
     fig, ax1 = plt.subplots()
     cmap = cm.get_cmap('coolwarm')
-    if "r2" in name:
+    if "R^2" in name:
         cmap = reverse_colormap(cmap, 'warmcool')
     plt.imshow(dct, cmap=cmap, interpolation='nearest', aspect='auto')
     plt.yticks(range(len(layers)), layers)
@@ -59,15 +59,15 @@ def plot(name, dct, layers, units, pdf=None, path=None):
                 text = ax1.text(j, i, "{:.4f}".format(dct[i, j]),
                                ha="center", va="center", color="black")
 
-    plt.xlabel("Neurons per hidden layer")
-    plt.ylabel("Number of hidden layers")
+    plt.xlabel("Antal neuroner per lag")
+    plt.ylabel("Antal lag")
     plt.title(name)
     plt.tight_layout()
     #plt.colorbar()
     if pdf is not None:
         pdf.savefig()
     if path is not None:
-        plt.savefig(os.path.dirname(path) + '/LU_' + name.replace(" ", "_").replace("^", "") + '.pdf')
+        plt.savefig(os.path.dirname(path) + '/LU_' + name.replace(" ", "_").replace("^", "").replace("æ", "ae").replace("å", "aa").replace("ø", "oe") + '.pdf')
     plt.clf()
     plt.close()
 
@@ -99,22 +99,45 @@ def main(args):
         for metric in ["mean_absolute_error", "mean_squared_error", "rmse", "mean_absolute_percentage_error", "r2", "loss"]:
             do_plots(df, layers, units, metric, args[1])
 
+def shorthand(metric):
+    if metric == 'mean_absolute_error':
+        return 'mae'
+    if metric == 'mean_absolute_percentage_error':
+        return 'mape'
+    if metric == 'mean_squared_error':
+        return 'mse'
+    else:
+        return metric
+
+def title_str(metric):
+    if metric == 'r2':
+        return 'R^2'
+    if metric == 'loss':
+        return 'Loss'
+    return shorthand(metric).upper()
+
+
 def do_plots(df, layers, units, metric, path):
-    if metric == "r2":
+    if metric == 'r2':
         dct_val = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_' + metric].values[0] for unit in units] for layer in layers])
         dct_train = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['train_' + metric].values[0] for unit in units] for layer in layers])
-        dct_val_trip = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_trip_' + metric].values[0] for unit in units] for layer in layers])
-        dct_train_trip = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['train_trip_' + metric].values[0] for unit in units] for layer in layers])
+        dct_val_trip = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_trip_' + shorthand(metric)].values[0] for unit in units] for layer in layers])
+        dct_train_trip = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['train_trip_' + shorthand(metric)].values[0] for unit in units] for layer in layers])
+    elif metric == 'loss':
+        dct_val = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_' + metric].values[0] for unit in units] for layer in layers])
+        dct_train = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit][metric].values[0] for unit in units] for layer in layers])
     else:
         dct_val = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_' + metric].values[0] for unit in units] for layer in layers])
         dct_train = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit][metric].values[0] for unit in units] for layer in layers])
-
+        dct_val_trip = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['val_trip_' + shorthand(metric)].values[0] for unit in units] for layer in layers])
+        dct_train_trip = np.array([[df.loc[df['layers'] == layer].loc[df['units'] == unit]['train_trip_' + shorthand(metric)].values[0] for unit in units] for layer in layers])
+    
     with PdfPages(os.path.dirname(path) + '/LU_All_' + metric + '.pdf') as pdf:
-        plot("Training " + metric, dct_train, layers, units, pdf, path)
-        plot("Validation " + metric, dct_val, layers, units, pdf, path)
-        if metric == "r2":
-            plot("Training Trip " + metric, dct_train_trip, layers, units, pdf, path)
-            plot("Validation Trip " + metric, dct_val_trip, layers, units, pdf, path)
+        plot("Trænings " + title_str(metric), dct_train, layers, units, pdf, path)
+        plot("Validerings " + title_str(metric), dct_val, layers, units, pdf, path)
+        if metric != 'loss':
+            plot("Trænings " + title_str(metric) + " på ture", dct_train_trip, layers, units, pdf, path)
+            plot("Validerings " + title_str(metric) + " på ture", dct_val_trip, layers, units, pdf, path)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
