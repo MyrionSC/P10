@@ -144,12 +144,10 @@ if(sys.argv[1] == "train"):
         "val_R2 tur": m.r2_score(grp_test["act"], grp_test["pred"])
     }
 
-    print(metrics)
-
     with open("batch_metrics.csv", "w") as f:
         w = csv.writer(f)
         w.writerow(metrics.keys())
-        w.writerows(metrics.values())
+        w.writerow(metrics.values())
 
     print("Validation results:")
     print("MAE: {:f}".format(metrics["val_MAE"]))
