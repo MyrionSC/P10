@@ -11,7 +11,7 @@ from sklearn.metrics import mean_absolute_error
 from Utils.Utilities import model_path
 import os
 import json
-
+from Utils.Configuration import Config
 
 plt.rcParams.update({'mathtext.fontset': 'stix'})
 plt.rcParams.update({'font.family': 'STIXGeneral'})
@@ -48,10 +48,15 @@ def plot_history(history, config):
             lastvalue = history[key][-1]
             delta = abs(midvalue - lastvalue)
 
-            plt.plot(range(2, len(history[key]) + 1), history[key][1:], 'b-', label="Training " + key)
-            plt.plot(range(2, len(history[key]) + 1), history['val_' + key][1:], 'r-', label="Validation " + key)
+            plt.plot(range(2, len(history[key]) + 1), history[key][1:], 'b-', label="Trænings " + key)
+            plt.plot(range(2, len(history[key]) + 1), history['val_' + key][1:], 'r-', label="Validerings " + key)
+            plt.xlabel("Epoker")
+            plt.ylabel(key.capitalize())
+            plt.title(key.capitalize() + " i løbet af træning")
+
             plt.ylim(lastvalue - delta * 0.5, lastvalue + delta * 4)
             plt.legend()
+            plt.tight_layout()
             plt.savefig(modelpath + "plots/" + config['model_name_base'] + "_" + key + ".pdf", bbox_inches='tight')
             pdf.savefig()
             plt.clf()
@@ -64,6 +69,15 @@ def load_hist(model_path):
     with open(model_path + "/history.json", "r") as f:
         history = json.load(f)
     return config, history
+
+
+def load_history(config: Config):
+    modelpath = model_path(config)
+    if not os.path.isfile(modelpath + 'history.json'):
+        return None
+    with open(modelpath + 'history.json', "r") as f:
+        hist = json.loads(f.read())
+    return hist
 
 
 def r2_count_pd(df_in):

@@ -1,10 +1,11 @@
 from Utils.Configuration import energy_config_superseg
 
-config = energy_config_superseg.copy()
-config['batch_dir'] = "FinalSupersegModel"
+batch_name = "FinalSupersegModel"
+config = energy_config_superseg
+config['batch_dir'] = batch_name + "/"
 config['model_name_base'] = "FinalSupersegModel"
 config['epochs'] = 25
-config['loss'] = 'mse'
+config['loss'] = 'mae'
 config['cells_per_layer'] = 1000
 config['hidden_layers'] = 6
 
