@@ -145,9 +145,9 @@ if(sys.argv[1] == "train"):
     }
 
     with open("batch_metrics.csv", "w") as f:
-        w = csv.DictWriter(f, metrics.keys())
-        w.writeheader()
-        w.writerows(metrics)
+        w = csv.writer(f)
+        w.writerow(metrics.keys())
+        w.writerows(metrics.values())
 
     print("Validation results:")
     print("MAE: {:f}".format(metrics["val_MAE"]))
