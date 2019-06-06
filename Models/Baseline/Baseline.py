@@ -10,7 +10,7 @@ import csv
 
 data_path = "../data/Data.csv"
 train_path = "../data/Training.csv"
-val_path = "../data/Validation.csv"
+val_path = "../data/Test.csv"
 
 def query(qry, db):
     conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(db['name'], db['user'], db['port'], db['host'], db['password']))
