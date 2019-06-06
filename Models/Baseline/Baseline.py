@@ -8,7 +8,8 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 data_path = "../data/Data.csv"
-
+train_path = "../data/Training.csv"
+val_path = "../data/Validation.csv"
 
 def query(qry, db):
     conn = psycopg2.connect("dbname='{0}' user='{1}' port='{2}' host='{3}' password='{4}'".format(db['name'], db['user'], db['port'], db['host'], db['password']))
@@ -96,13 +97,18 @@ if not (sys.argv[1] == 'train' or sys.argv[1] == 'predict' or sys.argv[1] == 'se
     quit()
 
 if not sys.argv[1] == 'segments':
-    df = pd.read_csv(data_path, header=0)
-    label = df['ev_kwh']
-    features = df[['segment_length', 'categoryid']]
+    df = pd.read_csv(train_path, header=0)
+    Y_train = df['ev_kwh']
+    X_train = df[['segment_length', 'categoryid']]
+    trip_id = df['trip_id']
+    df = pd.read_csv(val_path, header=0)
+    Y_test = df['ev_kwh']
+    X_test = df[['segment_length', 'categoryid']]
+    val_trip_id = df['trip_id']
 
 
 if(sys.argv[1] == "train"):
-    X_train, X_test, Y_train, Y_test = train_test_split(features, label, test_size=0.3, random_state=1337)
+    #X_train, X_test, Y_train, Y_test = train_test_split(features, label, test_size=0.3, random_state=1337)
 
     estimator = Baseline()
     estimator.fit(X_train, Y_train)
@@ -111,17 +117,43 @@ if(sys.argv[1] == "train"):
     train_pred = estimator.predict(X_train)
     test_pred = estimator.predict(X_test)
 
+    df_train, df_test = pd.DataFrame(), pd.DataFrame()
+    df_train["trip_id"] = trip_id
+    df_train["act"] = Y_train
+    df_train["pred"] = train_pred
+    df_test["trip_id"] = val_trip_id
+    df_test["act"] = Y_test
+    df_test["pred"] = test_pred
+
+    grp_train = df_train.groupby('trip_id').sum()
+    grp_test = df_test.groupby('trip_id').sum()
+
+    metrics = {
+        "MAE": m.mean_absolute_error(df_train["act"], df_train["pred"])
+        "RMSE": root_mean_squared_error(df_train["act"], df_train["pred"])
+        "R2": m.r2_score(df_train["act"], df_train["pred"])
+        "val_MAE": m.mean_absolute_error(df_test["act"], df_test["pred"])
+        "val_RMSE": root_mean_squared_error(df_test["act"], df_test["pred"])
+        "val_R2": m.r2_score(df_test["act"], df_test["pred"])
+        "MAE tur": m.mean_absolute_error(grp_train["act"], grp_train["pred"])
+        "RMSE tur": root_mean_squared_error(grp_train["act"], grp_train["pred"])
+        "R2 tur": m.r2_score(grp_train["act"], grp_train["pred"])
+        "val_MAE tur": m.mean_absolute_error(grp_test["act"], grp_test["pred"])
+        "val_RMSE tur": root_mean_squared_error(grp_test["act"], grp_test["pred"])
+        "val_R2 tur": m.r2_score(grp_test["act"], grp_test["pred"])
+    }
+
     print("Validation results:")
-    print("MAE: {:f}".format(m.mean_absolute_error(Y_test, test_pred)))
+    print("MAE: {:f}".format(metrics["val_MAE"]))
     print("MSE: {:f}".format(m.mean_squared_error(Y_test, test_pred)))
-    print("RMSE: {:f}".format(root_mean_squared_error(Y_test, test_pred)))
-    print("R2: {:f}".format(m.r2_score(Y_test, test_pred)))
+    print("RMSE: {:f}".format(metrics["val_RMSE"]))
+    print("R2: {:f}".format(metrics["val_R2"]))
     print("")
     print("Training results:")
-    print("MAE: {:f}".format(m.mean_absolute_error(Y_train, train_pred)))
+    print("MAE: {:f}".format(metrics["MAE"]))
     print("MSE: {:f}".format(m.mean_squared_error(Y_train, train_pred)))
-    print("RMSE: {:f}".format(root_mean_squared_error(Y_train, train_pred)))
-    print("R2: {:f}".format(m.r2_score(Y_train, train_pred)))
+    print("RMSE: {:f}".format(metrics["RMSE"]))
+    print("R2: {:f}".format(metrics["R2"]))
 
 elif(sys.argv[1] == "predict"):
     model = Baseline()
