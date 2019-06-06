@@ -6,6 +6,7 @@ import sys
 from LocalSettings import main_db
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import csv
 
 data_path = "../data/Data.csv"
 train_path = "../data/Training.csv"
@@ -129,19 +130,24 @@ if(sys.argv[1] == "train"):
     grp_test = df_test.groupby('trip_id').sum()
 
     metrics = {
-        "MAE": m.mean_absolute_error(df_train["act"], df_train["pred"])
-        "RMSE": root_mean_squared_error(df_train["act"], df_train["pred"])
-        "R2": m.r2_score(df_train["act"], df_train["pred"])
-        "val_MAE": m.mean_absolute_error(df_test["act"], df_test["pred"])
-        "val_RMSE": root_mean_squared_error(df_test["act"], df_test["pred"])
-        "val_R2": m.r2_score(df_test["act"], df_test["pred"])
-        "MAE tur": m.mean_absolute_error(grp_train["act"], grp_train["pred"])
-        "RMSE tur": root_mean_squared_error(grp_train["act"], grp_train["pred"])
-        "R2 tur": m.r2_score(grp_train["act"], grp_train["pred"])
-        "val_MAE tur": m.mean_absolute_error(grp_test["act"], grp_test["pred"])
-        "val_RMSE tur": root_mean_squared_error(grp_test["act"], grp_test["pred"])
+        "MAE": m.mean_absolute_error(df_train["act"], df_train["pred"]),
+        "RMSE": root_mean_squared_error(df_train["act"], df_train["pred"]),
+        "R2": m.r2_score(df_train["act"], df_train["pred"]),
+        "val_MAE": m.mean_absolute_error(df_test["act"], df_test["pred"]),
+        "val_RMSE": root_mean_squared_error(df_test["act"], df_test["pred"]),
+        "val_R2": m.r2_score(df_test["act"], df_test["pred"]),
+        "MAE tur": m.mean_absolute_error(grp_train["act"], grp_train["pred"]),
+        "RMSE tur": root_mean_squared_error(grp_train["act"], grp_train["pred"]),
+        "R2 tur": m.r2_score(grp_train["act"], grp_train["pred"]),
+        "val_MAE tur": m.mean_absolute_error(grp_test["act"], grp_test["pred"]),
+        "val_RMSE tur": root_mean_squared_error(grp_test["act"], grp_test["pred"]),
         "val_R2 tur": m.r2_score(grp_test["act"], grp_test["pred"])
     }
+
+    with open("batch_metrics.csv", "w") as f:
+        w = csv.DictWriter(f, metrics.keys())
+        w.writeheader()
+        w.writerows(metrics)
 
     print("Validation results:")
     print("MAE: {:f}".format(metrics["val_MAE"]))
