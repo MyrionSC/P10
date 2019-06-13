@@ -6,7 +6,8 @@ from Utils.Configuration import paths, Config, energy_config
 from Utils.Utilities import model_path, printparams, generate_upload_predictions
 from tensorflow import set_random_seed
 from numpy.random import seed
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+from Utils.Metrics import mean_absolute_percentage_error, root_mean_squared_error
 import pandas as pd
 import time
 import json
@@ -66,18 +67,18 @@ def read_training_data_sets(config: Config) -> (pd.DataFrame, pd.DataFrame, pd.D
     print("")
     print("------ Reading training data ------")
     start_time = time.time()
-    X_train, Y_train, trip_ids = read_data(train_path, config, re_scale=True)
+    X_train, Y_train, train_trip_ids = read_data(train_path, config, re_scale=True)
     print("Training data read")
     print("Time elapsed: %s" % (time.time() - start_time))
 
     print("")
     print("------ Reading validation data ------")
     start_time = time.time()
-    X_validation, Y_validation, _ = read_data(valid_path, config)
+    X_validation, Y_validation, val_trip_ids = read_data(valid_path, config)
     print("Validation data read")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
 
-    return X_train, Y_train, X_validation, Y_validation, trip_ids
+    return X_train, Y_train, X_validation, Y_validation, train_trip_ids, val_trip_ids
 
 
 def train_model(X_train: pd.DataFrame, Y_train: pd.DataFrame, X_validation: pd.DataFrame, Y_validation: pd.DataFrame, config: Config):
@@ -111,11 +112,28 @@ def calculate_results(estimator, X: pd.DataFrame, Y: pd.DataFrame, trip_ids: pd.
     trip_Y = pd.concat([Y[[config['target_feature']]], trip_ids[['trip_id']]], axis=1)\
         .groupby(['trip_id']).sum().sort_values(by=['trip_id'])
 
-    trip_r2 = r2_score(trip_Y[config['target_feature']], trip_prediction['prediction'])
+    trip_pred = trip_prediction['prediction']
+    trip_act = trip_Y[config['target_feature']]
+
+    preds = {'r2': r2,
+             'trip_r2': r2_score(trip_act, trip_pred),
+             'trip_mae': mean_absolute_error(trip_act, trip_pred),
+             'trip_rmse': root_mean_squared_error(trip_act, trip_pred),
+             'trip_mse': mean_squared_error(trip_act, trip_pred),
+             'trip_mape': mean_absolute_percentage_error(trip_act, trip_pred)}
 
     print("")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
-    return pd.DataFrame(prediction, columns=['prediction']), r2, trip_r2
+    return pd.DataFrame(prediction, columns=['prediction']), preds
+
+
+def load_history(config: Config):
+    modelpath = model_path(config)
+    if not os.path.isfile(modelpath + 'history.json'):
+        return None
+    with open(modelpath + 'history.json', "r") as f:
+        hist = json.loads(f.read())
+    return hist
 
 
 def save_history(history, config: Config):
@@ -126,31 +144,40 @@ def save_history(history, config: Config):
     if not os.path.isdir(modelpath):
         os.makedirs(modelpath)
     with open(modelpath + 'history.json', "w") as f:
-        f.write(json.dumps(history.history, indent=4))
+        f.write(json.dumps(history, indent=4))
     print("History saved")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
     return history
 
 
 def train(config: Config):
-    X_train, Y_train, X_validation, Y_validation, trip_ids = read_training_data_sets(config)
-    model, history = train_model(X_train, Y_train, X_validation, Y_validation, config)
+    #model = load_model(config)
+    #hist = load_history(config)
+    #if model is None or hist is None:
+    #    return None
 
-    train_predictions, train_r2, train_trip_r2 = calculate_results(model, X_train, Y_train, trip_ids, config)
-    val_predictions, val_r2, train_val_r2 = calculate_results(model, X_validation, Y_validation, trip_ids, config)
+    X_train, Y_train, X_validation, Y_validation, train_trip_ids, val_trip_ids = read_training_data_sets(config)
+    model, history = train_model(X_train, Y_train, X_validation, Y_validation, config)
+    hist = history.history
+
+    train_predictions, preds = calculate_results(model, X_train, Y_train, train_trip_ids, config)
+    val_predictions, val_preds = calculate_results(model, X_validation, Y_validation, val_trip_ids, config)
+    for k in val_preds.keys():
+        preds['val_' + k] = val_preds[k]
+    for k in [x for x in preds.keys() if 'val' not in x]:
+        preds['train_' + k] = preds.pop(k)
+    print(preds)
 
     print()
     print("Segments:")
-    print("Train R2: {:f}".format(train_r2) + "  -  Validation R2: {:f}".format(val_r2))
+    print("Train R2: {:f}".format(preds['train_r2']) + "  -  Validation R2: {:f}".format(preds['val_r2']))
     print("Trips:")
-    print("Train R2: {:f}".format(train_trip_r2) + "  -  Validation R2: {:f}".format(train_val_r2))
-    history.history['train_r2'] = train_r2
-    history.history['val_r2'] = val_r2
-    history.history['train_trip_r2'] = train_trip_r2
-    history.history['val_trip_r2'] = train_val_r2
-    save_history(history, config)
-    plot_history(history.history, config)
-    return history
+    print("Train R2: {:f}".format(preds['train_trip_r2']) + "  -  Validation R2: {:f}".format(preds['val_trip_r2']))
+    for k, v in preds.items():
+        hist[k] = v
+    save_history(hist, config)
+    plot_history(hist, config)
+    return hist
 
 
 def predict(config: Config, save_predictions: bool=False):
@@ -162,12 +189,12 @@ def predict(config: Config, save_predictions: bool=False):
         X.drop(['mapmatched_id'], axis=1, inplace=True)
 
     model = load_model(config)
-    predictions, r2, trip_r2 = calculate_results(model, X, Y, trip_ids, config)
+    predictions, preds = calculate_results(model, X, Y, trip_ids, config)
     print()
     print("Segments:")
-    print("R2-score: {:f}".format(r2))
+    print("R2-score: {:f}".format(preds['r2']))
     print("Trips:")
-    print("R2-score: {:f}".format(trip_r2))
+    print("R2-score: {:f}".format(preds['trip_r2']))
 
     if save_predictions:
         predictions.rename(columns={'0': 'prediction'})

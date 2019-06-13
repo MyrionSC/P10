@@ -58,9 +58,11 @@ def save_model(model: keras.models.Sequential, config: Config):
 
 
 # Load a model from disk
-def load_model(config: Config) -> keras.models.Sequential:
+def load_model(config: Config):# -> keras.models.Sequential:
     K.clear_session()
     modelpath = model_path(config)
+    if not os.path.isfile(modelpath + 'model.json'):
+        return None
     # Load model structure json
     with open(modelpath + 'model.json', 'r') as json_file:
         loaded_model_json = json_file.read()

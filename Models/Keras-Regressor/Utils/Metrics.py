@@ -1,4 +1,13 @@
 import keras.backend as K
+import numpy as np
+
+
+def root_mean_squared_error(y_true, y_pred):
+    return np.sqrt(np.mean(np.square(y_pred - y_true)))
+
+
+def mean_absolute_percentage_error(y_true, y_pred):
+    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
 
 
 # Keras backend implementation of Root Mean Squared Error
