@@ -2,12 +2,23 @@
     <div class="formsContainer">
         <p style="margin-top: 0;" class="p function-title">Model</p>
         <div class="content-box">
-            <select class="select model-select" [(ngModel)]="selectedModel">
-                <option *ngFor="let model of modelList" [ngValue]="model">{{model}}</option>
-            </select>
+
             <button type="submit" class="button calculate-button"
-                    (click)="loadModel()">
-                Load model</button>
+                    [ngClass]="{'is-active': usingSegmentModel}" (click)="useSegmentModel(true)">
+                Segment</button>
+
+            <button type="submit" class="button calculate-button"
+                    [ngClass]="{'is-active': !usingSegmentModel}" (click)="useSegmentModel(false)">
+                Supersegment</button>
+
+
+
+            <!--<select class="select model-select" [(ngModel)]="selectedModel">-->
+                <!--<option *ngFor="let model of modelList" [ngValue]="model">{{model}}</option>-->
+            <!--</select>-->
+            <!--<button type="submit" class="button calculate-button"-->
+                    <!--(click)="loadModel()">-->
+                <!--Load model</button>-->
         </div>
 
         <!-- Tabs -->

@@ -65,8 +65,10 @@ p {
     margin-bottom: 15px;
 }
 
-
-
+.button.is-active{
+    background: #ccffcc;
+}
+/*#b3ffb3*/
 
 .divider-container {
     display: flex;

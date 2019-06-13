@@ -24,7 +24,6 @@ select
 	(SELECT SUM(s) FROM UNNEST(ta.meters_segment_arr[sst.start_segmentno:sst.end_segmentno]) s) AS meters_segment,
 	(SELECT SUM(s) FROM UNNEST(ta.meters_driven_arr[sst.start_segmentno:sst.end_segmentno]) s) AS meters_driven,
 	(SELECT SUM(s) FROM UNNEST(ta.seconds_arr[sst.start_segmentno:sst.end_segmentno]) s) AS seconds,
-	NULL::double precision as incline, -- get from rmp10_all_supersegments when ready
 	(SELECT SUM(s) FROM UNNEST(ta.ev_kwh_arr[sst.start_segmentno:sst.end_segmentno]) s) * 1000 AS ev_wh,
 	(SELECT MIN(s) FROM UNNEST(ta.datekey_arr[sst.start_segmentno:sst.end_segmentno]) s) AS datekey,
 	(SELECT MIN(s) FROM UNNEST(ta.timekey_arr[sst.start_segmentno:sst.end_segmentno]) s) AS timekey,

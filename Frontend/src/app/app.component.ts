@@ -54,6 +54,7 @@ export class AppComponent implements OnInit {
     routeLoaded = false;
     tripLoaded = false;
     tripLoading = false;
+    usingSegmentModel = true;
 
     getRoute(endpoint: string) {
         const url = this.hostUrl + '/' + endpoint + '?origin=' + this.origin + '&dest=' + this.dest;
@@ -117,111 +118,6 @@ export class AppComponent implements OnInit {
         console.log(directionsString);
     }
 
-    getModels(): any {
-        const url = this.hostUrl + '/current_models';
-        this.http.get(url).subscribe((res: any) => {
-            const currentModel = res.current_model.split("/").slice(1, 3).join("/");
-            this.modelList = res.available_models;
-
-            const index = this.modelList.findIndex(item => item === currentModel);
-            if (index !== -1) {
-                this.selectedModel = res.available_models[index];
-            } else {
-                this.selectedModel = res.available_models[0];
-            }
-        });
-    }
-
-    loadModel() {
-        const strs = this.selectedModel.split('/');
-        const url = this.hostUrl + '/load_model?batch=' + strs[0] + '&model_name=' + strs[1];
-        this.http.get<any>(url).subscribe((res: any) => {
-
-            console.log(res);
-        });
-    }
-
-    estimateRoute() {
-        const url = this.hostUrl + '/predict_segs';
-
-        const data = {
-            description: 'Fra Cassiopeia til LIDL over Universitetsboulevarden',
-            from: 232175,
-            to: 193222,
-            segments: [
-                234716,
-                589460,
-                589461,
-                589462,
-                589463,
-                589464,
-                27516,
-                27517,
-                27518,
-                27512,
-                27519,
-                27520,
-                582930,
-                582931,
-                582932,
-                23817,
-                118638,
-                118639,
-                118640,
-                23843,
-                21842,
-                21843,
-                14410,
-                14411,
-                14412,
-                23833,
-                23834,
-                23836,
-                632287,
-                193301
-            ],
-            directions: [
-                "BACKWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "FORWARD",
-                "BACKWARD"
-            ]
-        };
-
-        this.http.post(url, data).subscribe((res) => {
-            console.log(res);
-            this.routeJson = res;
-            this.layers[0] = geoJSON(this.routeJson);
-            this.map.fitBounds(this.layers[0].getBounds());
-        });
-    }
-
     mapReady(mp) {
         this.map = mp;
     }
@@ -246,4 +142,8 @@ export class AppComponent implements OnInit {
         this.getModels();
     }
 
+    useSegmentModel(b: boolean) {
+        console.log("TODO: Change geojson layers");
+        this.usingSegmentModel = b;
+    }
 }
