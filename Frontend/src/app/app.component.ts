@@ -1,9 +1,10 @@
 /* tslint:disable:max-line-length */
 import {Component, Inject, OnInit} from '@angular/core';
-import {geoJSON, latLng, tileLayer} from 'leaflet';
+import {Circle, Point, geoJSON, latLng, Layer, tileLayer, layerGroup} from 'leaflet';
 import {HttpClient} from '@angular/common/http';
 import {DOCUMENT} from '@angular/platform-browser';
-import {FeatureCollection, GeoJsonObject} from 'geojson';
+import {Feature, FeatureCollection, GeoJsonObject} from 'geojson';
+import {LeafletLayerDiff} from '@asymmetrik/angular2-leaflet/dist/leaflet/layers/leaflet-layer-diff.model';
 
 @Component({
     selector: 'app-root',
@@ -68,56 +69,24 @@ export class AppComponent implements OnInit {
                 // this.tripModelAbsError = Math.abs(this.tripActualCost - this.tripModelCost);
                 // this.tripModelPercentageError = (this.tripModelAbsError / this.tripActualCost) * 100;
 
-                // style: function(feature) {
-                //     switch (feature.properties.party) {
-                //         case 'Republican': return {color: "#ff0000"};
-                //         case 'Democrat':   return {color: "#0000ff"};
-                //     }
-                // }
-
-
-
                 // TODO: Need length on segments to calculate error per meters
-                // Find max error for gradent calc
+                // Find max error for gradient calc
+                // TODO: Instead of using max error decide on some error / meter range so models can be compared
                 const maxErrorFeature = this.routeJson.features.reduce((prev, current) => {
                     return this.meterError(prev) > this.meterError(current) ? prev : current;
                 });
                 const maxError = this.meterError(maxErrorFeature);
-                console.log(maxError);
 
-
-
-
-                // actual: 51.0916672646999
-                // endpoint: 1088151
-                // id: 4338709
-                // predicted: 54.5486
-                // segmentno: 1
-                // startpoint: 85611
-                // trip_actual: 51.0916672646999
-                // trip_predicted: 54.5486
-
-                // ff0000 red
-                // 0000FF blue
-                // const hex = Number(200).toString(16);
-
+                // route layer
                 this.leafLayers[0] = geoJSON(this.routeJson, {style:
                         (feature) => {
-                            // console.log(feature);
-
                             const error = this.meterError(feature);
                             const rgbNormalisedError = ((error / maxError) * 256) - 1;
-                            console.log(rgbNormalisedError);
                             let greenHex = Number(Math.floor(255 - rgbNormalisedError)).toString(16);
                             greenHex = greenHex.length === 1 ? "0" + greenHex : greenHex;
-                            console.log(Math.floor(255 - rgbNormalisedError) + " " + greenHex);
                             let redHex = Number(Math.floor(rgbNormalisedError)).toString(16);
                             redHex = redHex.length === 1 ? "0" + redHex : redHex;
-                            console.log(Math.floor(rgbNormalisedError) + " " + redHex);
                             const hex = '#' + redHex + greenHex + '00';
-                            console.log(hex);
-                            console.log('-');
-
 
                             return {
                                 color: hex,
@@ -129,8 +98,32 @@ export class AppComponent implements OnInit {
                         }
                 });
 
+                // point layer
+                const pointsGroup = layerGroup();
+                // todo: find all overlapping latlngs
+
+                // const segmentStartEndpoints = [];
+                // for (const feature of this.routeJson.features) {
+                //     console.log(feature);
+                //     // @ts-ignore
+                //     const start = feature.geometry.coordinates[0][0];
+                //     const startlatlng = latLng(start[1], start[0]);
+                //     // damn this is ugly. I need python sugar :/
+                //     const stop = feature.geometry.coordinates[feature.geometry.coordinates.length - 1]
+                //         [feature.geometry.coordinates[feature.geometry.coordinates.length - 1].length - 1];
+                //     const stoplatlng = latLng(stop[1], stop[0]);
+                // }
 
 
+
+
+                const circle = new Circle(latLng(55.64694, 12.46025), {
+                    radius: 5,
+                    opacity: 1,
+                    color: '#444444'
+                });
+                pointsGroup.addLayer(circle);
+                this.leafLayers[1] = pointsGroup;
 
                 this.leafMap.fitBounds(this.leafLayers[0].getBounds());
                 this.tripLoaded = true;
