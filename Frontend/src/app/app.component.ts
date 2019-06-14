@@ -99,13 +99,28 @@ export class AppComponent implements OnInit {
 
                 // ff0000 red
                 // 0000FF blue
-                const hex = Number(200).toString(16);
+                // const hex = Number(200).toString(16);
 
                 this.leafLayers[0] = geoJSON(this.routeJson, {style:
                         (feature) => {
                             // console.log(feature);
+
+                            const error = this.meterError(feature);
+                            const rgbNormalisedError = ((error / maxError) * 256) - 1;
+                            console.log(rgbNormalisedError);
+                            let greenHex = Number(Math.floor(255 - rgbNormalisedError)).toString(16);
+                            greenHex = greenHex.length === 1 ? "0" + greenHex : greenHex;
+                            console.log(Math.floor(255 - rgbNormalisedError) + " " + greenHex);
+                            let redHex = Number(Math.floor(rgbNormalisedError)).toString(16);
+                            redHex = redHex.length === 1 ? "0" + redHex : redHex;
+                            console.log(Math.floor(rgbNormalisedError) + " " + redHex);
+                            const hex = '#' + redHex + greenHex + '00';
+                            console.log(hex);
+                            console.log('-');
+
+
                             return {
-                                color: "#ff7800",
+                                color: hex,
                                 weight: 5,
                                 opacity: 0.85};
                         },
