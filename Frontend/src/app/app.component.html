@@ -22,22 +22,22 @@
         </div>
 
         <!-- Tabs -->
-        <div style="margin: 0" class="tabs is-toggle is-fullwidth is-small">
-            <ul>
-                <li [ngClass]="{'is-active': estimateShown}"
-                (click)="estimateShown = true">
-                    <a>
-                        <span style="font-size: 18px;">Estimate</span>
-                    </a>
-                </li>
-                <li [ngClass]="{'is-active': !estimateShown}"
-                (click)="estimateShown = false">
-                    <a>
-                        <span style="font-size: 18px;">Route</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
+        <!--<div style="margin: 0" class="tabs is-toggle is-fullwidth is-small">-->
+            <!--<ul>-->
+                <!--<li [ngClass]="{'is-active': estimateShown}"-->
+                <!--(click)="estimateShown = true">-->
+                    <!--<a>-->
+                        <!--<span style="font-size: 18px;">Estimate</span>-->
+                    <!--</a>-->
+                <!--</li>-->
+                <!--<li [ngClass]="{'is-active': !estimateShown}"-->
+                <!--(click)="estimateShown = false">-->
+                    <!--<a>-->
+                        <!--<span style="font-size: 18px;">Route</span>-->
+                    <!--</a>-->
+                <!--</li>-->
+            <!--</ul>-->
+        <!--</div>-->
 
         <!-- Estimation -->
         <div *ngIf="estimateShown" class="content-box">
@@ -108,33 +108,33 @@
         </div>
 
         <!-- Routing -->
-        <div *ngIf="!estimateShown" class="content-box">
-            <p class="p function-p">Origin</p>
-            <input class="input location-input" placeholder="Origin segment id" [(ngModel)]="origin"><br>
-            <p class="p function-p">Destination</p>
-            <input class="input location-input" placeholder="Destination segment id" [(ngModel)]="dest"><br>
-            <button type="submit" class="button calculate-button"
-                    [ngClass]="{'is-loading': routeLoading}"
-                    (click)="getRoute('route')">
-                Find Model Route</button>
-            <button type="submit" class="button calculate-button"
-                    [ngClass]="{'is-loading': routeLoading}"
-                    (click)="getRoute('baseline')">
-                Find Baseline Route</button>
+        <!--<div *ngIf="!estimateShown" class="content-box">-->
+            <!--<p class="p function-p">Origin</p>-->
+            <!--<input class="input location-input" placeholder="Origin segment id" [(ngModel)]="origin"><br>-->
+            <!--<p class="p function-p">Destination</p>-->
+            <!--<input class="input location-input" placeholder="Destination segment id" [(ngModel)]="dest"><br>-->
+            <!--<button type="submit" class="button calculate-button"-->
+                    <!--[ngClass]="{'is-loading': routeLoading}"-->
+                    <!--(click)="getRoute('route')">-->
+                <!--Find Model Route</button>-->
+            <!--<button type="submit" class="button calculate-button"-->
+                    <!--[ngClass]="{'is-loading': routeLoading}"-->
+                    <!--(click)="getRoute('baseline')">-->
+                <!--Find Baseline Route</button>-->
 
-            <div *ngIf="routeLoaded" class="box resultsContainer">
-                <div class="navbar-divider"></div>
-                <!-- example results-->
-                <p class="results-p">
-                    <i class="mdi mdi-map-marker-distance" aria-hidden="true"></i>
-                    {{routeDistance | number:'0.0-2':'en-DK' }} km
-                </p>
-                <p class="results-p">
-                    <i class="mdi mdi-flash" aria-hidden="true"></i>
-                    {{routeEnergyCost | number:'0.0-2':'en-DK'}} kWh
-                </p>
-            </div>
-        </div>
+            <!--<div *ngIf="routeLoaded" class="box resultsContainer">-->
+                <!--<div class="navbar-divider"></div>-->
+                <!--&lt;!&ndash; example results&ndash;&gt;-->
+                <!--<p class="results-p">-->
+                    <!--<i class="mdi mdi-map-marker-distance" aria-hidden="true"></i>-->
+                    <!--{{routeDistance | number:'0.0-2':'en-DK' }} km-->
+                <!--</p>-->
+                <!--<p class="results-p">-->
+                    <!--<i class="mdi mdi-flash" aria-hidden="true"></i>-->
+                    <!--{{routeEnergyCost | number:'0.0-2':'en-DK'}} kWh-->
+                <!--</p>-->
+            <!--</div>-->
+        <!--</div>-->
     </div>
 
     <div class="mapContainer" (leafletMapReady)="mapReady($event)"

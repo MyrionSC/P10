@@ -13,10 +13,15 @@ export class AppComponent implements OnInit {
     constructor(private http: HttpClient, @Inject(DOCUMENT) private document: any) {
     }
 
-    modelList = [];
+    // available routes
+    availableTrips = [
+        '202094',
+        '1234',
+        '5678'
+    ];
+    selectedTrip = "202094";
 
-    selectedModel = '';
-
+    // leaflet stuff
     options = {};
     layers = {};
     map: any;
@@ -24,16 +29,9 @@ export class AppComponent implements OnInit {
     attribution = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors,' +
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>';
 
-    // Routing
-    origin: bigint;
-    dest: bigint;
-    routeJson: any;
-    routeDistance: number;
-    routeEnergyCost: number;
-
     // Estimation
+    routeJson: any;
     tripId: any;
-
     tripDistance: number;
     tripModelCost: number;
     tripModelAbsError: number;
@@ -43,39 +41,19 @@ export class AppComponent implements OnInit {
     tripBaselinePercentageError: number;
     tripActualCost: number;
 
-    estimationDirections: any;
-    estimationSegments: any;
-
-    hostUrl: string;
-
     // visual bools
     estimateShown = true;
-    routeLoading = false;
-    routeLoaded = false;
     tripLoaded = false;
     tripLoading = false;
     usingSegmentModel = true;
 
-    getRoute(endpoint: string) {
-        const url = this.hostUrl + '/' + endpoint + '?origin=' + this.origin + '&dest=' + this.dest;
-        console.log('GET: ' + url);
-        this.routeLoading = true;
-        this.http.get(url).subscribe((res: any) => {
-            this.routeJson = res;
-            this.routeEnergyCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_cost - this.routeJson.features.length;
-            this.routeDistance = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_length / 1000;
-            this.layers[0] = geoJSON(this.routeJson);
-            this.map.fitBounds(this.layers[0].getBounds());
-            this.routeLoaded = true;
-            this.routeLoading = false;
-
-            this.printSegsDirection(res);
-        });
-    }
-
     getTrip() {
-        const url = this.hostUrl + '/predict?trip=' + this.tripId;
+        const model = this.usingSegmentModel ? 'segment' : 'supersegment';
+        const url = './assets/trip' + this.selectedTrip + '-' + model +
+            '.json';
+        // return this.http.get("./assets/mydata.json");
         console.log('GET: ' + url);
+
         this.tripLoading = true;
         this.http.get(url).subscribe(
             (res: any) => {
@@ -96,8 +74,6 @@ export class AppComponent implements OnInit {
                 this.map.fitBounds(this.layers[0].getBounds());
                 this.tripLoaded = true;
                 this.tripLoading = false;
-
-                this.printSegsDirection(res);
             },
             error1 => {
                 this.tripLoaded = false;
@@ -107,27 +83,11 @@ export class AppComponent implements OnInit {
         );
     }
 
-    private printSegsDirection(res: any) {
-        const segmentKeys = res.features.map(seg => seg.properties.segmentkey);
-        const segmentKeysString = segmentKeys.join(', ');
-        console.log('Segmentkeys of trip:');
-        console.log(segmentKeysString);
-        const directions = res.features.map(seg => seg.properties.direction);
-        const directionsString = directions.join(', ');
-        console.log('Directions of trip:');
-        console.log(directionsString);
-    }
-
     mapReady(mp) {
         this.map = mp;
     }
 
     ngOnInit(): void {
-        this.hostUrl = 'http://172.25.11.191:5000';
-        // this.hostUrl = this.document.location.hostname === '172.25.11.191' ?
-        //     this.hostUrl = 'http://172.25.11.191:5000' :
-        //     this.hostUrl = 'http://localhost:5000';
-
         this.options = {
             layers: [
                 tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -139,7 +99,6 @@ export class AppComponent implements OnInit {
             center: this.aalLatLong
         };
         this.layers = [];
-        this.getModels();
     }
 
     useSegmentModel(b: boolean) {
