@@ -31,7 +31,6 @@ export class AppComponent implements OnInit {
 
     // Estimation
     routeJson: any;
-    tripId: any;
     tripDistance: number;
     tripModelCost: number;
     tripModelAbsError: number;
@@ -47,11 +46,9 @@ export class AppComponent implements OnInit {
     tripLoading = false;
     usingSegmentModel = true;
 
-    getTrip() {
+    showTrip() {
         const model = this.usingSegmentModel ? 'segment' : 'supersegment';
-        const url = './assets/trip' + this.selectedTrip + '-' + model +
-            '.json';
-        // return this.http.get("./assets/mydata.json");
+        const url = './assets/trip' + this.selectedTrip + '-' + model + '.json';
         console.log('GET: ' + url);
 
         this.tripLoading = true;
@@ -85,6 +82,7 @@ export class AppComponent implements OnInit {
 
     mapReady(mp) {
         this.map = mp;
+        this.showTrip();
     }
 
     ngOnInit(): void {
@@ -102,7 +100,7 @@ export class AppComponent implements OnInit {
     }
 
     useSegmentModel(b: boolean) {
-        console.log("TODO: Change geojson layers");
         this.usingSegmentModel = b;
+        this.showTrip();
     }
 }

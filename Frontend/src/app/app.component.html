@@ -10,65 +10,17 @@
             <button type="submit" class="button calculate-button"
                     [ngClass]="{'is-active': !usingSegmentModel}" (click)="useSegmentModel(false)">
                 Supersegment</button>
-
-
-
-            <!--<select class="select model-select" [(ngModel)]="selectedModel">-->
-                <!--<option *ngFor="let model of modelList" [ngValue]="model">{{model}}</option>-->
-            <!--</select>-->
-            <!--<button type="submit" class="button calculate-button"-->
-                    <!--(click)="loadModel()">-->
-                <!--Load model</button>-->
         </div>
 
-        <!-- Tabs -->
-        <!--<div style="margin: 0" class="tabs is-toggle is-fullwidth is-small">-->
-            <!--<ul>-->
-                <!--<li [ngClass]="{'is-active': estimateShown}"-->
-                <!--(click)="estimateShown = true">-->
-                    <!--<a>-->
-                        <!--<span style="font-size: 18px;">Estimate</span>-->
-                    <!--</a>-->
-                <!--</li>-->
-                <!--<li [ngClass]="{'is-active': !estimateShown}"-->
-                <!--(click)="estimateShown = false">-->
-                    <!--<a>-->
-                        <!--<span style="font-size: 18px;">Route</span>-->
-                    <!--</a>-->
-                <!--</li>-->
-            <!--</ul>-->
-        <!--</div>-->
 
-        <!-- Estimation -->
+        <p style="margin-top: 0;" class="p function-title">Rute</p>
         <div *ngIf="estimateShown" class="content-box">
-
-            <p class="p function-p">Known Trip</p>
-            <input autofocus class="input location-input" placeholder="Known trip id" [(ngModel)]="tripId"><br>
-
-            <button type="submit" class="button calculate-button"
-                    [ngClass]="{'is-loading': tripLoading}"
-                    (click)="getTrip()">
-                Estimate trip</button>
-
-            <!--<div class="divider-container">-->
-                <!--<div class="is-divider divider-with-text"></div>-->
-                <!--<span class="divider-text">OR</span>-->
-                <!--<div class="is-divider divider-with-text"></div>-->
-            <!--</div>-->
-
-            <!--<p class="p function-p">Segments</p>-->
-            <!--<input class="input location-input" placeholder="[1, 2, ...]" [(ngModel)]="estimationSegments"><br>-->
-
-            <!--<p class="p function-p">Directions</p>-->
-            <!--<input class="input location-input" placeholder="['FORWARDS', ...]" [(ngModel)]="estimationDirections"><br>-->
-
-            <button type="submit" class="button calculate-button"
-                    [ngClass]="{'is-loading': tripLoading}"
-                    (click)="estimateRoute()">
-                Estimate Segments</button>
+            <select class="select model-select" [(ngModel)]="selectedTrip" (change)="showTrip()">
+                <option *ngFor="let trip of availableTrips" [ngValue]="trip">{{trip}}</option>
+            </select>
 
             <div *ngIf="tripLoaded" class="box resultsContainer">
-                <div class="navbar-divider"></div>
+                <!--<div class="navbar-divider"></div>-->
                 <p class="results-p">
                     <i class="mdi mdi-map-marker-distance" aria-hidden="true"></i>
                     {{tripDistance | number:'0.0-5':'en-DK' }} km
@@ -106,35 +58,6 @@
                 </p>
             </div>
         </div>
-
-        <!-- Routing -->
-        <!--<div *ngIf="!estimateShown" class="content-box">-->
-            <!--<p class="p function-p">Origin</p>-->
-            <!--<input class="input location-input" placeholder="Origin segment id" [(ngModel)]="origin"><br>-->
-            <!--<p class="p function-p">Destination</p>-->
-            <!--<input class="input location-input" placeholder="Destination segment id" [(ngModel)]="dest"><br>-->
-            <!--<button type="submit" class="button calculate-button"-->
-                    <!--[ngClass]="{'is-loading': routeLoading}"-->
-                    <!--(click)="getRoute('route')">-->
-                <!--Find Model Route</button>-->
-            <!--<button type="submit" class="button calculate-button"-->
-                    <!--[ngClass]="{'is-loading': routeLoading}"-->
-                    <!--(click)="getRoute('baseline')">-->
-                <!--Find Baseline Route</button>-->
-
-            <!--<div *ngIf="routeLoaded" class="box resultsContainer">-->
-                <!--<div class="navbar-divider"></div>-->
-                <!--&lt;!&ndash; example results&ndash;&gt;-->
-                <!--<p class="results-p">-->
-                    <!--<i class="mdi mdi-map-marker-distance" aria-hidden="true"></i>-->
-                    <!--{{routeDistance | number:'0.0-2':'en-DK' }} km-->
-                <!--</p>-->
-                <!--<p class="results-p">-->
-                    <!--<i class="mdi mdi-flash" aria-hidden="true"></i>-->
-                    <!--{{routeEnergyCost | number:'0.0-2':'en-DK'}} kWh-->
-                <!--</p>-->
-            <!--</div>-->
-        <!--</div>-->
     </div>
 
     <div class="mapContainer" (leafletMapReady)="mapReady($event)"
