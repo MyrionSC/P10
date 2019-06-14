@@ -25,12 +25,13 @@
                     <i class="mdi mdi-map-marker-distance" aria-hidden="true"></i>
                     {{tripDistance | number:'0.0-5':'en-DK' }} km
                 </p>
-                <p>Actual</p>
+                <p>Faktisk gennemsnit</p>
                 <p class="results-p">
                     <i class="mdi mdi-flash" aria-hidden="true"></i>
                     {{tripActualCost | number:'0.0-5':'en-DK'}} kWh
                 </p>
-                <p>Model</p>
+
+                <p>Supersegment</p>
                 <p class="results-p">
                     <i class="mdi mdi-flash" aria-hidden="true"></i>
                     {{tripModelCost | number:'0.0-5':'en-DK'}} kWh
@@ -43,6 +44,21 @@
                     <i class="mdi mdi-block-helper" aria-hidden="true"></i>
                     {{tripModelPercentageError | number:'0.0-2':'en-DK'}} %
                 </p>
+
+                <p>Segment</p>
+                <p class="results-p">
+                    <i class="mdi mdi-flash" aria-hidden="true"></i>
+                    {{tripModelCost | number:'0.0-5':'en-DK'}} kWh
+                </p>
+                <p class="results-p">
+                    <i class="mdi mdi-block-helper" aria-hidden="true"></i>
+                    {{tripModelAbsError | number:'0.0-5':'en-DK'}} kWh
+                </p>
+                <p class="results-p">
+                    <i class="mdi mdi-block-helper" aria-hidden="true"></i>
+                    {{tripModelPercentageError | number:'0.0-2':'en-DK'}} %
+                </p>
+
                 <p>Baseline</p>
                 <p class="results-p">
                     <i class="mdi mdi-flash" aria-hidden="true"></i>
@@ -62,8 +78,8 @@
 
     <div class="mapContainer" (leafletMapReady)="mapReady($event)"
          leaflet
-         [leafletOptions]="options"
-         [leafletLayers]="layers">
+         [leafletOptions]="leafOptions"
+         [leafletLayers]="leafLayers">
     </div>
 </div>
 

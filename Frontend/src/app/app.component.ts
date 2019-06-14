@@ -3,6 +3,7 @@ import {Component, Inject, OnInit} from '@angular/core';
 import {geoJSON, latLng, tileLayer} from 'leaflet';
 import {HttpClient} from '@angular/common/http';
 import {DOCUMENT} from '@angular/platform-browser';
+import {FeatureCollection, GeoJsonObject} from 'geojson';
 
 @Component({
     selector: 'app-root',
@@ -22,15 +23,15 @@ export class AppComponent implements OnInit {
     selectedTrip = "202094";
 
     // leaflet stuff
-    options = {};
-    layers = {};
-    map: any;
+    leafOptions = {};
+    leafLayers = [];
+    leafMap: any;
     aalLatLong = latLng(57.046707, 9.935932);
     attribution = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors,' +
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>';
 
     // Estimation
-    routeJson: any;
+    routeJson: FeatureCollection;
     tripDistance: number;
     tripModelCost: number;
     tripModelAbsError: number;
@@ -53,22 +54,70 @@ export class AppComponent implements OnInit {
 
         this.tripLoading = true;
         this.http.get(url).subscribe(
-            (res: any) => {
+            (res: FeatureCollection) => {
                 this.routeJson = res;
                 console.log(res);
 
-                this.tripDistance = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_length / 1000;
-                this.tripActualCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_actual;
-                this.tripModelCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_cost;
-                this.tripBaselineCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_baseline;
+                // this.tripDistance = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_length / 1000;
+                // this.tripActualCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_actual;
+                // this.tripModelCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_cost;
+                // this.tripBaselineCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_baseline;
+                //
+                // this.tripBaselineAbsError = Math.abs(this.tripActualCost - this.tripBaselineCost);
+                // this.tripBaselinePercentageError = (this.tripBaselineAbsError / this.tripActualCost) * 100;
+                // this.tripModelAbsError = Math.abs(this.tripActualCost - this.tripModelCost);
+                // this.tripModelPercentageError = (this.tripModelAbsError / this.tripActualCost) * 100;
 
-                this.tripBaselineAbsError = Math.abs(this.tripActualCost - this.tripBaselineCost);
-                this.tripBaselinePercentageError = (this.tripBaselineAbsError / this.tripActualCost) * 100;
-                this.tripModelAbsError = Math.abs(this.tripActualCost - this.tripModelCost);
-                this.tripModelPercentageError = (this.tripModelAbsError / this.tripActualCost) * 100;
+                // style: function(feature) {
+                //     switch (feature.properties.party) {
+                //         case 'Republican': return {color: "#ff0000"};
+                //         case 'Democrat':   return {color: "#0000ff"};
+                //     }
+                // }
 
-                this.layers[0] = geoJSON(this.routeJson);
-                this.map.fitBounds(this.layers[0].getBounds());
+
+
+                // TODO: Need length on segments to calculate error per meters
+                // Find max error for gradent calc
+                const maxErrorFeature = this.routeJson.features.reduce((prev, current) => {
+                    return this.meterError(prev) > this.meterError(current) ? prev : current;
+                });
+                const maxError = this.meterError(maxErrorFeature);
+                console.log(maxError);
+
+
+
+
+                // actual: 51.0916672646999
+                // endpoint: 1088151
+                // id: 4338709
+                // predicted: 54.5486
+                // segmentno: 1
+                // startpoint: 85611
+                // trip_actual: 51.0916672646999
+                // trip_predicted: 54.5486
+
+                // ff0000 red
+                // 0000FF blue
+                const hex = Number(200).toString(16);
+
+                this.leafLayers[0] = geoJSON(this.routeJson, {style:
+                        (feature) => {
+                            // console.log(feature);
+                            return {
+                                color: "#ff7800",
+                                weight: 5,
+                                opacity: 0.85};
+                        },
+                        onEachFeature: (feature, layer) => {
+                            layer.bindPopup('Fejl per meter: ' + this.meterError(feature));
+                        }
+                });
+
+
+
+
+                this.leafMap.fitBounds(this.leafLayers[0].getBounds());
                 this.tripLoaded = true;
                 this.tripLoading = false;
             },
@@ -81,12 +130,12 @@ export class AppComponent implements OnInit {
     }
 
     mapReady(mp) {
-        this.map = mp;
+        this.leafMap = mp;
         this.showTrip();
     }
 
     ngOnInit(): void {
-        this.options = {
+        this.leafOptions = {
             layers: [
                 tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 18,
@@ -96,7 +145,11 @@ export class AppComponent implements OnInit {
             zoom: 13,
             center: this.aalLatLong
         };
-        this.layers = [];
+    }
+
+    meterError(feature: any) {
+        // TODO: When segment distance is available, use it here
+        return Math.abs(feature.properties.predicted - feature.properties.actual);
     }
 
     useSegmentModel(b: boolean) {
