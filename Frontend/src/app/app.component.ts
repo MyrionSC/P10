@@ -48,13 +48,16 @@ export class AppComponent implements OnInit {
     tripLoaded = false;
     tripLoading = false;
     usingSegmentModel = true;
+    pointSeparation = false;
 
-    showTrip() {
+    loadTrip(scrollTo: boolean) {
         const model = this.usingSegmentModel ? 'segment' : 'supersegment';
         const url = './assets/trip' + this.selectedTrip + '-' + model + '.json';
         console.log('GET: ' + url);
 
         this.tripLoading = true;
+        this.leafLayers = [];
+
         this.http.get(url).subscribe(
             (res: FeatureCollection) => {
                 this.routeJson = res;
@@ -105,37 +108,40 @@ export class AppComponent implements OnInit {
                 // unfortunately we cannot just take first and last LatLng from each feature because the individual segment's
                     // direction is not always right. Instead we remove all duplicates from merged list of linestrings coords
                     // and take first and last of these.
-                const pointsGroup = layerGroup();
-                for (const feature of this.routeJson.features) {
-                    // flatten array and convert to LatLngs
-                    // @ts-ignore
-                    let merged: Array<any> = Array.prototype.concat.apply([], feature.geometry.coordinates);
-                    merged = merged.map((item) => {
-                        return new LatLng(item[1], item[0]);
-                    });
-                    // take only ones where no duplicate
-                    merged = merged.filter((item: LatLng) => {
-                        return merged.findIndex((item2: LatLng) => {
-                            return item !== item2 && item.equals(item2);
-                        }) === -1;
-                    });
+                if (this.pointSeparation) {
+                    const pointsGroup = layerGroup();
+                    for (const feature of this.routeJson.features) {
+                        // flatten array and convert to LatLngs
+                        // @ts-ignore
+                        let merged: Array<any> = Array.prototype.concat.apply([], feature.geometry.coordinates);
+                        merged = merged.map((item) => {
+                            return new LatLng(item[1], item[0]);
+                        });
+                        // take only ones where no duplicate
+                        merged = merged.filter((item: LatLng) => {
+                            return merged.findIndex((item2: LatLng) => {
+                                return item !== item2 && item.equals(item2);
+                            }) === -1;
+                        });
 
-                    // The first and last are the ones we want
-                    const startcircle = new Circle(merged[0], {
-                        radius: 5,
-                        color: '#444444'
-                    });
-                    pointsGroup.addLayer(startcircle);
-                    const stopcircle = new Circle(merged[merged.length - 1], {
-                        radius: 5,
-                        color: '#444444'
-                    });
-                    pointsGroup.addLayer(stopcircle);
+                        // The first and last are the ones we want
+                        const startcircle = new Circle(merged[0], {
+                            radius: 3,
+                            color: '#444444'
+                        });
+                        pointsGroup.addLayer(startcircle);
+                        const stopcircle = new Circle(merged[merged.length - 1], {
+                            radius: 3,
+                            color: '#444444'
+                        });
+                        pointsGroup.addLayer(stopcircle);
+                    }
+                    this.leafLayers[1] = pointsGroup;
                 }
-                this.leafLayers[1] = pointsGroup;
 
-                // scroll to layers
-                this.leafMap.fitBounds(this.leafLayers[0].getBounds());
+                if (scrollTo) {
+                    this.scrollToTrip();
+                }
                 this.tripLoaded = true;
                 this.tripLoading = false;
             },
@@ -147,9 +153,21 @@ export class AppComponent implements OnInit {
         );
     }
 
+    changeTrip() {
+        this.loadTrip(true);
+        // this.scrollToTrip();
+
+    }
+
+    scrollToTrip() {
+        this.leafMap.fitBounds(this.leafLayers[0].getBounds());
+    }
+
     mapReady(mp) {
         this.leafMap = mp;
-        this.showTrip();
+        this.loadTrip(true);
+        // scroll to layers
+        // this.scrollToTrip();
     }
 
     ngOnInit(): void {
@@ -172,6 +190,11 @@ export class AppComponent implements OnInit {
 
     useSegmentModel(b: boolean) {
         this.usingSegmentModel = b;
-        this.showTrip();
+        this.loadTrip(false);
+    }
+
+    usePointSeparation() {
+        this.pointSeparation = !this.pointSeparation;
+        this.loadTrip(false);
     }
 }

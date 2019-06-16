@@ -15,9 +15,13 @@
 
         <p style="margin-top: 0;" class="p function-title">Rute</p>
         <div *ngIf="estimateShown" class="content-box">
-            <select class="select model-select" [(ngModel)]="selectedTrip" (change)="showTrip()">
+            <select class="select model-select" [(ngModel)]="selectedTrip" (change)="loadTrip()">
                 <option *ngFor="let trip of availableTrips" [ngValue]="trip">{{trip}}</option>
             </select>
+
+            <button type="submit" class="button calculate-button"
+                    [ngClass]="{'is-active': pointSeparation}" (click)="usePointSeparation()">
+                Punkt separation</button>
 
             <div *ngIf="tripLoaded" class="box resultsContainer">
                 <!--<div class="navbar-divider"></div>-->
