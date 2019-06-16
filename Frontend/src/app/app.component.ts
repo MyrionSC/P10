@@ -1,10 +1,11 @@
 /* tslint:disable:max-line-length */
 import {Component, Inject, OnInit} from '@angular/core';
-import {Circle, Point, geoJSON, latLng, Layer, tileLayer, layerGroup} from 'leaflet';
+import {Circle, Point, geoJSON, latLng, Layer, tileLayer, layerGroup, LatLng} from 'leaflet';
 import {HttpClient} from '@angular/common/http';
 import {DOCUMENT} from '@angular/platform-browser';
 import {Feature, FeatureCollection, GeoJsonObject} from 'geojson';
 import {LeafletLayerDiff} from '@asymmetrik/angular2-leaflet/dist/leaflet/layers/leaflet-layer-diff.model';
+import {merge} from 'rxjs';
 
 @Component({
     selector: 'app-root',
@@ -94,37 +95,46 @@ export class AppComponent implements OnInit {
                                 opacity: 0.85};
                         },
                         onEachFeature: (feature, layer) => {
-                            layer.bindPopup('Fejl per meter: ' + this.meterError(feature));
+                            layer.bindPopup(feature.properties.id + ': Fejl per meter: ' + this.meterError(feature));
                         }
                 });
 
+
+
                 // point layer
+                // unfortunately we cannot just take first and last LatLng from each feature because the individual segment's
+                    // direction is not always right. Instead we remove all duplicates from merged list of linestrings coords
+                    // and take first and last of these.
                 const pointsGroup = layerGroup();
-                // todo: find all overlapping latlngs
+                for (const feature of this.routeJson.features) {
+                    // flatten array and convert to LatLngs
+                    // @ts-ignore
+                    let merged: Array<any> = Array.prototype.concat.apply([], feature.geometry.coordinates);
+                    merged = merged.map((item) => {
+                        return new LatLng(item[1], item[0]);
+                    });
+                    // take only ones where no duplicate
+                    merged = merged.filter((item: LatLng) => {
+                        return merged.findIndex((item2: LatLng) => {
+                            return item !== item2 && item.equals(item2);
+                        }) === -1;
+                    });
 
-                // const segmentStartEndpoints = [];
-                // for (const feature of this.routeJson.features) {
-                //     console.log(feature);
-                //     // @ts-ignore
-                //     const start = feature.geometry.coordinates[0][0];
-                //     const startlatlng = latLng(start[1], start[0]);
-                //     // damn this is ugly. I need python sugar :/
-                //     const stop = feature.geometry.coordinates[feature.geometry.coordinates.length - 1]
-                //         [feature.geometry.coordinates[feature.geometry.coordinates.length - 1].length - 1];
-                //     const stoplatlng = latLng(stop[1], stop[0]);
-                // }
-
-
-
-
-                const circle = new Circle(latLng(55.64694, 12.46025), {
-                    radius: 5,
-                    opacity: 1,
-                    color: '#444444'
-                });
-                pointsGroup.addLayer(circle);
+                    // The first and last are the ones we want
+                    const startcircle = new Circle(merged[0], {
+                        radius: 5,
+                        color: '#444444'
+                    });
+                    pointsGroup.addLayer(startcircle);
+                    const stopcircle = new Circle(merged[merged.length - 1], {
+                        radius: 5,
+                        color: '#444444'
+                    });
+                    pointsGroup.addLayer(stopcircle);
+                }
                 this.leafLayers[1] = pointsGroup;
 
+                // scroll to layers
                 this.leafMap.fitBounds(this.leafLayers[0].getBounds());
                 this.tripLoaded = true;
                 this.tripLoading = false;
