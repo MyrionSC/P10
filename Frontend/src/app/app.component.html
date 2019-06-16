@@ -4,12 +4,17 @@
         <div class="content-box">
 
             <button type="submit" class="button calculate-button"
-                    [ngClass]="{'is-active': usingSegmentModel}" (click)="useSegmentModel(true)">
-                Segment</button>
-
-            <button type="submit" class="button calculate-button"
-                    [ngClass]="{'is-active': !usingSegmentModel}" (click)="useSegmentModel(false)">
+                    [ngClass]="{'is-active': usingModel === 'supersegment'}" (click)="changeModel('supersegment')">
                 Supersegment</button>
+            <button type="submit" class="button calculate-button"
+                    [ngClass]="{'is-active': usingModel === 'segment-emb'}" (click)="changeModel('segment-emb')">
+                Segment Emb</button>
+            <button type="submit" class="button calculate-button"
+                    [ngClass]="{'is-active': usingModel === 'segment'}" (click)="changeModel('segment')">
+                Segment</button>
+            <button type="submit" class="button calculate-button"
+                    [ngClass]="{'is-active': usingModel === 'baseline'}" (click)="changeModel('baseline')">
+                Baseline</button>
         </div>
 
 
@@ -27,55 +32,60 @@
                 <!--<div class="navbar-divider"></div>-->
                 <p class="results-p">
                     <i class="mdi mdi-map-marker-distance" aria-hidden="true"></i>
-                    {{tripDistance | number:'0.0-5':'en-DK' }} km
+                    {{tripDistance | number:'0.0-2':'en-DK' }} km
                 </p>
-                <p>Faktisk gennemsnit</p>
                 <p class="results-p">
+                    <!--<i class="mdi mdi-map-marker-distance" aria-hidden="true"></i>-->
+                    # {{tripSegmentsNum | number:'0.0-0':'en-DK' }}
+                </p>
+                <p class="results-p">
+                    Faktisk
                     <i class="mdi mdi-flash" aria-hidden="true"></i>
-                    {{tripActualCost | number:'0.0-5':'en-DK'}} kWh
+                    {{tripActualCost | number:'0.0-2':'en-DK'}} Wh
                 </p>
 
-                <p>Supersegment</p>
+                <!--<p>Supersegment</p>-->
                 <p class="results-p">
+                    Estimeret
                     <i class="mdi mdi-flash" aria-hidden="true"></i>
-                    {{tripModelCost | number:'0.0-5':'en-DK'}} kWh
+                    {{tripPredictedCost | number:'0.0-2':'en-DK'}} Wh
                 </p>
                 <p class="results-p">
                     <i class="mdi mdi-block-helper" aria-hidden="true"></i>
-                    {{tripModelAbsError | number:'0.0-5':'en-DK'}} kWh
+                    {{tripMAError | number:'0.0-2':'en-DK'}} Wh
                 </p>
                 <p class="results-p">
                     <i class="mdi mdi-block-helper" aria-hidden="true"></i>
-                    {{tripModelPercentageError | number:'0.0-2':'en-DK'}} %
+                    {{tripErrorPercentage | number:'0.0-2':'en-DK'}} %
                 </p>
 
-                <p>Segment</p>
-                <p class="results-p">
-                    <i class="mdi mdi-flash" aria-hidden="true"></i>
-                    {{tripModelCost | number:'0.0-5':'en-DK'}} kWh
-                </p>
-                <p class="results-p">
-                    <i class="mdi mdi-block-helper" aria-hidden="true"></i>
-                    {{tripModelAbsError | number:'0.0-5':'en-DK'}} kWh
-                </p>
-                <p class="results-p">
-                    <i class="mdi mdi-block-helper" aria-hidden="true"></i>
-                    {{tripModelPercentageError | number:'0.0-2':'en-DK'}} %
-                </p>
+                <!--<p>Segment</p>-->
+                <!--<p class="results-p">-->
+                    <!--<i class="mdi mdi-flash" aria-hidden="true"></i>-->
+                    <!--{{tripModelCost | number:'0.0-5':'en-DK'}} kWh-->
+                <!--</p>-->
+                <!--<p class="results-p">-->
+                    <!--<i class="mdi mdi-block-helper" aria-hidden="true"></i>-->
+                    <!--{{tripModelAbsError | number:'0.0-5':'en-DK'}} kWh-->
+                <!--</p>-->
+                <!--<p class="results-p">-->
+                    <!--<i class="mdi mdi-block-helper" aria-hidden="true"></i>-->
+                    <!--{{tripModelPercentageError | number:'0.0-2':'en-DK'}} %-->
+                <!--</p>-->
 
-                <p>Baseline</p>
-                <p class="results-p">
-                    <i class="mdi mdi-flash" aria-hidden="true"></i>
-                    {{tripBaselineCost | number:'0.0-5':'en-DK'}} kWh
-                </p>
-                <p class="results-p">
-                    <i class="mdi mdi-block-helper" aria-hidden="true"></i>
-                    {{tripBaselineAbsError | number:'0.0-5':'en-DK'}} kWh
-                </p>
-                <p class="results-p">
-                    <i class="mdi mdi-block-helper" aria-hidden="true"></i>
-                    {{tripBaselinePercentageError | number:'0.0-2':'en-DK'}} %
-                </p>
+                <!--<p>Baseline</p>-->
+                <!--<p class="results-p">-->
+                    <!--<i class="mdi mdi-flash" aria-hidden="true"></i>-->
+                    <!--{{tripBaselineCost | number:'0.0-5':'en-DK'}} kWh-->
+                <!--</p>-->
+                <!--<p class="results-p">-->
+                    <!--<i class="mdi mdi-block-helper" aria-hidden="true"></i>-->
+                    <!--{{tripBaselineAbsError | number:'0.0-5':'en-DK'}} kWh-->
+                <!--</p>-->
+                <!--<p class="results-p">-->
+                    <!--<i class="mdi mdi-block-helper" aria-hidden="true"></i>-->
+                    <!--{{tripBaselinePercentageError | number:'0.0-2':'en-DK'}} %-->
+                <!--</p>-->
             </div>
         </div>
     </div>

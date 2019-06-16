@@ -23,6 +23,7 @@ export class AppComponent implements OnInit {
         '5678'
     ];
     selectedTrip = "202094";
+    usingModel = "supersegment";
 
     // leaflet stuff
     leafOptions = {};
@@ -31,28 +32,26 @@ export class AppComponent implements OnInit {
     aalLatLong = latLng(57.046707, 9.935932);
     attribution = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors,' +
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>';
-
-    // Estimation
     routeJson: FeatureCollection;
+
+    // metrics
     tripDistance: number;
-    tripModelCost: number;
-    tripModelAbsError: number;
-    tripModelPercentageError: number;
-    tripBaselineCost: number;
-    tripBaselineAbsError: number;
-    tripBaselinePercentageError: number;
+    tripSegmentsNum: number;
     tripActualCost: number;
+    tripPredictedCost: number;
+    tripMAError: number;
+    tripErrorPercentage: number;
 
     // visual bools
     estimateShown = true;
     tripLoaded = false;
     tripLoading = false;
-    usingSegmentModel = true;
     pointSeparation = false;
 
     loadTrip(scrollTo: boolean) {
-        const model = this.usingSegmentModel ? 'segment' : 'supersegment';
-        const url = './assets/trip' + this.selectedTrip + '-' + model + '.json';
+        // const model = this.usingSegmentModel ? 'segment' : 'supersegment';
+
+        const url = './assets/trip' + this.selectedTrip + '-' + this.usingModel + '.json';
         console.log('GET: ' + url);
 
         this.tripLoading = true;
@@ -62,6 +61,14 @@ export class AppComponent implements OnInit {
             (res: FeatureCollection) => {
                 this.routeJson = res;
                 console.log(res);
+
+                // Vis: længde, antal segmenter, aktuelt energiforbrug, estimeret energiforbrug, fejl, fejl i procent
+                this.tripDistance = this.routeJson.features.reduce((total, item) => total + item.properties.length, 0) / 1000;
+                this.tripSegmentsNum = this.routeJson.features.length;
+                this.tripActualCost = this.routeJson.features.reduce((total, item) => total + item.properties.actual, 0);
+                this.tripPredictedCost = this.routeJson.features.reduce((total, item) => total + item.properties.predicted, 0);
+                this.tripMAError = Math.abs(this.tripActualCost - this.tripPredictedCost);
+                this.tripErrorPercentage = (this.tripMAError / this.tripActualCost) * 100;
 
                 // this.tripDistance = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_length / 1000;
                 // this.tripActualCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_actual;
@@ -111,26 +118,31 @@ export class AppComponent implements OnInit {
                 if (this.pointSeparation) {
                     const pointsGroup = layerGroup();
                     for (const feature of this.routeJson.features) {
-                        // flatten array and convert to LatLngs
+
                         // @ts-ignore
-                        let merged: Array<any> = Array.prototype.concat.apply([], feature.geometry.coordinates);
-                        merged = merged.map((item) => {
+                        let coords = feature.geometry.coordinates;
+                        if (feature.geometry.type === 'MultiLineString') {
+                            // flatten array to LineString syntax
+                            coords = Array.prototype.concat.apply([], feature.geometry.coordinates);
+                        }
+                        coords = coords.map((item) => {
                             return new LatLng(item[1], item[0]);
                         });
+
                         // take only ones where no duplicate
-                        merged = merged.filter((item: LatLng) => {
-                            return merged.findIndex((item2: LatLng) => {
+                        coords = coords.filter((item: LatLng) => {
+                            return coords.findIndex((item2: LatLng) => {
                                 return item !== item2 && item.equals(item2);
                             }) === -1;
                         });
 
                         // The first and last are the ones we want
-                        const startcircle = new Circle(merged[0], {
+                        const startcircle = new Circle(coords[0], {
                             radius: 3,
                             color: '#444444'
                         });
                         pointsGroup.addLayer(startcircle);
-                        const stopcircle = new Circle(merged[merged.length - 1], {
+                        const stopcircle = new Circle(coords[coords.length - 1], {
                             radius: 3,
                             color: '#444444'
                         });
@@ -153,10 +165,14 @@ export class AppComponent implements OnInit {
         );
     }
 
+    changeModel(model: string) {
+        this.usingModel = model;
+        this.loadTrip(false);
+    }
+
     changeTrip() {
         this.loadTrip(true);
         // this.scrollToTrip();
-
     }
 
     scrollToTrip() {
@@ -186,11 +202,6 @@ export class AppComponent implements OnInit {
     meterError(feature: any) {
         // TODO: When segment distance is available, use it here
         return Math.abs(feature.properties.predicted - feature.properties.actual);
-    }
-
-    useSegmentModel(b: boolean) {
-        this.usingSegmentModel = b;
-        this.loadTrip(false);
     }
 
     usePointSeparation() {
