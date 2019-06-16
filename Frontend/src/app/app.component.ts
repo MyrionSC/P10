@@ -40,6 +40,7 @@ export class AppComponent implements OnInit {
     tripActualCost: number;
     tripPredictedCost: number;
     tripMAError: number;
+    tripMAMError: number;
     tripErrorPercentage: number;
 
     // visual bools
@@ -68,31 +69,25 @@ export class AppComponent implements OnInit {
                 this.tripActualCost = this.routeJson.features.reduce((total, item) => total + item.properties.actual, 0);
                 this.tripPredictedCost = this.routeJson.features.reduce((total, item) => total + item.properties.predicted, 0);
                 this.tripMAError = Math.abs(this.tripActualCost - this.tripPredictedCost);
+                this.tripMAMError = Math.abs(this.tripActualCost - this.tripPredictedCost) / this.tripDistance;
                 this.tripErrorPercentage = (this.tripMAError / this.tripActualCost) * 100;
 
-                // this.tripDistance = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_length / 1000;
-                // this.tripActualCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_actual;
-                // this.tripModelCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_cost;
-                // this.tripBaselineCost = this.routeJson.features[this.routeJson.features.length - 1].properties.agg_baseline;
-                //
-                // this.tripBaselineAbsError = Math.abs(this.tripActualCost - this.tripBaselineCost);
-                // this.tripBaselinePercentageError = (this.tripBaselineAbsError / this.tripActualCost) * 100;
-                // this.tripModelAbsError = Math.abs(this.tripActualCost - this.tripModelCost);
-                // this.tripModelPercentageError = (this.tripModelAbsError / this.tripActualCost) * 100;
-
-                // TODO: Need length on segments to calculate error per meters
                 // Find max error for gradient calc
                 // TODO: Instead of using max error decide on some error / meter range so models can be compared
-                const maxErrorFeature = this.routeJson.features.reduce((prev, current) => {
-                    return this.meterError(prev) > this.meterError(current) ? prev : current;
-                });
-                const maxError = this.meterError(maxErrorFeature);
+                // const maxErrorFeature = this.routeJson.features.reduce((prev, current) => {
+                //     return this.segmentMAME(prev) > this.segmentMAME(current) ? prev : current;
+                // });
+                // const maxError = this.segmentMAME(maxErrorFeature);
+                const maxError = 1;
 
                 // route layer
                 this.leafLayers[0] = geoJSON(this.routeJson, {style:
                         (feature) => {
-                            const error = this.meterError(feature);
-                            const rgbNormalisedError = ((error / maxError) * 256) - 1;
+                            const error = this.segmentMAME(feature);
+                            let rgbNormalisedError = ((error / maxError) * 256) - 1;
+                            rgbNormalisedError = rgbNormalisedError > 255 ? 255 : rgbNormalisedError;
+                            rgbNormalisedError = rgbNormalisedError < 0 ? 0 : rgbNormalisedError;
+                            console.log(rgbNormalisedError);
                             let greenHex = Number(Math.floor(255 - rgbNormalisedError)).toString(16);
                             greenHex = greenHex.length === 1 ? "0" + greenHex : greenHex;
                             let redHex = Number(Math.floor(rgbNormalisedError)).toString(16);
@@ -105,7 +100,7 @@ export class AppComponent implements OnInit {
                                 opacity: 0.85};
                         },
                         onEachFeature: (feature, layer) => {
-                            layer.bindPopup(feature.properties.id + ': Fejl per meter: ' + this.meterError(feature));
+                            layer.bindPopup(feature.properties.id + ': Fejl per meter: ' + this.segmentMAME(feature));
                         }
                 });
 
@@ -171,8 +166,8 @@ export class AppComponent implements OnInit {
     }
 
     changeTrip() {
+        // TODO: change trip
         this.loadTrip(true);
-        // this.scrollToTrip();
     }
 
     scrollToTrip() {
@@ -199,9 +194,14 @@ export class AppComponent implements OnInit {
         };
     }
 
-    meterError(feature: any) {
+    segmentMAE(feature: any) {
         // TODO: When segment distance is available, use it here
         return Math.abs(feature.properties.predicted - feature.properties.actual);
+    }
+
+    segmentMAME(feature: any) {
+        // TODO: When segment distance is available, use it here
+        return Math.abs(feature.properties.predicted - feature.properties.actual) / feature.properties.length;
     }
 
     usePointSeparation() {

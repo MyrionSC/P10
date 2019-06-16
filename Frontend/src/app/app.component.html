@@ -52,40 +52,16 @@
                 </p>
                 <p class="results-p">
                     <i class="mdi mdi-block-helper" aria-hidden="true"></i>
-                    {{tripMAError | number:'0.0-2':'en-DK'}} Wh
+                    MAE: {{tripMAError | number:'0.0-2':'en-DK'}} Wh
+                </p>
+                <p class="results-p">
+                    <i class="mdi mdi-block-helper" aria-hidden="true"></i>
+                    MAME: {{tripMAMError | number:'0.0-2':'en-DK'}} Wh/m
                 </p>
                 <p class="results-p">
                     <i class="mdi mdi-block-helper" aria-hidden="true"></i>
                     {{tripErrorPercentage | number:'0.0-2':'en-DK'}} %
                 </p>
-
-                <!--<p>Segment</p>-->
-                <!--<p class="results-p">-->
-                    <!--<i class="mdi mdi-flash" aria-hidden="true"></i>-->
-                    <!--{{tripModelCost | number:'0.0-5':'en-DK'}} kWh-->
-                <!--</p>-->
-                <!--<p class="results-p">-->
-                    <!--<i class="mdi mdi-block-helper" aria-hidden="true"></i>-->
-                    <!--{{tripModelAbsError | number:'0.0-5':'en-DK'}} kWh-->
-                <!--</p>-->
-                <!--<p class="results-p">-->
-                    <!--<i class="mdi mdi-block-helper" aria-hidden="true"></i>-->
-                    <!--{{tripModelPercentageError | number:'0.0-2':'en-DK'}} %-->
-                <!--</p>-->
-
-                <!--<p>Baseline</p>-->
-                <!--<p class="results-p">-->
-                    <!--<i class="mdi mdi-flash" aria-hidden="true"></i>-->
-                    <!--{{tripBaselineCost | number:'0.0-5':'en-DK'}} kWh-->
-                <!--</p>-->
-                <!--<p class="results-p">-->
-                    <!--<i class="mdi mdi-block-helper" aria-hidden="true"></i>-->
-                    <!--{{tripBaselineAbsError | number:'0.0-5':'en-DK'}} kWh-->
-                <!--</p>-->
-                <!--<p class="results-p">-->
-                    <!--<i class="mdi mdi-block-helper" aria-hidden="true"></i>-->
-                    <!--{{tripBaselinePercentageError | number:'0.0-2':'en-DK'}} %-->
-                <!--</p>-->
             </div>
         </div>
     </div>
