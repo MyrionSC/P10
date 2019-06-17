@@ -18,6 +18,7 @@ export class AppComponent implements OnInit {
 
     // available routes
     availableTrips = [
+        '1',
         '202094',
         '240',
         '18824',
@@ -51,9 +52,6 @@ export class AppComponent implements OnInit {
     pointSeparation = false;
 
     loadTrip(scrollTo: boolean) {
-        // const model = this.usingSegmentModel ? 'segment' : 'supersegment';
-
-        // todo: change to new structure
         const url = './assets/' + this.selectedTrip + '/trip' + this.selectedTrip + '-' + this.usingModel + '.json';
         console.log('GET: ' + url);
 
@@ -65,7 +63,7 @@ export class AppComponent implements OnInit {
                 this.routeJson = res;
                 console.log(res);
 
-                // Vis: længde, antal segmenter, aktuelt energiforbrug, estimeret energiforbrug, fejl, fejl i procent
+                // udregn metrics
                 this.tripDistance = this.routeJson.features.reduce((total, item) => total + item.properties.length, 0) / 1000;
                 this.tripSegmentsNum = this.routeJson.features.length;
                 this.tripActualCost = this.routeJson.features.reduce((total, item) => total + item.properties.actual, 0);
@@ -73,14 +71,6 @@ export class AppComponent implements OnInit {
                 this.tripMAError = Math.abs(this.tripActualCost - this.tripPredictedCost);
                 this.tripMAMError = Math.abs(this.tripActualCost - this.tripPredictedCost) / (this.tripDistance * 1000);
                 this.tripErrorPercentage = (this.tripMAError / this.tripActualCost) * 100;
-
-                // Find max error for gradient calc
-                // TODO: Instead of using max error decide on some error / meter range so models can be compared
-                // const maxErrorFeature = this.routeJson.features.reduce((prev, current) => {
-                //     return this.segmentMAME(prev) > this.segmentMAME(current) ? prev : current;
-                // });
-                // const maxError = this.segmentMAME(maxErrorFeature);
-                // const maxError = 0.3;
 
                 // route layer
                 this.leafLayers[0] = geoJSON(this.routeJson, {style:
@@ -110,44 +100,66 @@ export class AppComponent implements OnInit {
                         }
                 });
 
-
-
                 // point layer
                 // unfortunately we cannot just take first and last LatLng from each feature because the individual segment's
                     // direction is not always right. Instead we remove all duplicates from merged list of linestrings coords
-                    // and take first and last of these.
+                    // and take first and last of these. For supersegments not even that is enough. For that we take
+                    // the two points which are furthest from each other, which is right 99,9% of the time.
                 if (this.pointSeparation) {
                     const pointsGroup = layerGroup();
                     for (const feature of this.routeJson.features) {
 
                         // @ts-ignore
                         let coords = feature.geometry.coordinates;
-                        if (feature.geometry.type === 'MultiLineString') {
-                            // flatten array to LineString syntax
+                        if (feature.geometry.type === 'MultiLineString') { // supersegments
                             coords = Array.prototype.concat.apply([], feature.geometry.coordinates);
+                            coords = coords.map((item) => {
+                                return new LatLng(item[1], item[0]);
+                            });
+
+                            // take two furthest from each other
+                            let furthestCoords = [];
+                            let furthestDist = 0;
+                            for (const c1 of coords) {
+                                for (const c2 of coords) {
+                                    if (c1.distanceTo(c2) > furthestDist) {
+                                        furthestDist = c1.distanceTo(c2);
+                                        furthestCoords = [c1, c2];
+                                    }
+                                }
+                            }
+
+                            pointsGroup.addLayer(new Circle(furthestCoords[0], {
+                                radius: 3,
+                                color: '#444444'
+                            }));
+                            pointsGroup.addLayer(new Circle(furthestCoords[1], {
+                                radius: 3,
+                                color: '#444444'
+                            }));
+
+                        } else { // segments
+                            coords = coords.map((item) => {
+                                return new LatLng(item[1], item[0]);
+                            });
+
+                            // take only ones where no duplicate
+                            coords = coords.filter((item: LatLng) => {
+                                return coords.findIndex((item2: LatLng) => {
+                                    return item !== item2 && item.equals(item2);
+                                }) === -1;
+                            });
+
+                            // The first and last are the ones we want
+                            pointsGroup.addLayer(new Circle(coords[0], {
+                                radius: 3,
+                                color: '#444444'
+                            }));
+                            pointsGroup.addLayer(new Circle(coords[coords.length - 1], {
+                                radius: 3,
+                                color: '#444444'
+                            }));
                         }
-                        coords = coords.map((item) => {
-                            return new LatLng(item[1], item[0]);
-                        });
-
-                        // take only ones where no duplicate
-                        coords = coords.filter((item: LatLng) => {
-                            return coords.findIndex((item2: LatLng) => {
-                                return item !== item2 && item.equals(item2);
-                            }) === -1;
-                        });
-
-                        // The first and last are the ones we want
-                        const startcircle = new Circle(coords[0], {
-                            radius: 3,
-                            color: '#444444'
-                        });
-                        pointsGroup.addLayer(startcircle);
-                        const stopcircle = new Circle(coords[coords.length - 1], {
-                            radius: 3,
-                            color: '#444444'
-                        });
-                        pointsGroup.addLayer(stopcircle);
                     }
                     this.leafLayers[1] = pointsGroup;
                 }
@@ -169,11 +181,6 @@ export class AppComponent implements OnInit {
     changeModel(model: string) {
         this.usingModel = model;
         this.loadTrip(false);
-    }
-
-    changeTrip() {
-        // TODO: change trip
-        this.loadTrip(true);
     }
 
     scrollToTrip() {
