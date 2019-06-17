@@ -40,10 +40,10 @@ def read_road_map_data(month, quarter, hour, two_hour, four_hour, six_hour, twel
 
 
 # Read data from csv file at path
-def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+def read_data(path: str, config: Config, re_scale: bool=False, retain_id: bool=False, first=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
     # Get the base data from the csv
     df = get_base_data(path, config)
-    return preprocess_data(df, config, re_scale, retain_id)
+    return preprocess_data(df, config, re_scale, retain_id, first=first)
 
 
 def read_predicting_data(config: Config, re_scale: bool=False, retain_id: bool=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
@@ -60,10 +60,17 @@ def get_candidate_trip_data(trip_ids: List[int], config: Config, re_scale: bool=
     return preprocess_data(df, config, re_scale, retain_id)
 
 
-def preprocess_data(df: pd.DataFrame, config: Config, re_scale: bool=False, retain_id: bool=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
+def preprocess_data(df: pd.DataFrame, config: Config, re_scale: bool=False, retain_id: bool=False, first=False) -> (pd.DataFrame, pd.DataFrame, pd.DataFrame):
     # If speed predictions are set to be used, include them
     if 'speed_prediction' in config['features_used']:
         df = get_speed_predictions(df, config['speed_model_path'])
+
+    if first:
+        dfm = df[['mapmatched_id', 'segment_length', 'ev_wh']]
+        if os.path.isfile("meters.csv"):
+            dfm2 = pd.read_csv("meters.csv")
+            dfm = pd.concat([dfm2, dfm], ignore_index=True)
+        dfm.to_csv("meters.csv", index=False)
 
     # One hot encode categorical features
     if 'month' in config['features_used'] or 'weekday' in config['features_used'] \

@@ -6,6 +6,7 @@ from Utils.Configuration import paths, Config, energy_config
 from Utils.Utilities import model_path, printparams, generate_upload_predictions
 from tensorflow import set_random_seed
 from numpy.random import seed
+import numpy as np
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 from Utils.Metrics import mean_absolute_percentage_error, root_mean_squared_error
 import pandas as pd
@@ -34,17 +35,28 @@ def do_speed_predictions_if_not_there(config: Config):
             predict(speed_config, True)
 
 
-def read_predicting_data_sets(config: Config, retain_id: bool) -> (pd.DataFrame, pd.DataFrame):
+def read_predicting_data_sets(config: Config, retain_id: bool, first=False) -> (pd.DataFrame, pd.DataFrame):
     do_speed_predictions_if_not_there(config)
 
     print("")
     print("------ Reading data ------")
     start_time = time.time()
     if config['supersegment']:
-        path = paths['supersegDataPath']
+        path_t = paths['supersegTrainPath']
+        path_v = paths['supersegValidationPath']
     else:
-        path = paths['dataPath']
-    X, Y, trip_ids = read_data(path, config, retain_id=retain_id)
+        path_t = paths['dataPath']
+        path_v = None
+    X_train, Y_train, train_trip_ids = read_data(path_t, config, retain_id=retain_id, first=first)
+    if path_v is not None:
+        X_test, Y_test, test_trip_ids = read_data(path_v, config, retain_id=retain_id, first=first)
+        X = pd.concat([X_train, X_test], ignore_index=True)
+        Y = pd.concat([Y_train, Y_test], ignore_index=True)
+        trip_ids = pd.concat([train_trip_ids, test_trip_ids], ignore_index=True)
+    else:
+        X = X_train
+        Y = Y_train
+        trip_ids = train_trip_ids
     print("Data read")
     print("Time elapsed: %s" % (time.time() - start_time))
 
@@ -122,6 +134,26 @@ def calculate_results(estimator, X: pd.DataFrame, Y: pd.DataFrame, trip_ids: pd.
              'trip_mse': mean_squared_error(trip_act, trip_pred),
              'trip_mape': mean_absolute_percentage_error(trip_act, trip_pred)}
 
+    #full_df = pd.concat([X, pd.DataFrame(prediction, columns=['prediciton'])], axis=1)
+    #full_df = pd.concat([full_df, Y[[config['target_feature']]]], axis=1)
+    #full_df['type'] = np.nan
+    #for x in list(full_df):
+    #    if "type_" in x:
+    #        full_df.loc[full_df[x] > 0, ['type']] = x[5:]
+
+    #full_df = full_df[['prediciton', config['target_feature'], 'type', 'incline']]
+    #full_df['incline'] = np.floor(full_df['incline'] / 4) * 4
+    #grp_type = full_df.groupby(['type'])
+    #grp_inc = full_df.groupby(['incline'])
+
+    #dfs_type = {k: df for k, df in grp_type}
+    #dfs_inc = {k: df for k, df in grp_inc}
+
+    #for k in dfs_type.keys():
+    #    preds[k + "_r2"] = r2_score(dfs_type[k][config['target_feature']], dfs_type[k]['prediciton'])
+    #for k in dfs_inc.keys():
+    #    preds["Incline_" + str(k) + "-" + str(k+4) + "_r2"] = r2_score(dfs_inc[k][config['target_feature']], dfs_inc[k]['prediciton'])
+
     print("")
     print("Time elapsed: %s seconds" % (time.time() - start_time))
     return pd.DataFrame(prediction, columns=['prediction']), preds
@@ -160,8 +192,12 @@ def train(config: Config):
     model, history = train_model(X_train, Y_train, X_validation, Y_validation, config)
     hist = history.history
 
+    if model is None or hist is None:
+        return None
+
     train_predictions, preds = calculate_results(model, X_train, Y_train, train_trip_ids, config)
     val_predictions, val_preds = calculate_results(model, X_validation, Y_validation, val_trip_ids, config)
+
     for k in val_preds.keys():
         preds['val_' + k] = val_preds[k]
     for k in [x for x in preds.keys() if 'val' not in x]:
@@ -180,8 +216,8 @@ def train(config: Config):
     return hist
 
 
-def predict(config: Config, save_predictions: bool=False):
-    X, Y, trip_ids = read_predicting_data_sets(config, save_predictions)
+def predict(config: Config, save_predictions: bool=False, first=False):
+    X, Y, trip_ids = read_predicting_data_sets(config, save_predictions, first)
 
     keys = None
     if save_predictions:
@@ -195,6 +231,10 @@ def predict(config: Config, save_predictions: bool=False):
     print("R2-score: {:f}".format(preds['r2']))
     print("Trips:")
     print("R2-score: {:f}".format(preds['trip_r2']))
+
+    #dfm = pd.read_csv("meters.csv")
+    #dfm['pred_' + config['model_name_base']] = predictions['prediction']
+    #dfm.to_csv("meters.csv", index=False)
 
     if save_predictions:
         predictions.rename(columns={'0': 'prediction'})
