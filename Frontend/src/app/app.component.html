@@ -20,7 +20,7 @@
 
         <p style="margin-top: 0;" class="p function-title">Rute</p>
         <div *ngIf="estimateShown" class="content-box">
-            <select class="select model-select" [(ngModel)]="selectedTrip" (change)="loadTrip()">
+            <select class="select model-select" [(ngModel)]="selectedTrip" (change)="loadTrip(true)">
                 <option *ngFor="let trip of availableTrips" [ngValue]="trip">{{trip}}</option>
             </select>
 
@@ -56,7 +56,7 @@
                 </p>
                 <p class="results-p">
                     <i class="mdi mdi-block-helper" aria-hidden="true"></i>
-                    MAME: {{tripMAMError | number:'0.0-2':'en-DK'}} Wh/m
+                    MAME: {{tripMAMError | number:'0.0-5':'en-DK'}} Wh/m
                 </p>
                 <p class="results-p">
                     <i class="mdi mdi-block-helper" aria-hidden="true"></i>

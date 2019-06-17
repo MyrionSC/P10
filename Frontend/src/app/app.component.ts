@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
     // available routes
     availableTrips = [
         '202094',
-        '1234',
+        '240',
         '5678'
     ];
     selectedTrip = "202094";
@@ -69,7 +69,7 @@ export class AppComponent implements OnInit {
                 this.tripActualCost = this.routeJson.features.reduce((total, item) => total + item.properties.actual, 0);
                 this.tripPredictedCost = this.routeJson.features.reduce((total, item) => total + item.properties.predicted, 0);
                 this.tripMAError = Math.abs(this.tripActualCost - this.tripPredictedCost);
-                this.tripMAMError = Math.abs(this.tripActualCost - this.tripPredictedCost) / this.tripDistance;
+                this.tripMAMError = Math.abs(this.tripActualCost - this.tripPredictedCost) / (this.tripDistance * 1000);
                 this.tripErrorPercentage = (this.tripMAError / this.tripActualCost) * 100;
 
                 // Find max error for gradient calc
@@ -78,21 +78,25 @@ export class AppComponent implements OnInit {
                 //     return this.segmentMAME(prev) > this.segmentMAME(current) ? prev : current;
                 // });
                 // const maxError = this.segmentMAME(maxErrorFeature);
-                const maxError = 1;
+                // const maxError = 0.3;
 
                 // route layer
                 this.leafLayers[0] = geoJSON(this.routeJson, {style:
                         (feature) => {
                             const error = this.segmentMAME(feature);
-                            let rgbNormalisedError = ((error / maxError) * 256) - 1;
-                            rgbNormalisedError = rgbNormalisedError > 255 ? 255 : rgbNormalisedError;
-                            rgbNormalisedError = rgbNormalisedError < 0 ? 0 : rgbNormalisedError;
-                            console.log(rgbNormalisedError);
-                            let greenHex = Number(Math.floor(255 - rgbNormalisedError)).toString(16);
-                            greenHex = greenHex.length === 1 ? "0" + greenHex : greenHex;
-                            let redHex = Number(Math.floor(rgbNormalisedError)).toString(16);
-                            redHex = redHex.length === 1 ? "0" + redHex : redHex;
-                            const hex = '#' + redHex + greenHex + '00';
+
+                            let hex = "";
+                            if (error < 0.2) {
+                                hex = "#a1aff6";
+                            } else if (error < 0.4) {
+                                hex = "#d89fd3";
+                            } else if (error < 0.6) {
+                                hex = "#df65b0";
+                            } else if (error < 0.8) {
+                                hex = "#dd1c77";
+                            } else {
+                                hex = "#980043";
+                            }
 
                             return {
                                 color: hex,
@@ -194,13 +198,7 @@ export class AppComponent implements OnInit {
         };
     }
 
-    segmentMAE(feature: any) {
-        // TODO: When segment distance is available, use it here
-        return Math.abs(feature.properties.predicted - feature.properties.actual);
-    }
-
     segmentMAME(feature: any) {
-        // TODO: When segment distance is available, use it here
         return Math.abs(feature.properties.predicted - feature.properties.actual) / feature.properties.length;
     }
 
