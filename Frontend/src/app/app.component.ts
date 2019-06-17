@@ -20,7 +20,8 @@ export class AppComponent implements OnInit {
     availableTrips = [
         '202094',
         '240',
-        '5678'
+        '18824',
+        '156595'
     ];
     selectedTrip = "202094";
     usingModel = "supersegment";
@@ -52,7 +53,8 @@ export class AppComponent implements OnInit {
     loadTrip(scrollTo: boolean) {
         // const model = this.usingSegmentModel ? 'segment' : 'supersegment';
 
-        const url = './assets/trip' + this.selectedTrip + '-' + this.usingModel + '.json';
+        // todo: change to new structure
+        const url = './assets/' + this.selectedTrip + '/trip' + this.selectedTrip + '-' + this.usingModel + '.json';
         console.log('GET: ' + url);
 
         this.tripLoading = true;
@@ -100,8 +102,8 @@ export class AppComponent implements OnInit {
 
                             return {
                                 color: hex,
-                                weight: 5,
-                                opacity: 0.85};
+                                weight: 8,
+                                opacity: 1};
                         },
                         onEachFeature: (feature, layer) => {
                             layer.bindPopup(feature.properties.id + ': Fejl per meter: ' + this.segmentMAME(feature));
