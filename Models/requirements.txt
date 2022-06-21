@@ -1,5 +1,5 @@
 # model
-numpy==1.14.3
+numpy==1.22.0
 psycopg2==2.7.5
 SQLAlchemy==1.2.15
 matplotlib==2.2.2
